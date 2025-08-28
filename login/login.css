@@ -150,8 +150,9 @@
     --font-color-sub: #666;
     --bg-color: beige;
     --main-color: black;
-    width: 20%;
-    height: 30%;
+    width: 320px; /* 固定宽度 */
+    min-height: 400px; /* 最小高度 */
+    max-width: 90%; /* 移动端适配 */
     padding: 30px;
     background: rgb(249, 146, 163);
     display: flex;
@@ -163,6 +164,12 @@
     border: 2px solid var(--main-color);
     box-shadow: 4px 4px var(--main-color);
   }
+  .form-label {
+            color: var(--font-color);
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: block;
+            align-self: flex-start; /* 左对齐 */}
   
   .title {
     color: var(--font-color);
