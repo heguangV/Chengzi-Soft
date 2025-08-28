@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>剧情页面示例</title>
+  <link rel="stylesheet" href="storypage.css">
+  <script src="storypage.js" defer></script>
+</head>
+<body>
+  <!-- 背景 -->
+  <img src="background.png" alt="背景图" class="background-img">
+
+  <!-- 角色立绘 -->
+  <img src="character.png" alt="角色" class="character-img">
+
+  <!-- 对话框 -->
+  <div class="dialog-box">
+    <div class="character-name">芳乃</div>
+    <div class="dialog-text" id="dialog-text"></div>
+    <div class="dialog-controls">
+      <button id="prev-btn">上一句</button>
+      <button id="speed-btn">加速</button>
+      <button id="auto-btn">自动播放</button>
+      <button id="skip-btn">跳过</button>
+      <button id="next-btn">下一句 ▶</button>     
+    </div>
+  </div>
+
+  <!-- 侧边栏触发按钮 -->
+  <div id="sidebar-toggle">▶</div>
+
+  <!-- 侧边栏 -->
+
+  <div id="sidebar">
+    <h3>设置</h3>
+    <div class="sidebar-buttons">
+      <button id="main-menu-btn">回到主菜单</button>
+      <button id="load-btn">读档</button>
+      <button id="save-btn">存档</button> <!-- 新增存档按钮 -->
+      <button id="music-btn">音乐暂停</button>
+    </div>
+  
+    <div class="volume-control">
+      <label for="volume-range">音量</label>
+      <input type="range" id="volume-range" min="0" max="100" value="50">
+    </div>
+  </div>
+
+  <audio id="bg-music" src="bg-music.mp3" loop></audio>
+  <!-- 选择界面 -->
+  <div id="choice-container" class="hidden" >
+
+    <button class="choice-btn" data-choice="A">选项A</button>
+    <button class="choice-btn" data-choice="B">选项B</button>
+    <button class="choice-btn" data-choice="C">选项C</button>
+  </div>
+  <div id="auto-save-notice" class="hidden">已存档</div>
+</body>
+</html>
