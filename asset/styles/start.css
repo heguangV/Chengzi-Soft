@@ -1,0 +1,99 @@
+
+.title {
+  font-size: 3.5em;
+  font-weight: bold;
+  margin-bottom: 32px;
+  color: #333;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transform: rotate(-15deg);
+  display: inline-block;
+  background: rgba(173, 216, 230, 0.7); /* 淡蓝色背景 */
+  padding: 24px 48px;
+  border-radius: 18px;
+}
+
+.button-container {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+/* 标题倾斜且字体更大 */
+
+/* 按钮样式与 login 页面一致 */
+        .button{
+            margin-bottom: 16px;
+            margin-left: 100px;
+            margin-right: 100px;
+            border-radius: 5px;
+            border: none;
+            padding: 8px 10px;
+            background: linear-gradient(45deg, #ffea98, #f8b55e);
+            color: rgb(255, 255, 255);
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+              display: inline-block;
+              white-space: nowrap;
+              align-items: center;
+              justify-content: center;
+              width: auto;
+              min-width: 80px;
+              height: auto;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(118, 75, 162, 0.5);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(118, 75, 162, 0.4);
+        }
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* ⭐确保背景图能定位 */
+    overflow: hidden;
+  }
+  #music {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+
+  background: #fbca1f;
+  font-family: inherit;
+  padding: 0.4em 0.8em;
+  font-weight: 900;
+  font-size: 20px;     /* 字体大点，符号明显 */
+  border: 3px solid black;
+  border-radius: 0.4em;
+  box-shadow: 0.1em 0.1em;
+  cursor: pointer;
+}
+
+#music:hover {
+  transform: translate(-0.05em, -0.05em);
+  box-shadow: 0.15em 0.15em;
+}
+
+#music:active {
+  transform: translate(0.05em, 0.05em);
+  box-shadow: 0.05em 0.05em;
+}
+  /* 背景图片 */
+  .background-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;   /* 保证填满屏幕 */
+    opacity: 0.4;        /* ⭐这里控制透明度 0~1 */
+    z-index: -1;         /* 放到表单后面 */
+  }

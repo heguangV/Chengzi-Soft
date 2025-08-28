@@ -3,10 +3,7 @@ window.addEventListener('DOMContentLoaded', function() {
     let timer = null;
     
     const centerArea = document.querySelector('.center-area');
-    if (!centerArea) {
-        console.error('找不到 .center-area 元素');
-        return;
-    }
+   
     function isInSideArea(e) {
         const rect = centerArea.getBoundingClientRect();
         const x = e.clientX;
