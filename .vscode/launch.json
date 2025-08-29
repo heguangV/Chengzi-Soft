@@ -1,0 +1,19 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Debug Edge",
+            "url": "file:///${file}",  // 自动使用当前打开的文件
+            "webRoot": "${workspaceFolder}",
+            "userDataDir": false,      // 禁用临时用户数据目录
+            "runtimeArgs": [           // 启动参数
+                "--disable-extensions" // 禁用扩展保证纯净环境
+            ]
+        }
+    ]
+}
