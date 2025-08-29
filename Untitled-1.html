@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全屏视频动画体验</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            overflow: hidden;
+            height: 100vh;
+            background: #0a0a16;
+            color: white;
+            cursor: pointer;
+        }
+        
+        #video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        #animation-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: 1;
+        }
+        
+        #fallback-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            display: none;
+        }
+        
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 80px;
+        }
+        
+        #subtitles {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px 40px;
+            border-radius: 15px;
+            max-width: 80%;
+            text-align: center;
+            font-size: 1.8rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            transition: opacity 0.5s;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        #progress-container {
+            width: 80%;
+            max-width: 600px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        
+        #skip-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        
+        #skip-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a16;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            flex-direction: column;
+        }
+        
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top: 5px solid #4CAF50;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #instruction {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.2rem;
+            opacity: 0.9;
+            z-index: 3;
+        }
+        
+        .fallback-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            z-index: -1;
+        }
+        
+        .fallback-shape-1 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            top: 20%;
+            left: 10%;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        .fallback-shape-2 {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #a1c4fd, #c2e9fb);
+            bottom: 15%;
+            right: 10%;
+            animation: float 12s infinite ease-in-out reverse;
+        }
+        
+        .fallback-shape-3 {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            top: 50%;
+            left: 80%;
+            animation: float 10s infinite ease-in-out;
+        }
+        
+        .fallback-content {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            max-width: 80%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .fallback-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #4facfe;
+        }
+        
+        .fallback-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-30px) rotate(10deg);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            #subtitles {
+                font-size: 1.4rem;
+                padding: 15px 25px;
+            }
+            
+            .fallback-title {
+                font-size: 2rem;
+            }
+            
+            .fallback-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载界面 -->
+    <div id="loading">
+        <div class="loader"></div>
+        <p>视频加载中，请稍候...</p>
+        <p id="load-status" style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">正在初始化...</p>
+    </div>
+
+    <!-- 视频容器 -->
+    <div id="video-container">
+        <video id="animation-video" preload="auto" muted>
+            <!-- 多个视频源格式以提高兼容性 -->
+            <source src="https://assets.codepen.io/3364143/sample.mp4" type="video/mp4">
+            <source src="https://assets.codepen.io/3364143/sample.webm" type="video/webm">
+            您的浏览器不支持HTML5视频。
+        </video>
+    </div>
+
+    <!-- 视频加载失败时的备用内容 -->
+    <div id="fallback-animation">
+        <div class="fallback-shape fallback-shape-1"></div>
+        <div class="fallback-shape fallback-shape-2"></div>
+        <div class="fallback-shape fallback-shape-3"></div>
+        
+        <div class="fallback-content">
+            <h2 class="fallback-title">视频加载提示</h2>
+            <p class="fallback-text">当前视频资源加载较慢或无法访问，您可以：</p>
+            <p class="fallback-text">1. 检查网络连接</p>
+            <p class="fallback-text">2. 点击下方按钮跳过视频直接进入</p>
+            <button id="fallback-skip-button" style="background: #4facfe; color: white; border: none; padding: 12px 30px; border-radius: 50px; font-size: 1.1rem; cursor: pointer; margin-top: 15px;">
+                跳过视频 <i class="fas fa-forward"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 覆盖层 -->
+    <div id="overlay">
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="subtitles">欢迎来到我们的世界...</div>
+        <button id="skip-button"><i class="fas fa-forward"></i> 跳过介绍</button>
+    </div>
+
+    <div id="instruction">点击任意位置继续 <i class="fas fa-hand-point-up"></i></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('animation-video');
+            const loadingScreen = document.getElementById('loading');
+            const loadStatus = document.getElementById('load-status');
+            const subtitles = document.getElementById('subtitles');
+            const progressBar = document.getElementById('progress-bar');
+            const skipButton = document.getElementById('skip-button');
+            const fallbackAnimation = document.getElementById('fallback-animation');
+            const fallbackSkipButton = document.getElementById('fallback-skip-button');
+            
+            // 字幕序列（时间戳和对应的字幕文本）
+            const subtitleSequence = [
+                { time: 0, text: "欢迎来到我们的世界..." },
+                { time: 3, text: "在这里，每一个瞬间都充满惊喜" },
+                { time: 6, text: "探索未知的领域，发现新的可能" },
+                { time: 9, text: "创意与技术的完美结合" },
+                { time: 12, text: "准备好开始这段旅程了吗？" }
+            ];
+            
+            // 当前字幕索引
+            let currentSubtitleIndex = 0;
+            
+            // 模拟下一个页面的URL
+            const nextPageURL = "https://www.example.com";
+            
+            // 视频加载状态
+            let videoLoaded = false;
+            let videoError = false;
+            
+            // 视频加载事件
+            video.addEventListener('loadeddata', function() {
+                loadStatus.textContent = "视频加载成功，准备播放...";
+                videoLoaded = true;
+            });
+            
+            video.addEventListener('canplay', function() {
+                if (videoLoaded) {
+                    setTimeout(function() {
+                        loadingScreen.style.opacity = 0;
+                        setTimeout(function() {
+                            loadingScreen.style.display = 'none';
+                            video.play();
+                        }, 500);
+                    }, 1000);
+                }
+            });
+            
+            video.addEventListener('error', function(e) {
+                console.error("视频加载错误:", e);
+                loadStatus.textContent = "视频加载失败，显示备用内容...";
+                videoError = true;
+                
+                setTimeout(function() {
+                    loadingScreen.style.display = 'none';
+                    fallbackAnimation.style.display = 'flex';
+                }, 1500);
+            });
+            
+            // 设置超时检测（8秒后如果视频仍未加载成功，显示备用内容）
+            setTimeout(function() {
+                if (!videoLoaded && !videoError) {
+                    loadStatus.textContent = "视频加载超时，显示备用内容...";
+                    videoError = true;
+                    
+                    setTimeout(function() {
+                        loadingScreen.style.display = 'none';
+                        fallbackAnimation.style.display = 'flex';
+                    }, 1000);
+                }
+            }, 8000);
+            
+            // 更新进度条
+            video.addEventListener('timeupdate', function() {
+                // 更新进度条
+                const progress = (video.currentTime / video.duration) * 100;
+                progressBar.style.width = progress + '%';
+                
+                // 更新字幕
+                if (currentSubtitleIndex < subtitleSequence.length - 1) {
+                    if (video.currentTime >= subtitleSequence[currentSubtitleIndex + 1].time) {
+                        currentSubtitleIndex++;
+                        subtitles.style.opacity = 0;
+                        setTimeout(function() {
+                            subtitles.textContent = subtitleSequence[currentSubtitleIndex].text;
+                            subtitles.style.opacity = 1;
+                        }, 500);
+                    }
+                }
+            });
+            
+            // 视频结束时自动跳转
+            video.addEventListener('ended', function() {
+                redirectToNextPage();
+            });
+            
+            // 点击任意位置跳转
+            document.addEventListener('click', function() {
+                redirectToNextPage();
+            });
+            
+            // 跳过按钮点击事件
+            skipButton.addEventListener('click', function(e) {
+                e.stopPropagation(); // 防止事件冒泡到document
+                redirectToNextPage();
+            });
+            
+            // 备用跳过按钮点击事件
+            fallbackSkipButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                redirectToNextPage();
+            });
+            
+            // 添加键盘支持（按任意键跳过）
+            document.addEventListener('keydown', function() {
+                redirectToNextPage();
+            });
+            
+            // 跳转到下一个页面
+            function redirectToNextPage() {
+                document.body.style.opacity = 0;
+                document.body.style.transition = 'opacity 0.5s ease';
+                
+                setTimeout(function() {
+                    // 在实际应用中，这里应该跳转到真实的URL
+                    alert('动画已结束，即将跳转到下一个页面');
+                    // window.location.href = nextPageURL;
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
