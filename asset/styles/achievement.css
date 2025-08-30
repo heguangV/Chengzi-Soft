@@ -1,0 +1,295 @@
+/* 成就页面样式 - 水墨风设计 */
+.achievement-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+}
+
+.achievement-content {
+    background: linear-gradient(135deg, rgba(255, 248, 220, 0.95), rgba(255, 248, 220, 0.85));
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 25px;
+    width: 85%;
+    max-width: 900px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.4s ease-out;
+    border: 2px solid rgba(139, 115, 85, 0.3);
+    position: relative;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-60px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.achievement-header {
+    background: linear-gradient(45deg, #8B7355, #A0522D);
+    color: white;
+    padding: 25px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 25px 25px 0 0;
+    border-bottom: 2px solid rgba(139, 115, 85, 0.3);
+}
+
+.achievement-header h2 {
+    margin: 0;
+    font-size: 2.2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: 'Ma Shan Zheng', cursive;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 2.2em;
+    cursor: pointer;
+    padding: 8px 18px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+.achievement-tabs {
+    background: rgba(139, 115, 85, 0.1);
+    padding: 25px 35px;
+    display: flex;
+    gap: 15px;
+    border-bottom: 2px solid rgba(139, 115, 85, 0.2);
+}
+
+.tab-btn {
+    background: rgba(139, 115, 85, 0.15);
+    border: none;
+    color: #8B7355;
+    padding: 15px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    font-family: 'ZCOOL XiaoWei', sans-serif;
+    border: 1px solid rgba(139, 115, 85, 0.2);
+}
+
+.tab-btn:hover {
+    background: rgba(139, 115, 85, 0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(139, 115, 85, 0.2);
+}
+
+.tab-btn.active {
+    background: linear-gradient(45deg, #8B7355, #A0522D);
+    color: white;
+    box-shadow: 0 6px 20px rgba(139, 115, 85, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.achievement-list {
+    padding: 35px;
+    max-height: 450px;
+    overflow-y: auto;
+    background: rgba(255, 248, 220, 0.3);
+}
+
+.achievement-item {
+    background: rgba(255, 255, 255, 0.7);
+    margin-bottom: 20px;
+    padding: 25px;
+    border-radius: 20px;
+    border-left: 5px solid #8B7355;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.achievement-item:hover {
+    transform: translateX(8px);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.achievement-item.uncompleted {
+    border-left-color: #D2691E;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.achievement-item.completed {
+    border-left-color: #8B7355;
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.1), rgba(255, 255, 255, 0.8));
+}
+
+.achievement-item.completed::before {
+    content: "✓";
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: linear-gradient(45deg, #8B7355, #A0522D);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 3px 10px rgba(139, 115, 85, 0.3);
+}
+
+.achievement-name {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: 'ZCOOL XiaoWei', sans-serif;
+}
+
+.achievement-description {
+    color: #34495e;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    font-size: 1.1em;
+}
+
+.achievement-time {
+    color: #7f8c8d;
+    font-size: 0.95em;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.achievement-progress {
+    margin-top: 15px;
+    background: rgba(139, 115, 85, 0.2);
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(45deg, #8B7355, #A0522D);
+    transition: width 0.5s ease;
+}
+
+/* 滚动条样式 */
+.achievement-list::-webkit-scrollbar {
+    width: 10px;
+}
+
+.achievement-list::-webkit-scrollbar-track {
+    background: rgba(139, 115, 85, 0.1);
+    border-radius: 5px;
+}
+
+.achievement-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #8B7355, #A0522D);
+    border-radius: 5px;
+}
+
+.achievement-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #A0522D, #8B7355);
+}
+
+/* 左侧侧边栏提示 */
+.achievement-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 8px;
+    height: 100vh;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 248, 220, 0.8) 0%,
+        rgba(255, 248, 220, 0.6) 20%,
+        rgba(255, 248, 220, 0.4) 40%,
+        rgba(255, 248, 220, 0.2) 60%,
+        rgba(255, 248, 220, 0.1) 80%,
+        transparent 100%
+    );
+    z-index: 1999;
+    pointer-events: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .achievement-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+    
+    .achievement-header h2 {
+        font-size: 1.8em;
+    }
+    
+    .achievement-tabs {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .tab-btn {
+        text-align: center;
+        padding: 12px 20px;
+    }
+    
+    .achievement-sidebar {
+        width: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .achievement-content {
+        width: 98%;
+        margin: 5% auto;
+    }
+    
+    .achievement-header {
+        padding: 20px 25px;
+    }
+    
+    .achievement-header h2 {
+        font-size: 1.6em;
+    }
+    
+    .achievement-list {
+        padding: 25px;
+    }
+    
+    .achievement-item {
+        padding: 20px;
+    }
+    
+    .achievement-sidebar {
+        width: 4px;
+    }
+}

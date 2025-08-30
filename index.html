@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scale=no">
     <link rel="stylesheet" type="text/css" href="./asset/styles/menu.css">
     <link rel="stylesheet" type="text/css" href="./asset/styles/start.css">
+    <link rel="stylesheet" type="text/css" href="./asset/styles/achievement.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif+SC:wght@200..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Noto+Sans+SC:wght@100..900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
      
 </head>
 
@@ -21,23 +20,64 @@
     <div class="menu">
         <div class="title">
             <div class="text">
-                迷途之子！！！！！
+                风吹过的地方
             </div>
         </div>
-        <div class="button-container">
-            <div class="button" id="start">开始游戏</div>
-            <div class="button" id="load">加载存档</div>
-            <div class="button" id="achievement">成就页面</div>
-            <div class="button" id="exit">退出游戏</div>
-            <div class="button" id="team">团队信息</div>
+        
+        <div class="function-list">
+            <div class="function-item" id="start">
+                <span class="function-text">开始游戏</span>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="function-item" id="load">
+                <span class="function-text">加载存档</span>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="function-item" id="achievement">
+                <span class="function-text">成就页面</span>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="function-item" id="exit">
+                <span class="function-text">退出游戏</span>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="function-item" id="team">
+                <span class="function-text">团队信息</span>
+            </div>
         </div>
     </div>
+
+    <!-- 左侧侧边栏提示 -->
+    <div class="achievement-sidebar"></div>
+
+    <!-- 成就页面模态框 -->
+    <div id="achievementModal" class="achievement-modal">
+        <div class="achievement-content">
+            <div class="achievement-header">
+                <h2>🏆 成就系统</h2>
+                <button class="close-btn" id="closeAchievement">&times;</button>
+            </div>
+            <div class="achievement-tabs">
+                <button class="tab-btn active" data-tab="completed">已完成</button>
+                <button class="tab-btn" data-tab="uncompleted">未完成</button>
+            </div>
+            <div class="achievement-list" id="achievementList">
+                <!-- 成就列表将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
       <button id="music">▶</button>
 
       <audio id="bg-music" src="your-music.mp3" loop></audio>
   <!--TODO: 背景图片-->
     <img src="./login/gaomulogin.png" alt="背景图" class="background-img">
     <script src="./script/menu.js"></script>
+    <script src="./script/achievement.js"></script>
 </body>
 
 </html>

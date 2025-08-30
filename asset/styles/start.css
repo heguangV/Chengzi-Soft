@@ -1,15 +1,23 @@
-
+/* 水墨风标题样式 */
 .title {
-  font-size: 3.5em;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 4.5em;
   font-weight: bold;
-  margin-bottom: 32px;
-  color: #333;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transform: rotate(-15deg);
+  margin-bottom: 40px;
+  color: #2c3e50;
+  text-shadow: 
+    2px 2px 4px rgba(0,0,0,0.3),
+    0 0 20px rgba(44, 62, 80, 0.2);
+  transform: rotate(-8deg);
   display: inline-block;
-  background: rgba(173, 216, 230, 0.7); /* 淡蓝色背景 */
-  padding: 24px 48px;
-  border-radius: 18px;
+  padding: 30px 60px;
+  position: relative;
+  z-index: 2;
+}
+
+.title .text {
+  position: relative;
+  z-index: 1;
 }
 
 body {
@@ -18,100 +26,181 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
 }
 
-.button-container {
-  margin-top: 48px;
+/* 淡黄色渐变背景 */
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 248, 220, 0.8) 0%,
+    rgba(255, 248, 220, 0.6) 30%,
+    rgba(255, 248, 220, 0.4) 60%,
+    rgba(255, 248, 220, 0.2) 80%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+/* 左侧功能列表样式 */
+.function-list {
+  position: absolute;
+  left: 50px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgb(249, 146, 163);
-  border-radius: 10px;
-  border: 2px solid black;
-  box-shadow: 1px 2px black;
-  padding: 24px 0;
-  width: 240px;
-  min-width: 120px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  align-items: flex-start;
+  padding: 30px 20px;
+  z-index: 2;
+  background: rgba(255, 248, 220, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
 }
-/* 标题倾斜且字体更大 */
 
-/* 按钮样式与 login 页面一致 */
-        .button{
-            margin-bottom: 16px;
-            margin-left: 100px;
-            margin-right: 100px;
-            border-radius: 5px;
-            border: none;
-            padding: 8px 10px;
-            background: linear-gradient(45deg, #ffea98, #f8b55e);
-            color: rgb(255, 255, 255);
-            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
-              display: inline-block;
-              white-space: nowrap;
-              align-items: center;
-              justify-content: center;
-              width: auto;
-              min-width: 80px;
-              height: auto;
-        }
-        
-        .button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(118, 75, 162, 0.5);
-        }
-        
-        .button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(118, 75, 162, 0.4);
-        }
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative; /* ⭐确保背景图能定位 */
-    overflow: hidden;
-  }
-  #music {
+.function-item {
+  padding: 15px 25px;
+  margin: 5px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 15px;
+  width: 200px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.function-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(52, 73, 94, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.function-item:hover::before {
+  left: 100%;
+}
+
+.function-item:hover {
+  background: rgba(255, 248, 220, 0.5);
+  transform: translateX(10px);
+  box-shadow: 0 5px 15px rgba(52, 73, 94, 0.2);
+}
+
+.function-text {
+  font-family: 'ZCOOL XiaoWei', sans-serif;
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #2c3e50;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.function-item:hover .function-text {
+  color: #34495e;
+  transform: scale(1.05);
+}
+
+/* 分割线样式 */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8B7355, transparent);
+  margin: 8px 0;
+  border-radius: 1px;
+  opacity: 0.7;
+  width: 100%;
+}
+
+/* 音乐按钮样式 */
+#music {
   position: fixed;
   top: 20px;
   left: 20px;
   z-index: 1000;
-
-  background: #fbca1f;
+  background: linear-gradient(45deg, #f39c12, #e67e22);
   font-family: inherit;
-  padding: 0.4em 0.8em;
+  padding: 0.6em 1em;
   font-weight: 900;
-  font-size: 20px;     /* 字体大点，符号明显 */
-  border: 3px solid black;
-  border-radius: 0.4em;
-  box-shadow: 0.1em 0.1em;
+  font-size: 22px;
+  border: 3px solid #2c3e50;
+  border-radius: 0.6em;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
 }
 
 #music:hover {
-  transform: translate(-0.05em, -0.05em);
-  box-shadow: 0.15em 0.15em;
+  transform: translate(-2px, -2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  background: linear-gradient(45deg, #e67e22, #d35400);
 }
 
 #music:active {
-  transform: translate(0.05em, 0.05em);
-  box-shadow: 0.05em 0.05em;
+  transform: translate(0, 0);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
-  /* 背景图片 */
-  .background-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;   /* 保证填满屏幕 */
-    opacity: 0.4;        /* ⭐这里控制透明度 0~1 */
-    z-index: -1;         /* 放到表单后面 */
+
+/* 背景图片 */
+.background-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+  z-index: -1;
+  filter: grayscale(30%) sepia(20%);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .function-list {
+    left: 20px;
+    padding: 20px 15px;
   }
+  
+  .function-item {
+    width: 160px;
+    padding: 12px 20px;
+  }
+  
+  .function-text {
+    font-size: 1.2em;
+  }
+  
+  .title {
+    font-size: 3em;
+    padding: 20px 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .function-list {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin-top: 30px;
+    width: 90%;
+  }
+  
+  .title {
+    font-size: 2.5em;
+    transform: rotate(-5deg);
+  }
+}

@@ -30,15 +30,55 @@ const auth = {
     }
 };
 
-// 使用新的登录检查
-document.getElementById('start').onclick = function() {
-    if (auth.isLoggedIn()) {
-        window.location.href = "./storypage/storypage.html";
-    } else {
-        window.location.href = './login/login.html';
-    }
-};
+// 功能列表点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 开始游戏
+    document.getElementById('start').addEventListener('click', function() {
+        if (auth.isLoggedIn()) {
+            window.location.href = "./storypage/storypage.html";
+        } else {
+            window.location.href = './login/login.html';
+        }
+    });
 
-document.getElementById('team').onclick = function() {
-    window.location.href = 'team.htm';
-};
+    // 加载存档
+    document.getElementById('load').addEventListener('click', function() {
+        window.location.href = './savepage/save.htm';
+    });
+
+    // 成就页面
+    document.getElementById('achievement').addEventListener('click', function() {
+        if (window.achievementSystem) {
+            window.achievementSystem.showModal();
+            window.achievementSystem.unlockAchievement('achievement_hunter');
+        }
+    });
+
+    // 退出游戏
+    document.getElementById('exit').addEventListener('click', function() {
+        if (confirm('确定要退出游戏吗？')) {
+            window.close();
+            // 如果window.close()不起作用，显示提示
+            if (!window.closed) {
+                alert('请手动关闭浏览器标签页');
+            }
+        }
+    });
+
+    // 团队信息
+    document.getElementById('team').addEventListener('click', function() {
+        window.location.href = 'team.htm';
+    });
+
+    // 为整个功能项区域添加点击事件
+    const functionItems = document.querySelectorAll('.function-item');
+    functionItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // 添加点击反馈动画
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+});
