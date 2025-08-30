@@ -8,7 +8,9 @@ class AchievementSystem {
                 description: '第一次进入游戏',
                 completed: false,
                 completedTime: null,
-                icon: '🎮'
+                icon: '🎮',
+                progress: 0,
+                target: 1
             },
             {
                 id: 'story_progress',
@@ -16,7 +18,9 @@ class AchievementSystem {
                 description: '完成第一个故事章节',
                 completed: false,
                 completedTime: null,
-                icon: '📖'
+                icon: '📖',
+                progress: 0,
+                target: 5
             },
             {
                 id: 'music_lover',
@@ -24,7 +28,9 @@ class AchievementSystem {
                 description: '播放背景音乐',
                 completed: false,
                 completedTime: null,
-                icon: '🎵'
+                icon: '🎵',
+                progress: 0,
+                target: 1
             },
             {
                 id: 'team_viewer',
@@ -32,7 +38,9 @@ class AchievementSystem {
                 description: '查看团队信息页面',
                 completed: false,
                 completedTime: null,
-                icon: '👥'
+                icon: '👥',
+                progress: 0,
+                target: 1
             },
             {
                 id: 'achievement_hunter',
@@ -40,7 +48,9 @@ class AchievementSystem {
                 description: '查看成就页面',
                 completed: false,
                 completedTime: null,
-                icon: '🏆'
+                icon: '🏆',
+                progress: 0,
+                target: 1
             },
             {
                 id: 'game_master',
@@ -48,7 +58,9 @@ class AchievementSystem {
                 description: '完成所有主要功能',
                 completed: false,
                 completedTime: null,
-                icon: '👑'
+                icon: '👑',
+                progress: 0,
+                target: 1
             }
         ];
         
@@ -114,14 +126,25 @@ class AchievementSystem {
         if (modal) {
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
+            
+            // 添加出现动画类
+            setTimeout(() => {
+                modal.classList.add('modal-visible');
+            }, 10);
         }
     }
 
     hideModal() {
         const modal = document.getElementById('achievementModal');
         if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            modal.classList.remove('modal-visible');
+            modal.classList.add('modal-hiding');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-hiding');
+                document.body.style.overflow = 'auto';
+            }, 300);
         }
     }
 
@@ -151,8 +174,10 @@ class AchievementSystem {
 
         if (filteredAchievements.length === 0) {
             achievementList.innerHTML = `
-                <div class="achievement-item" style="text-align: center; color: rgba(255,255,255,0.7);">
-                    ${this.currentTab === 'completed' ? '还没有完成的成就' : '所有成就都已完成！'}
+                <div class="achievement-item empty-state">
+                    <div class="empty-text">
+                        ${this.currentTab === 'completed' ? '还没有完成的成就' : '所有成就都已完成！'}
+                    </div>
                 </div>
             `;
             return;
@@ -176,7 +201,7 @@ class AchievementSystem {
                     </div>
                     ${achievement.completed ? '' : `
                         <div class="achievement-progress">
-                            <div class="progress-bar" style="width: 0%"></div>
+                            <div class="progress-bar" style="width: ${(achievement.progress / achievement.target) * 100}%"></div>
                         </div>
                     `}
                 </div>
@@ -194,6 +219,20 @@ class AchievementSystem {
             
             // 显示解锁提示
             this.showUnlockNotification(achievement);
+        }
+    }
+
+    updateAchievementProgress(achievementId, progress) {
+        const achievement = this.achievements.find(a => a.id === achievementId);
+        if (achievement && !achievement.completed) {
+            achievement.progress = Math.min(progress, achievement.target);
+            
+            if (achievement.progress >= achievement.target) {
+                this.unlockAchievement(achievementId);
+            }
+            
+            this.saveAchievements();
+            this.renderAchievements();
         }
     }
 
@@ -216,7 +255,7 @@ class AchievementSystem {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
+            background: linear-gradient(45deg, #8B7355, #A0522D);
             color: white;
             padding: 15px 20px;
             border-radius: 10px;
@@ -225,6 +264,7 @@ class AchievementSystem {
             transform: translateX(400px);
             transition: transform 0.5s ease;
             max-width: 300px;
+            font-family: 'ZCOOL XiaoWei', sans-serif;
         `;
         
         document.body.appendChild(notification);
@@ -244,32 +284,7 @@ class AchievementSystem {
             }, 500);
         }, 3000);
     }
-    // 在成就对象中添加进度字段
-{
-    id: 'story_progress',
-    name: '故事探索者',
-    description: '完成故事章节',
-    completed: false,
-    completedTime: null,
-    icon: '📖',
-    progress: 0,        // 新增进度字段
-    target: 5           // 新增目标值
-}
 
-// 更新解锁方法以支持进度
-    updateAchievementProgress(achievementId, progress) {
-    const achievement = this.achievements.find(a => a.id === achievementId);
-    if (achievement && !achievement.completed) {
-        achievement.progress = Math.min(progress, achievement.target);
-        
-        if (achievement.progress >= achievement.target) {
-            this.unlockAchievement(achievementId);
-        }
-        
-        this.saveAchievements();
-        this.renderAchievements();
-    }
-}
     autoUnlockAchievements() {
         // 自动解锁初次登录成就
         this.unlockAchievement('first_login');
