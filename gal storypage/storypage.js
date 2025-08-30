@@ -159,6 +159,22 @@ nextBtn.addEventListener("click", () => {
   stopAutoPlay();
 });
 
+// -------------------- 点击屏幕任意位置执行下一句 --------------------
+document.body.addEventListener("click", (e) => {
+  // 排除点击对话框按钮、侧边栏和选择框等区域
+  const target = e.target;
+  if (
+    target.closest(".dialog-controls") || // 对话控制按钮
+    target.closest("#sidebar") ||        // 侧边栏
+    target.closest("#choice-container")  // 选择框
+  ) {
+    return; // 点击这些元素时不触发下一句
+  }
+
+  // 直接触发“下一句”按钮的点击逻辑
+  nextBtn.click();
+});
+
 // -------------------- 上一句按钮 --------------------
 prevBtn.addEventListener("click", () => {
   showDialogue(index - 1);
@@ -231,15 +247,40 @@ function hideChoices() {
   choiceContainer.classList.add("hidden");
   dialogBox.style.display = "block"; // ✅ 显示对话框
 }
+// 页面加载完成后淡入
+window.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("fade-in");
+});
+
+// 修改选择按钮点击逻辑，加动画跳转
 choiceBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     const choice = btn.dataset.choice;
-    console.log("玩家选择了:", choice);
     hideChoices();
-    if (choice === "A") showDialogue(index + 1);
-    else if (choice === "B") showDialogue(index + 2);
-    else showDialogue(index + 3);
+
+    if (choice === "A") {
+      // 淡出动画后跳转
+      document.body.classList.remove("fade-in");
+      document.body.classList.add("fade-out");
+      setTimeout(() => {
+        window.location.href = "../galStorypage2/storypage.html";
+      }, 500); // 与 CSS 动画时长一致
+    } else if (choice === "B") {
+      showDialogue(index + 2);
+    } else {
+      showDialogue(index + 3);
+    }
   });
+});
+
+// 可选：主菜单按钮也加淡出动画
+const mainMenuBtn = document.getElementById("main-menu-btn");
+mainMenuBtn.addEventListener("click", () => {
+  document.body.classList.remove("fade-in");
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    window.location.href = "../index.html";
+  }, 500);
 });
 
 // -------------------- 初始化 --------------------
