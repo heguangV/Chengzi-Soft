@@ -37,7 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (auth.isLoggedIn()) {
             window.location.href = "./storypage/storypage.html";
         } else {
-            window.location.href = './login/login.html';
+            if (window.loginSystem) {
+                window.loginSystem.showModal();
+            } else {
+                window.location.href = './login/login.html';
+            }
         }
     });
 

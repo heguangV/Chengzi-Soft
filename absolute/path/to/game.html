@@ -1,0 +1,61 @@
+// 开始游戏
+function startGame() {
+    if (isGameRunning || isCountingDown) return;
+    
+    // 重置游戏状态
+    score = 0;
+    timeLeft = GAME_TIME;
+    isPaused = false;
+    
+    // 移除所有动态生成的目标
+    const targets = gameBoard.querySelectorAll('.target-item');
+    targets.forEach(target => target.remove());
+    
+    // 隐藏倒计时元素（如果有）
+    const countdownEl = gameBoard.querySelector('.countdown');
+    if (countdownEl) countdownEl.remove();
+    
+    // 更新游戏信息显示 - 修改这部分代码
+    let containerGameInfo = document.querySelector('.game-container > .game-info');
+    
+    // 如果没有找到游戏信息区域，则创建一个
+    if (!containerGameInfo) {
+        containerGameInfo = document.createElement('div');
+        containerGameInfo.classList.add('game-info');
+        containerGameInfo.innerHTML = `
+            <div class="score">得分: <span id="score">0</span></div>
+            <div class="time">时间: <span id="time">30</span>秒</div>
+            <div class="target">目标: <span id="target-score">20</span>分</div>
+        `;
+        const gameContainer = document.querySelector('.game-container');
+        if (gameContainer) {
+            gameContainer.insertBefore(containerGameInfo, gameBoard);
+        }
+    } else {
+        containerGameInfo.style.display = 'flex';
+    }
+    
+    // 重新获取分数、时间和目标分数显示元素
+    scoreDisplay = containerGameInfo.querySelector('#score');
+    timeDisplay = containerGameInfo.querySelector('#time');
+    targetScoreDisplay = containerGameInfo.querySelector('#target-score');
+    
+    if (scoreDisplay) scoreDisplay.textContent = score;
+    if (timeDisplay) timeDisplay.textContent = timeLeft;
+    if (targetScoreDisplay) targetScoreDisplay.textContent = TARGET_SCORE;
+    
+    // 设置游戏信息区域引用，供其他函数使用
+    gameInfoArea = containerGameInfo;
+    
+    // 隐藏暂停菜单和游戏控制区域
+    pauseMenu.classList.remove('active');
+    gameControls.style.display = 'none';
+    
+    // 隐藏开始按钮容器
+    if (startButtonContainer) {
+        startButtonContainer.style.display = 'none';
+    }
+    
+    // 开始倒计时
+    startCountdown();
+}
