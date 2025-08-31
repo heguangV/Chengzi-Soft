@@ -6,6 +6,8 @@
     <link rel="stylesheet" type="text/css" href="./asset/styles/menu.css">
     <link rel="stylesheet" type="text/css" href="./asset/styles/start.css">
     <link rel="stylesheet" type="text/css" href="./asset/styles/achievement.css">
+    <link rel="stylesheet" type="text/css" href="./asset/styles/save.css">
+    <link rel="stylesheet" type="text/css" href="./asset/styles/music.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@200..900&family=Noto+Sans+SC:wght@100..900&display=swap" rel="stylesheet">
@@ -15,8 +17,29 @@
     
 
 <body>
-    <button id="music">▶</button>
+    <!-- 音乐播放器 -->
+    <div class="music-player">
+        <button id="music-btn" class="music-btn">
+            <span class="music-icon">▶</span>
+        </button>
+        <div class="music-visualizer">
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+        </div>
+        <div class="music-info">
+            <span class="music-title">背景音乐</span>
+            <div class="volume-control">
+                <input type="range" id="volume-range" min="0" max="100" value="50" class="volume-slider">
+                <span class="volume-icon">🔊</span>
+            </div>
+        </div>
+    </div>
+    
     <audio id="bg-music" src="your-music.mp3" loop></audio>
+    
     <div class="menu">
         <div class="title">
             <div class="text">
@@ -58,7 +81,7 @@
     <div id="achievementModal" class="achievement-modal">
         <div class="achievement-content">
             <div class="achievement-header">
-                <h2>🏆 成就系统</h2>
+                <h2>成就系统</h2>
                 <button class="close-btn" id="closeAchievement">&times;</button>
             </div>
             <div class="achievement-tabs">
@@ -71,13 +94,29 @@
         </div>
     </div>
 
-      <button id="music">▶</button>
+    <!-- 存档页面模态框 -->
+    <div id="saveModal" class="save-modal">
+        <div class="save-content">
+            <div class="save-header">
+                <h2>💾 游戏存档</h2>
+                <button class="close-btn" id="closeSave">&times;</button>
+            </div>
+            <div class="save-container" id="saveContainer">
+                <!-- 存档列表将通过JavaScript动态生成 -->
+            </div>
+            <div class="save-actions">
+                <button class="save-action-btn" id="newSaveBtn">新建存档</button>
+                <button class="save-action-btn" id="importSaveBtn">导入存档</button>
+            </div>
+        </div>
+    </div>
 
-      <audio id="bg-music" src="your-music.mp3" loop></audio>
   <!--TODO: 背景图片-->
     <img src="./login/gaomulogin.png" alt="背景图" class="background-img">
     <script src="./script/menu.js"></script>
     <script src="./script/achievement.js"></script>
+    <script src="./script/save.js"></script>
+    <script src="./script/music.js"></script>
 </body>
 
 </html>

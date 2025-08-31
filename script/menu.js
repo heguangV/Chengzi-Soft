@@ -43,7 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 加载存档
     document.getElementById('load').addEventListener('click', function() {
-        window.location.href = './savepage/save.htm';
+        // 检查存档系统是否可用，如果可用则显示模态框，否则跳转到原存档页面
+        if (window.saveSystem) {
+            window.saveSystem.showModal();
+        } else {
+            // 如果存档系统不可用，回退到原来的跳转逻辑
+            window.location.href = './savepage/save.htm';
+        }
     });
 
     // 成就页面

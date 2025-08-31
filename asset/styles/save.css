@@ -1,0 +1,283 @@
+/* 存档页面样式 - 水墨风设计，与主界面风格一致 */
+.save-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+}
+
+.save-modal.modal-visible {
+    opacity: 1;
+}
+
+.save-modal.modal-hiding {
+    opacity: 0;
+}
+
+.save-content {
+    background: linear-gradient(135deg, rgba(255, 248, 220, 0.95), rgba(255, 248, 220, 0.85));
+    margin: 3% auto;
+    padding: 0;
+    border-radius: 25px;
+    width: 90%;
+    max-width: 1200px;
+    height: 85vh;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(139, 115, 85, 0.3);
+    position: relative;
+    transform: scale(0.8) translateY(-50px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.save-modal.modal-visible .save-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.save-modal.modal-hiding .save-content {
+    transform: scale(0.8) translateY(-50px);
+    opacity: 0;
+}
+
+.save-header {
+    background: linear-gradient(45deg, #8B7355, #A0522D);
+    color: white;
+    padding: 20px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 25px 25px 0 0;
+    border-bottom: 2px solid rgba(139, 115, 85, 0.3);
+    flex-shrink: 0;
+}
+
+.save-header h2 {
+    margin: 0;
+    font-size: 2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: 'Ma Shan Zheng', cursive;
+    letter-spacing: 2px;
+}
+
+.save-container {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    align-content: start;
+}
+
+.save-slot {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(139, 115, 85, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.save-slot:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-color: rgba(139, 115, 85, 0.4);
+}
+
+.save-slot.empty {
+    background: rgba(255, 255, 255, 0.6);
+    border-style: dashed;
+    border-color: rgba(139, 115, 85, 0.3);
+}
+
+.save-slot.empty:hover {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(139, 115, 85, 0.5);
+}
+
+.save-slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.save-slot-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 1.3em;
+    color: #8B7355;
+    font-weight: bold;
+    margin: 0;
+}
+
+.save-delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    border: 2px solid rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    font-family: 'ZCOOL XiaoWei', sans-serif;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-delete-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+    transform: scale(1.1);
+}
+
+.save-slot-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.save-slot-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B7355, #A0522D);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.save-slot-info {
+    font-family: 'ZCOOL XiaoWei', sans-serif;
+    color: #666;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.save-slot-date {
+    font-weight: bold;
+    color: #8B7355;
+    margin-bottom: 5px;
+}
+
+.save-slot-progress {
+    color: #999;
+}
+
+.save-actions {
+    background: rgba(139, 115, 85, 0.1);
+    padding: 25px 35px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    border-top: 2px solid rgba(139, 115, 85, 0.2);
+    flex-shrink: 0;
+}
+
+.save-action-btn {
+    background: linear-gradient(45deg, #8B7355, #A0522D);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'ZCOOL XiaoWei', sans-serif;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.save-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.save-action-btn:active {
+    transform: translateY(0);
+}
+
+/* 空存档位样式 */
+.save-slot.empty .save-slot-content {
+    color: #999;
+}
+
+.save-slot.empty .save-slot-image {
+    background: linear-gradient(135deg, #ccc, #999);
+    font-size: 1.5em;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .save-content {
+        width: 95%;
+        margin: 5% auto;
+        height: 90vh;
+    }
+    
+    .save-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .save-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .save-action-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* 滚动条样式 */
+.save-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.save-container::-webkit-scrollbar-track {
+    background: rgba(139, 115, 85, 0.1);
+    border-radius: 4px;
+}
+
+.save-container::-webkit-scrollbar-thumb {
+    background: rgba(139, 115, 85, 0.3);
+    border-radius: 4px;
+}
+
+.save-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 115, 85, 0.5);
+}

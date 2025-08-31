@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>存档系统测试</title>
+    <link rel="stylesheet" type="text/css" href="./asset/styles/save.css">
+</head>
+<body>
+    <h1>存档系统测试页面</h1>
+    
+    <button id="testSaveBtn">测试显示存档模态框</button>
+    <button id="testCreateSaveBtn">测试创建存档</button>
+    <button id="testLoadSaveBtn">测试加载存档</button>
+    
+    <!-- 存档页面模态框 -->
+    <div id="saveModal" class="save-modal">
+        <div class="save-content">
+            <div class="save-header">
+                <h2>💾 游戏存档</h2>
+                <button class="close-btn" id="closeSave">&times;</button>
+            </div>
+            <div class="save-container" id="saveContainer">
+                <!-- 存档列表将通过JavaScript动态生成 -->
+            </div>
+            <div class="save-actions">
+                <button class="save-action-btn" id="newSaveBtn">新建存档</button>
+                <button class="save-action-btn" id="importSaveBtn">导入存档</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./script/save.js"></script>
+    <script>
+        // 测试脚本
+        document.getElementById('testSaveBtn').addEventListener('click', () => {
+            if (window.saveSystem) {
+                console.log('存档系统可用，显示模态框');
+                window.saveSystem.showModal();
+            } else {
+                console.log('存档系统不可用');
+                alert('存档系统未加载！');
+            }
+        });
+        
+        document.getElementById('testCreateSaveBtn').addEventListener('click', () => {
+            if (window.saveSystem) {
+                console.log('创建测试存档');
+                window.saveSystem.saveCurrentGame(5, '测试角色', '测试进度', {fang: 80, other: 60});
+                alert('测试存档创建成功！');
+            } else {
+                alert('存档系统未加载！');
+            }
+        });
+        
+        document.getElementById('testLoadSaveBtn').addEventListener('click', () => {
+            if (window.saveSystem) {
+                console.log('存档数量:', window.saveSystem.getSaveCount());
+                alert(`当前存档数量: ${window.saveSystem.getSaveCount()}`);
+            } else {
+                alert('存档系统未加载！');
+            }
+        });
+    </script>
+</body>
+</html>

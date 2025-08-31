@@ -1,6 +1,13 @@
 * {
   box-sizing: border-box;
 }
+* {
+  -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+  -webkit-user-select: none;                /* 禁止选中文本 */
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 body {
   width: 100vw;
   height: 100vh;
