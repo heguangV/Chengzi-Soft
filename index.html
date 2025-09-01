@@ -1,7 +1,9 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <title>名字是六个字</title>
+    <title>风吹过的地方</title>
     <meta charset="utf-8">
-    <link rel="icon" href="./asset/images/sakiko.jpg" type="image/jpeg" />
+    <link rel="icon" href="./asset/images/sakiko.jpg" type="image/jpeg">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scale=no">
     <link rel="stylesheet" type="text/css" href="./asset/styles/menu.css">
     <link rel="stylesheet" type="text/css" href="./asset/styles/start.css">
@@ -12,12 +14,177 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@200..900&family=Noto+Sans+SC:wght@100..900&display=swap" rel="stylesheet">
-     
+    <style>
+        /* 添加一些内联样式增强视觉效果 */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            font-family: 'Noto Sans SC', sans-serif;
+            color: #fff;
+            /* 防止文本选择 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* 允许部分元素文本选择 */
+        .login-form input,
+        .achievement-content,
+        .save-content {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        
+        .background-img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            filter: brightness(0.7);
+        }
+        
+        /* 添加动态背景效果 */
+        .dynamic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(101, 65, 155, 0.3), rgba(48, 96, 133, 0.3), rgba(176, 60, 131, 0.3));
+            background-size: 400% 400%;
+            z-index: -1;
+            animation: gradientBG 15s ease infinite;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* 添加落叶动画效果 */
+        .falling-leaves {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .leaf {
+            position: absolute;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff50"><path d="M12 2C13.66 2 15 3.34 15 5V6H16C17.66 6 19 7.34 19 9V19C19 20.66 17.66 22 16 22H8C6.34 22 5 20.66 5 19V9C5 7.34 6.34 6 8 6H9V5C9 3.34 10.34 2 12 2ZM12 4C11.45 4 11 4.45 11 5V6H13V5C13 4.45 12.55 4 12 4Z"/></svg>');
+            background-size: cover;
+            width: 20px;
+            height: 20px;
+            opacity: 0;
+            animation: fall linear forwards;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.6;
+            }
+        }
+        
+        /* 菜单项悬停效果增强 */
+        .function-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            /* 防止文本选择 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        .function-item:hover {
+            transform: translateX(10px);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        
+        /* 标题动画效果 */
+        .title {
+            animation: fadeInDown 1s ease;
+            /* 防止文本选择 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        .wind-character {
+            display: inline-block;
+            animation: windBlow 3s infinite alternate;
+        }
+        
+        @keyframes windBlow {
+            0% { transform: skewX(0deg); }
+            25% { transform: skewX(5deg); }
+            50% { transform: skewX(-5deg); }
+            75% { transform: skewX(3deg); }
+            100% { transform: skewX(0deg); }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .menu {
+                width: 90% !important;
+                padding: 20px !important;
+            }
+            
+            .title .text {
+                font-size: 2rem !important;
+            }
+            
+            .function-item {
+                padding: 12px 0 !important;
+            }
+        }
+        
+        /* 自定义文本选择颜色 */
+        ::selection {
+            background: rgba(255, 222, 89, 0.3);
+            color: #fff;
+        }
+        
+        ::-moz-selection {
+            background: rgba(255, 222, 89, 0.3);
+            color: #fff;
+        }
+    </style>
 </head>
 
-    
-
 <body>
+    <!-- 动态背景 -->
+    <div class="dynamic-bg"></div>
+    
+    <!-- 落叶动画 -->
+    <div class="falling-leaves" id="leaves-container"></div>
+    
     <!-- 音乐播放器 -->
     <div class="music-player">
         <button id="music-btn" class="music-btn">
@@ -131,8 +298,8 @@
                     </div>
                     <label class="form-label" for="login-password">密码</label>
                     <input class="input" id="login-password" name="password" placeholder="Password" type="password">
-                    <button type="button" class="button-confirm" onclick="loginSystem.showSignup()">注册！</button>
-                    <button type="button" class="button-confirm" onclick="loginSystem.goNextPage()">开始！</button>
+                    <button type="button" class="button-confirm" id="signup-btn">注册！</button>
+                    <button type="button" class="button-confirm" id="login-btn">开始！</button>
                 </div>
                 
                 <!-- 注册表单 -->
@@ -142,20 +309,140 @@
                     <input class="input" id="signup-password" name="password" placeholder="Password" type="password">
                     <div id="signup-error" style="color:red; font-size:14px; display:none; margin-bottom:5px;"></div>
                     <input class="input" id="signup-confirm-password" name="confirm-password" placeholder="Confirm Password" type="password">
-                    <button type="button" class="button-confirm" onclick="loginSystem.signUpAndGoBack()">注册账号</button>
-                    <button type="button" class="button-confirm" onclick="loginSystem.showLogin()">返回</button>
+                    <button type="button" class="button-confirm" id="register-btn">注册账号</button>
+                    <button type="button" class="button-confirm" id="back-to-login-btn">返回</button>
                 </div>
             </form>
         </div>
     </div>
 
-  <!--TODO: 背景图片-->
-    <img src="./login/gaomulogin.png" alt="背景图" class="background-img">
+    <!-- 背景图片 -->
+    <img src="./asset/images/background.jpg" alt="背景图" class="background-img">
+    
+    <script>
+        // 添加落叶动画
+        function createLeaves() {
+            const container = document.getElementById('leaves-container');
+            const leafCount = 15;
+            
+            for (let i = 0; i < leafCount; i++) {
+                const leaf = document.createElement('div');
+                leaf.classList.add('leaf');
+                
+                // 随机位置和动画延迟
+                const leftPos = Math.random() * 100;
+                const animDuration = 10 + Math.random() * 20;
+                const animDelay = Math.random() * 10;
+                
+                leaf.style.left = `${leftPos}%`;
+                leaf.style.top = `${-10 - Math.random() * 10}%`;
+                leaf.style.animationDuration = `${animDuration}s`;
+                leaf.style.animationDelay = `${animDelay}s`;
+                
+                container.appendChild(leaf);
+            }
+        }
+        
+        // 菜单项点击效果
+        document.querySelectorAll('.function-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 添加点击反馈效果
+                this.style.transform = 'translateX(5px)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+                
+                // 根据ID执行相应操作
+                const id = this.id;
+                if (id === 'start') {
+                    // 开始游戏逻辑
+                    document.getElementById('loginModal').style.display = 'block';
+                } else if (id === 'load') {
+                    // 加载存档逻辑
+                    document.getElementById('saveModal').style.display = 'block';
+                } else if (id === 'achievement') {
+                    // 成就页面逻辑
+                    document.getElementById('achievementModal').style.display = 'block';
+                } else if (id === 'exit') {
+                    // 退出游戏逻辑
+                    if (confirm('确定要退出游戏吗？')) {
+                        window.close();
+                    }
+                } else if (id === 'team') {
+                    // 团队信息逻辑
+                    alert('开发团队信息将在这里显示');
+                }
+            });
+        });
+        
+        // 初始化
+        window.onload = function() {
+            createLeaves();
+            
+            // 关闭按钮事件
+            document.getElementById('closeAchievement').addEventListener('click', function() {
+                document.getElementById('achievementModal').style.display = 'none';
+            });
+            
+            document.getElementById('closeSave').addEventListener('click', function() {
+                document.getElementById('saveModal').style.display = 'none';
+            });
+            
+            document.getElementById('closeLogin').addEventListener('click', function() {
+                document.getElementById('loginModal').style.display = 'none';
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', function(event) {
+                const achievementModal = document.getElementById('achievementModal');
+                const saveModal = document.getElementById('saveModal');
+                const loginModal = document.getElementById('loginModal');
+                
+                if (event.target === achievementModal) {
+                    achievementModal.style.display = 'none';
+                }
+                if (event.target === saveModal) {
+                    saveModal.style.display = 'none';
+                }
+                if (event.target === loginModal) {
+                    loginModal.style.display = 'none';
+                }
+            });
+            
+            // 添加额外的防止文本选择事件监听器
+            document.querySelectorAll('.function-item, .title, .music-player, .music-title').forEach(element => {
+                element.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                });
+            });
+        };
+        
+        // 防止文本选择的额外保护
+        document.addEventListener('DOMContentLoaded', function() {
+            // 禁用文本选择
+            disableTextSelection();
+        });
+        
+        function disableTextSelection() {
+            // 为所有不应被选择的元素添加类
+            const noSelectElements = document.querySelectorAll('.function-item, .title, .music-player, .music-title, .music-btn');
+            noSelectElements.forEach(el => {
+                el.classList.add('no-select');
+            });
+            
+            // 防止拖拽产生选择
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.classList.contains('no-select')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    </script>
+    
     <script src="./script/menu.js"></script>
     <script src="./script/achievement.js"></script>
     <script src="./script/save.js"></script>
     <script src="./script/music.js"></script>
     <script src="./script/login.js"></script>
 </body>
-
 </html>

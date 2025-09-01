@@ -1,3 +1,5 @@
+// login.js - 登录系统功能实现
+
 // 登录系统
 class LoginSystem {
     constructor() {
@@ -6,6 +8,7 @@ class LoginSystem {
 
     init() {
         this.setupEventListeners();
+        this.initializeUserData();
     }
 
     setupEventListeners() {
@@ -25,6 +28,58 @@ class LoginSystem {
                     this.hideModal();
                 }
             });
+        }
+
+        // 注册按钮事件
+        const signupBtn = document.getElementById('signup-btn');
+        if (signupBtn) {
+            signupBtn.addEventListener('click', () => {
+                this.showSignup();
+            });
+        }
+
+        // 登录按钮事件
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                this.goNextPage();
+            });
+        }
+
+        // 注册账号按钮事件
+        const registerBtn = document.getElementById('register-btn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', () => {
+                this.signUpAndGoBack();
+            });
+        }
+
+        // 返回登录按钮事件
+        const backToLoginBtn = document.getElementById('back-to-login-btn');
+        if (backToLoginBtn) {
+            backToLoginBtn.addEventListener('click', () => {
+                this.showLogin();
+            });
+        }
+
+        // 开始游戏按钮点击事件
+        const startBtn = document.getElementById('start');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                this.showModal();
+            });
+        }
+    }
+
+    // 初始化用户数据
+    initializeUserData() {
+        if (!localStorage.getItem('users')) {
+            // 初始化示例用户
+            const initialUsers = [
+                { email: 'player1@example.com', password: '123456' },
+                { email: 'gamer2023@example.com', password: 'abcdef' }
+            ];
+            localStorage.setItem('users', JSON.stringify(initialUsers));
         }
     }
 
