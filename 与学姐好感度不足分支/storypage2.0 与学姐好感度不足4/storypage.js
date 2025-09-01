@@ -28,6 +28,8 @@ const choiceContainer = document.getElementById("choice-container");
 const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box");
 
+const specialItem = document.getElementById("special-item");
+
 // -------------------- 状态变量 --------------------
 let index = 0;
 let charIndex = 0;
@@ -37,6 +39,7 @@ let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
+let waitingForItem = false;
 
 // -------------------- 对话数据 --------------------
 const dialogues = [
@@ -67,6 +70,11 @@ function typeText(text, callback) {
   }, typingSpeed);
 }
 
+// -------------------- 判断是否显示特殊物品 --------------------
+function shouldShowSpecialItem(idx) {
+  return idx === 4 && specialItem.dataset.clicked !== "true";
+}
+
 // -------------------- 显示对话 --------------------
 function showDialogue(idx) {
   if (idx < 0) idx = 0;
@@ -75,13 +83,38 @@ function showDialogue(idx) {
 
   nameBox.textContent = dialogues[index].name;
 
+  if (shouldShowSpecialItem(index)) {
+    specialItem.classList.remove("hidden");
+    waitingForItem = true;
+    charIndex = 0;
+    dialogText.textContent = "";
+    return;
+  }
+
+  waitingForItem = false;
   typeText(dialogues[index].text, () => {
-    autoSave(); // 每一句台词自动存档
+    autoSave(); // 显示完文字后再自动存档
+    if (autoPlay) startAutoPlay();
   });
 }
 
-// -------------------- 按钮事件 --------------------
+// -------------------- 点击特殊物品 --------------------
+specialItem.addEventListener("click", () => {
+  specialItem.classList.add("hidden");
+  specialItem.dataset.clicked = "true";
+  waitingForItem = false;
+
+  // 点击物品后显示文字并触发存档
+  typeText(dialogues[index].text, () => {
+    autoSave();
+    if (autoPlay) startAutoPlay();
+  });
+});
+
+// -------------------- 下一句 --------------------
 nextBtn.addEventListener("click", () => {
+  if (waitingForItem) return;
+
   if (charIndex < dialogues[index].text.length) {
     clearInterval(typingInterval);
     dialogText.textContent = dialogues[index].text;
@@ -98,11 +131,14 @@ nextBtn.addEventListener("click", () => {
   stopAutoPlay();
 });
 
+// -------------------- 上一句 --------------------
 prevBtn.addEventListener("click", () => {
+  if (waitingForItem) return;
   showDialogue(index - 1);
   stopAutoPlay();
 });
 
+// -------------------- 加速按钮 --------------------
 speedBtn.addEventListener("click", () => {
   isFast = !isFast;
   typingSpeed = isFast ? 10 : 50;
@@ -110,12 +146,15 @@ speedBtn.addEventListener("click", () => {
   showDialogue(index);
 });
 
+// -------------------- 跳过 --------------------
 skipBtn.addEventListener("click", () => {
+  if (waitingForItem) return;
   clearInterval(typingInterval);
   dialogText.textContent = dialogues[index].text;
   stopAutoPlay();
 });
 
+// -------------------- 自动播放 --------------------
 autoBtn.addEventListener("click", () => {
   autoPlay = !autoPlay;
   if (autoPlay) {
@@ -127,6 +166,7 @@ autoBtn.addEventListener("click", () => {
 function startAutoPlay() {
   clearInterval(autoInterval);
   autoInterval = setInterval(() => {
+    if (waitingForItem) return;
     if (charIndex < dialogues[index].text.length) {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
