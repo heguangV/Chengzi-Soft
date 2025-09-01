@@ -1,22 +1,17 @@
-
-
-// -------------------- 页面载入效果 --------------------
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
 });
 
+// -------------------- 剧情台词 --------------------
+const dialogues = [
+  { name: "C", text: "在淡蓝色的世界中 你伸出了双手 将学姐拥入怀中" },
+  { name: "A", text: "你感受到学姐并没有任何反抗 反而迎合着你 伸手抱住了你" },  
+  { name: "C", text: "你看着怀中的学姐 脸颊上的红晕甚至比刚才更加明显 她的嘴唇微微颤动 仿佛有话要说 你便试着将耳朵贴的更近了一点" }, 
+  { name: "A", text: "我喜欢你…" }, 
+  { name: "B", text: "整个世界好像只剩下了这一句话的声音 你被这突如其来的告白怔在了原地 一时说不出话" }, 
+];
+
 // -------------------- DOM 元素 --------------------
-const musicBtn = document.getElementById("music-btn");
-const bgMusic = document.getElementById("bg-music");
-const volumeRange = document.getElementById("volume-range");
-
-const sidebar = document.getElementById("sidebar");
-const toggleBtn = document.getElementById("sidebar-toggle");
-
-const autoSaveNotice = document.getElementById("auto-save-notice");
-const saveBtn = document.getElementById("save-btn");
-const loadBtn = document.getElementById("load-btn");
-
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
 
@@ -40,16 +35,40 @@ let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
 
-const dialogues = [
-  { name: "旁白", text: "一学期的大学生活，如同被风吹散的云烟，在不知不觉中走到了学姐约定的分别时刻" },
-  { name: "旁白", text: "你的手机屏幕映出一片淡淡的白光，反射在天花板上，与傍晚的晚霞交织在一起。" },
-  { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
-  { name: "旁白", text: "你一个学期就这样过去了。很忙，却又说不上忙了些什么。" },
-  { name: "旁白", text: "你努力回想，这一学期究竟有什么值得留恋的瞬间。" },
-  { name: "旁白", text: "除了和青梅的时光，似乎就只有学姐的存在让你记得。" },
-  { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
-  { name: "旁白", text: "你有些惆怅。" }
-];
+// -------------------- 下一句按钮 --------------------
+nextBtn.addEventListener("click", () => {
+  if (charIndex < dialogues[index].text.length) {
+    clearInterval(typingInterval);
+    dialogText.textContent = dialogues[index].text;
+    charIndex = dialogues[index].text.length;
+    if (index === 999) setTimeout(showChoices, 500);
+    return;
+  }
+
+  if (index < dialogues.length - 1) {
+    showDialogue(index + 1);
+  } else {
+    document.body.classList.add("fade-out");
+    setTimeout(() => {
+      window.location.href = "../storypage2.0 与学姐好感度足够  4选择了1 2/storypage.html";
+    }, 1000);
+  }
+  stopAutoPlay();
+});
+
+// -------------------- 显示某条对话 --------------------
+function showDialogue(idx) {
+  if (idx < 0) idx = 0;
+  if (idx >= dialogues.length) idx = dialogues.length - 1;
+  index = idx;
+
+  nameBox.textContent = dialogues[index].name;
+
+  typeText(dialogues[index].text, () => {
+    if (index === 999) autoSave();
+    if (index === 999) setTimeout(showChoices, 500);
+  });
+}
 
 // -------------------- 打字机效果 --------------------
 function typeText(text, callback) {
@@ -66,44 +85,6 @@ function typeText(text, callback) {
     }
   }, typingSpeed);
 }
-
-// -------------------- 显示某条对话 --------------------
-function showDialogue(idx) {
-  if (idx < 0) idx = 0;
-  if (idx >= dialogues.length) idx = dialogues.length - 1;
-  index = idx;
-
-  nameBox.textContent = dialogues[index].name;
-
-  typeText(dialogues[index].text, () => {
-    if (index === 999) {
-      autoSave();
-      setTimeout(showChoices, 500);
-    }
-  });
-}
-
-// -------------------- 下一句按钮 --------------------
-nextBtn.addEventListener("click", () => {
-  if (charIndex < dialogues[index].text.length) {
-    clearInterval(typingInterval);
-    dialogText.textContent = dialogues[index].text;
-    charIndex = dialogues[index].text.length;
-    if (index === 999) {
-      setTimeout(showChoices, 500);
-    }
-  } else {
-    if (index < dialogues.length - 1) {
-      showDialogue(index + 1);
-    } else {
-      document.body.classList.add("fade-out");
-      setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度不足2/storypage.html";
-      }, 1000);
-    }
-  }
-  stopAutoPlay();
-});
 
 // -------------------- 上一句按钮 --------------------
 prevBtn.addEventListener("click", () => {
@@ -126,7 +107,7 @@ skipBtn.addEventListener("click", () => {
   stopAutoPlay();
 });
 
-// -------------------- 自动播放 --------------------
+// -------------------- 自动播放按钮 --------------------
 autoBtn.addEventListener("click", () => {
   autoPlay = !autoPlay;
   if (autoPlay) {
@@ -144,11 +125,8 @@ function startAutoPlay() {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
     } else {
-      if (index < dialogues.length - 1) {
-        showDialogue(index + 1);
-      } else {
-        stopAutoPlay();
-      }
+      if (index < dialogues.length - 1) showDialogue(index + 1);
+      else stopAutoPlay();
     }
   }, 2000);
 }
@@ -159,69 +137,7 @@ function stopAutoPlay() {
   autoBtn.textContent = "自动播放";
 }
 
-// -------------------- 音乐控制 --------------------
-volumeRange.addEventListener("input", () => {
-  bgMusic.volume = volumeRange.value / 100;
-});
-
-musicBtn.addEventListener("click", () => {
-  if (bgMusic.paused) {
-    bgMusic.play();
-    musicBtn.textContent = "音乐暂停";
-  } else {
-    bgMusic.pause();
-    musicBtn.textContent = "音乐播放";
-  }
-});
-
-// -------------------- 侧边栏控制 --------------------
-toggleBtn.addEventListener("click", () => {
-  sidebar.classList.toggle("show");
-});
-
-// -------------------- 自动存档 --------------------
-function autoSave() {
-  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
-  const saveData = {
-    page: "storyPage1",
-    dialogueIndex: saveIndex,
-    charIndex: charIndex,
-    timestamp: Date.now()
-  };
-  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-  saves.push(saveData);
-  localStorage.setItem("storySaves", JSON.stringify(saves));
-
-  autoSaveNotice.classList.remove("hidden");
-  autoSaveNotice.classList.add("show");
-
-  setTimeout(() => {
-    autoSaveNotice.classList.remove("show");
-    autoSaveNotice.classList.add("hidden");
-  }, 1500);
-}
-
-// -------------------- 存档 --------------------
-saveBtn.addEventListener("click", () => {
-  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
-  const saveData = {
-    page: "storyPage1",
-    dialogueIndex: saveIndex,
-    charIndex: charIndex,
-    timestamp: Date.now()
-  };
-  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-  saves.push(saveData);
-  localStorage.setItem("storySaves", JSON.stringify(saves));
-  alert("已存档！");
-});
-
-// -------------------- 读档 --------------------
-loadBtn.addEventListener("click", () => {
-  window.location.href = "load.html";
-});
-
-// -------------------- 选择框 --------------------
+// -------------------- 选择框 ------------------------
 function showChoices() {
   choiceContainer.classList.remove("hidden");
   dialogBox.style.display = "none";
@@ -237,12 +153,84 @@ function hideChoices() {
 choiceBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     const choice = btn.dataset.choice;
-    console.log("玩家选择了:", choice);
     hideChoices();
+
     if (choice === "A") showDialogue(index + 1);
     else if (choice === "B") showDialogue(index + 2);
     else showDialogue(index + 3);
   });
+});
+
+// -------------------- 音乐控制 --------------------
+const musicBtn = document.getElementById("music-btn");
+const bgMusic = document.getElementById("bg-music");
+const volumeRange = document.getElementById("volume-range");
+
+volumeRange.addEventListener("input", () => {
+  bgMusic.volume = volumeRange.value / 100;
+});
+
+musicBtn.addEventListener("click", () => {
+  if (bgMusic.paused) {
+    bgMusic.play();
+    musicBtn.textContent = "音乐暂停";
+  } else {
+    bgMusic.pause();
+    musicBtn.textContent = "音乐播放";
+  }
+});
+
+// -------------------- 侧边栏控制 --------------------
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("sidebar-toggle");
+
+toggleBtn.addEventListener("click", () => {
+  sidebar.classList.toggle("show");
+});
+
+// -------------------- 自动存档 --------------------
+const autoSaveNotice = document.getElementById("auto-save-notice");
+
+function autoSave() {
+  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
+  const saveData = {
+    page: "storyPage1",
+    dialogueIndex: saveIndex,
+    charIndex: charIndex,
+    timestamp: Date.now()
+  };
+  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  saves.push(saveData);
+  localStorage.setItem("storySaves", JSON.stringify(saves));
+
+  autoSaveNotice.classList.remove("hidden");
+  autoSaveNotice.classList.add("show");
+  setTimeout(() => {
+    autoSaveNotice.classList.remove("show");
+    autoSaveNotice.classList.add("hidden");
+  }, 1500);
+}
+
+// -------------------- 存档 / 读档 --------------------
+const saveBtn = document.getElementById("save-btn");
+const loadBtn = document.getElementById("load-btn");
+
+saveBtn.addEventListener("click", () => {
+  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
+  const saveData = {
+    page: "storyPage1",
+    dialogueIndex: saveIndex,
+    charIndex: charIndex,
+    timestamp: Date.now()
+  };
+  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  saves.push(saveData);
+  localStorage.setItem("storySaves", JSON.stringify(saves));
+  alert("已存档！");
+});
+
+loadBtn.addEventListener("click", () => {
+  window.location.href = "load.html";
 });
 
 // -------------------- 好感度系统 --------------------
@@ -260,16 +248,15 @@ function updateAffection(character, value) {
 function initAffection() {
   const savedData = localStorage.getItem('affectionData');
   if (savedData) Object.assign(affectionData, JSON.parse(savedData));
-  for (const [character, value] of Object.entries(affectionData)) {
-    updateAffection(character, value);
-  }
+  for (const [character, value] of Object.entries(affectionData)) updateAffection(character, value);
 }
 
+// 在对话选择时更新好感度
 choiceBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     const choice = btn.dataset.choice;
-    console.log("玩家选择了:", choice);
     hideChoices();
+
     if (choice === "A") {
       updateAffection('fang', affectionData.fang + 10);
       showDialogue(index + 1);

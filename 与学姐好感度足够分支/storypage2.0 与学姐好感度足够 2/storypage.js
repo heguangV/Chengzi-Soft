@@ -1,22 +1,8 @@
-
-
-// -------------------- 页面载入效果 --------------------
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
 });
 
 // -------------------- DOM 元素 --------------------
-const musicBtn = document.getElementById("music-btn");
-const bgMusic = document.getElementById("bg-music");
-const volumeRange = document.getElementById("volume-range");
-
-const sidebar = document.getElementById("sidebar");
-const toggleBtn = document.getElementById("sidebar-toggle");
-
-const autoSaveNotice = document.getElementById("auto-save-notice");
-const saveBtn = document.getElementById("save-btn");
-const loadBtn = document.getElementById("load-btn");
-
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
 
@@ -30,6 +16,17 @@ const choiceContainer = document.getElementById("choice-container");
 const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box");
 
+const musicBtn = document.getElementById("music-btn");
+const bgMusic = document.getElementById("bg-music");
+const volumeRange = document.getElementById("volume-range");
+
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("sidebar-toggle");
+
+const autoSaveNotice = document.getElementById("auto-save-notice");
+const saveBtn = document.getElementById("save-btn");
+const loadBtn = document.getElementById("load-btn");
+
 // -------------------- 状态变量 --------------------
 let index = 0;
 let charIndex = 0;
@@ -40,15 +37,13 @@ let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
 
+// -------------------- 剧情控制 --------------------
 const dialogues = [
-  { name: "旁白", text: "一学期的大学生活，如同被风吹散的云烟，在不知不觉中走到了学姐约定的分别时刻" },
-  { name: "旁白", text: "你的手机屏幕映出一片淡淡的白光，反射在天花板上，与傍晚的晚霞交织在一起。" },
-  { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
-  { name: "旁白", text: "你一个学期就这样过去了。很忙，却又说不上忙了些什么。" },
-  { name: "旁白", text: "你努力回想，这一学期究竟有什么值得留恋的瞬间。" },
-  { name: "旁白", text: "除了和青梅的时光，似乎就只有学姐的存在让你记得。" },
-  { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
-  { name: "旁白", text: "你有些惆怅。" }
+  { name: "B", text: "忽然 你只感觉一阵柔和的风从身后吹过 你身上的痛苦好像在风的吹拂中烟消云散 你不由得加快了脚步 终于看到了在门口等候的学姐" },
+  { name: "C", text: "你来到了学姐身边 但即将离开的学姐脸上却是一幅复杂的申请 一时间 你们两个人竟都想不出来如何开口 空气仿佛都已经凝固在了这一刻" },
+  { name: "A", text: "看着你被汗水打湿的 亦或是被风吹乱的刘海 自然地伸出手 帮你梳理整齐" },
+  { name: "B", text: "你看着学姐的手 心里闪回着与学姐间的点点滴滴 虽然时间不长 但这一份回忆已经要比天边的那一抹骄阳还要炽热 看着眼前这幅即将离自己远去的脸 不由得心头一紧" },
+  { name: "B", text: "选择： 1.抓住学姐的手 2. 默默看着学姐" }, // todo
 ];
 
 // -------------------- 打字机效果 --------------------
@@ -76,42 +71,35 @@ function showDialogue(idx) {
   nameBox.textContent = dialogues[index].name;
 
   typeText(dialogues[index].text, () => {
-    if (index === 999) {
-      autoSave();
-      setTimeout(showChoices, 500);
-    }
+    if (index === 999) autoSave();
+    if (index === 3) setTimeout(showChoices, 500);
   });
 }
 
-// -------------------- 下一句按钮 --------------------
+// -------------------- 对话控制按钮 --------------------
 nextBtn.addEventListener("click", () => {
   if (charIndex < dialogues[index].text.length) {
     clearInterval(typingInterval);
     dialogText.textContent = dialogues[index].text;
     charIndex = dialogues[index].text.length;
-    if (index === 999) {
-      setTimeout(showChoices, 500);
-    }
+    if (index === 3) setTimeout(showChoices, 500);
   } else {
-    if (index < dialogues.length - 1) {
-      showDialogue(index + 1);
-    } else {
+    if (index < dialogues.length - 1) showDialogue(index + 1);
+    else {
       document.body.classList.add("fade-out");
       setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度不足2/storypage.html";
+        window.location.href = "";
       }, 1000);
     }
   }
   stopAutoPlay();
 });
 
-// -------------------- 上一句按钮 --------------------
 prevBtn.addEventListener("click", () => {
   showDialogue(index - 1);
   stopAutoPlay();
 });
 
-// -------------------- 加速按钮 --------------------
 speedBtn.addEventListener("click", () => {
   isFast = !isFast;
   typingSpeed = isFast ? 10 : 50;
@@ -119,22 +107,15 @@ speedBtn.addEventListener("click", () => {
   showDialogue(index);
 });
 
-// -------------------- 跳过按钮 --------------------
 skipBtn.addEventListener("click", () => {
   clearInterval(typingInterval);
   dialogText.textContent = dialogues[index].text;
   stopAutoPlay();
 });
 
-// -------------------- 自动播放 --------------------
 autoBtn.addEventListener("click", () => {
   autoPlay = !autoPlay;
-  if (autoPlay) {
-    autoBtn.textContent = "停止自动";
-    startAutoPlay();
-  } else {
-    stopAutoPlay();
-  }
+  autoPlay ? (autoBtn.textContent = "停止自动", startAutoPlay()) : stopAutoPlay();
 });
 
 function startAutoPlay() {
@@ -144,11 +125,8 @@ function startAutoPlay() {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
     } else {
-      if (index < dialogues.length - 1) {
-        showDialogue(index + 1);
-      } else {
-        stopAutoPlay();
-      }
+      if (index < dialogues.length - 1) showDialogue(index + 1);
+      else stopAutoPlay();
     }
   }, 2000);
 }
@@ -158,68 +136,6 @@ function stopAutoPlay() {
   autoPlay = false;
   autoBtn.textContent = "自动播放";
 }
-
-// -------------------- 音乐控制 --------------------
-volumeRange.addEventListener("input", () => {
-  bgMusic.volume = volumeRange.value / 100;
-});
-
-musicBtn.addEventListener("click", () => {
-  if (bgMusic.paused) {
-    bgMusic.play();
-    musicBtn.textContent = "音乐暂停";
-  } else {
-    bgMusic.pause();
-    musicBtn.textContent = "音乐播放";
-  }
-});
-
-// -------------------- 侧边栏控制 --------------------
-toggleBtn.addEventListener("click", () => {
-  sidebar.classList.toggle("show");
-});
-
-// -------------------- 自动存档 --------------------
-function autoSave() {
-  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
-  const saveData = {
-    page: "storyPage1",
-    dialogueIndex: saveIndex,
-    charIndex: charIndex,
-    timestamp: Date.now()
-  };
-  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-  saves.push(saveData);
-  localStorage.setItem("storySaves", JSON.stringify(saves));
-
-  autoSaveNotice.classList.remove("hidden");
-  autoSaveNotice.classList.add("show");
-
-  setTimeout(() => {
-    autoSaveNotice.classList.remove("show");
-    autoSaveNotice.classList.add("hidden");
-  }, 1500);
-}
-
-// -------------------- 存档 --------------------
-saveBtn.addEventListener("click", () => {
-  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
-  const saveData = {
-    page: "storyPage1",
-    dialogueIndex: saveIndex,
-    charIndex: charIndex,
-    timestamp: Date.now()
-  };
-  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-  saves.push(saveData);
-  localStorage.setItem("storySaves", JSON.stringify(saves));
-  alert("已存档！");
-});
-
-// -------------------- 读档 --------------------
-loadBtn.addEventListener("click", () => {
-  window.location.href = "load.html";
-});
 
 // -------------------- 选择框 --------------------
 function showChoices() {
@@ -234,16 +150,62 @@ function hideChoices() {
   dialogBox.style.display = "block";
 }
 
+// 选择按钮统一处理
 choiceBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     const choice = btn.dataset.choice;
     console.log("玩家选择了:", choice);
     hideChoices();
-    if (choice === "A") showDialogue(index + 1);
-    else if (choice === "B") showDialogue(index + 2);
+
+    // 更新好感度（后面模块）
+    if (choice === "A"){
+      document.body.classList.add("fade-out");
+    setTimeout(() => {
+      window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 1/storypage.html";
+    }, 1000);}
+    else if (choice === "B") {document.body.classList.add("fade-out");
+      setTimeout(() => {
+        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了2 1/storypage.html";
+      }, 1000);}
     else showDialogue(index + 3);
   });
 });
+
+// -------------------- 音乐控制 --------------------
+volumeRange.addEventListener("input", () => bgMusic.volume = volumeRange.value / 100);
+
+musicBtn.addEventListener("click", () => {
+  if (bgMusic.paused) bgMusic.play(), musicBtn.textContent = "音乐暂停";
+  else bgMusic.pause(), musicBtn.textContent = "音乐播放";
+});
+
+// -------------------- 侧边栏控制 --------------------
+toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
+
+// -------------------- 自动存档 --------------------
+function autoSave() {
+  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
+  const saveData = { page: "storyPage1", dialogueIndex: saveIndex, charIndex, timestamp: Date.now() };
+  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  saves.push(saveData);
+  localStorage.setItem("storySaves", JSON.stringify(saves));
+
+  autoSaveNotice.classList.remove("hidden");
+  autoSaveNotice.classList.add("show");
+  setTimeout(() => autoSaveNotice.classList.remove("show"), 1500);
+}
+
+// -------------------- 存档/读档 --------------------
+saveBtn.addEventListener("click", () => {
+  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
+  const saveData = { page: "storyPage1", dialogueIndex: saveIndex, charIndex, timestamp: Date.now() };
+  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  saves.push(saveData);
+  localStorage.setItem("storySaves", JSON.stringify(saves));
+  alert("已存档！");
+});
+
+loadBtn.addEventListener("click", () => window.location.href = "load.html");
 
 // -------------------- 好感度系统 --------------------
 const affectionData = { fang: 50, other: 30 };
@@ -260,28 +222,8 @@ function updateAffection(character, value) {
 function initAffection() {
   const savedData = localStorage.getItem('affectionData');
   if (savedData) Object.assign(affectionData, JSON.parse(savedData));
-  for (const [character, value] of Object.entries(affectionData)) {
-    updateAffection(character, value);
-  }
+  for (const [character, value] of Object.entries(affectionData)) updateAffection(character, value);
 }
-
-choiceBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const choice = btn.dataset.choice;
-    console.log("玩家选择了:", choice);
-    hideChoices();
-    if (choice === "A") {
-      updateAffection('fang', affectionData.fang + 10);
-      showDialogue(index + 1);
-    } else if (choice === "B") {
-      updateAffection('fang', affectionData.fang - 5);
-      showDialogue(index + 2);
-    } else {
-      updateAffection('other', affectionData.other + 5);
-      showDialogue(index + 3);
-    }
-  });
-});
 
 // -------------------- 初始化 --------------------
 initAffection();

@@ -4,6 +4,18 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // -------------------- DOM 元素 --------------------
+const dialogText = document.getElementById("dialog-text");
+const nameBox = document.querySelector(".character-name");
+const nextBtn = document.getElementById("next-btn");
+const prevBtn = document.getElementById("prev-btn");
+const speedBtn = document.getElementById("speed-btn");
+const skipBtn = document.getElementById("skip-btn");
+const autoBtn = document.getElementById("auto-btn");
+
+const choiceContainer = document.getElementById("choice-container");
+const choiceBtns = document.querySelectorAll(".choice-btn");
+const dialogBox = document.querySelector(".dialog-box");
+
 const musicBtn = document.getElementById("music-btn");
 const bgMusic = document.getElementById("bg-music");
 const volumeRange = document.getElementById("volume-range");
@@ -15,21 +27,6 @@ const autoSaveNotice = document.getElementById("auto-save-notice");
 const saveBtn = document.getElementById("save-btn");
 const loadBtn = document.getElementById("load-btn");
 
-const dialogText = document.getElementById("dialog-text");
-const nameBox = document.querySelector(".character-name");
-
-const nextBtn = document.getElementById("next-btn");
-const prevBtn = document.getElementById("prev-btn");
-const speedBtn = document.getElementById("speed-btn");
-const skipBtn = document.getElementById("skip-btn");
-const autoBtn = document.getElementById("auto-btn");
-
-const choiceContainer = document.getElementById("choice-container");
-const choiceBtns = document.querySelectorAll(".choice-btn");
-const dialogBox = document.querySelector(".dialog-box");
-
-const specialItem = document.getElementById("special-item");
-
 // -------------------- 状态变量 --------------------
 let index = 0;
 let charIndex = 0;
@@ -39,20 +36,55 @@ let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
-let waitingForItem = false;
 
 // -------------------- 对话数据 --------------------
 const dialogues = [
-  { name: "B", text: "可……这样我真的不会后悔吗？" },
-  { name: "B", text: "人怎么会这么矛盾呢……" },
-  { name: "C", text: "忽然，手机轻轻振动了一下。" },
-  { name: "C", text: "你拿起手机，屏幕上是一条简短的消息：" },
-  { name: "A", text: "“再见啦，学弟君~ 我已经在去机场的车上咯~ 以后有时间可以来看我的演出哦，我会为你留特等席的 (＾▽＾) ”" },
-  { name: "C", text: "你盯着屏幕，回忆着一个学期中与学姐共同度过的点滴时光。" },
-  { name: "C", text: "虽然琐碎，却也温暖而美好。" },
-  { name: "C", text: "你想到这些，迅速的打出了一句：学姐我还有很多话想和你说" },
-  { name: "C", text: "可你又想到了被拒绝之后的种种可能，又或是异地恋的各种可能，慢慢地将那句未发的消息删去了" },
+  { name: "B", text: "你的头发早已整齐 但是学姐的手却迟迟游移着不肯离去 你看出了她的不舍 于是向前一步 将学姐抱入了怀中" },
+  { name: "B", text: "在那边也要继续加油哦 我会一直在心里为你加油的 你的演出可要记得为我留下一个视野最好的座位哦！”说罢 嘴角挤出一抹逞强的笑容" },
+  { name: "A", text: "看着你的笑脸 不由得湿了眼眶 用略显吃力的声音回答 “我一定会努力的 毕竟我可是你的最厉害的学姐呢！”" },
 ];
+
+// -------------------- 显示对话 --------------------
+function showDialogue(idx) {
+  if (idx < 0) idx = 0;
+  if (idx >= dialogues.length) idx = dialogues.length - 1;
+  index = idx;
+
+  nameBox.textContent = dialogues[index].name;
+
+  typeText(dialogues[index].text, () => {
+    if (index === 999) { // 特殊句子触发存档或选择框
+      autoSave();
+      setTimeout(showChoices, 500);
+    }
+  });
+}
+
+// -------------------- 下一句按钮 --------------------
+nextBtn.addEventListener("click", () => {
+  if (charIndex < dialogues[index].text.length) {
+    clearInterval(typingInterval);
+    dialogText.textContent = dialogues[index].text;
+    charIndex = dialogues[index].text.length;
+    if (index === 999) setTimeout(showChoices, 500);
+  } else {
+    if (index < dialogues.length - 1) {
+      showDialogue(index + 1);
+    } else {
+      document.body.classList.add("fade-out");
+      setTimeout(() => {
+        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了2 2/storypage.html";
+      }, 1000);
+    }
+  }
+  stopAutoPlay();
+});
+
+// -------------------- 上一句按钮 --------------------
+prevBtn.addEventListener("click", () => {
+  showDialogue(index - 1);
+  stopAutoPlay();
+});
 
 // -------------------- 打字机效果 --------------------
 function typeText(text, callback) {
@@ -70,74 +102,6 @@ function typeText(text, callback) {
   }, typingSpeed);
 }
 
-// -------------------- 判断是否显示特殊物品 --------------------
-function shouldShowSpecialItem(idx) {
-  return idx === 4 && specialItem.dataset.clicked !== "true";
-}
-
-// -------------------- 显示对话 --------------------
-function showDialogue(idx) {
-  if (idx < 0) idx = 0;
-  if (idx >= dialogues.length) idx = dialogues.length - 1;
-  index = idx;
-
-  nameBox.textContent = dialogues[index].name;
-
-  if (shouldShowSpecialItem(index)) {
-    specialItem.classList.remove("hidden");
-    waitingForItem = true;
-    charIndex = 0;
-    dialogText.textContent = "";
-    return;
-  }
-
-  waitingForItem = false;
-  typeText(dialogues[index].text, () => {
-    autoSave(); // 显示完文字后再自动存档
-    if (autoPlay) startAutoPlay();
-  });
-}
-
-// -------------------- 点击特殊物品 --------------------
-specialItem.addEventListener("click", () => {
-  specialItem.classList.add("hidden");
-  specialItem.dataset.clicked = "true";
-  waitingForItem = false;
-
-  // 点击物品后显示文字并触发存档
-  typeText(dialogues[index].text, () => {
-    autoSave();
-    if (autoPlay) startAutoPlay();
-  });
-});
-
-// -------------------- 下一句 --------------------
-nextBtn.addEventListener("click", () => {
-  if (waitingForItem) return;
-
-  if (charIndex < dialogues[index].text.length) {
-    clearInterval(typingInterval);
-    dialogText.textContent = dialogues[index].text;
-    charIndex = dialogues[index].text.length;
-  } else {
-    if (index < dialogues.length - 1) showDialogue(index + 1);
-    else {
-      document.body.classList.add("fade-out");
-      setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度不足4 不上分支/storypage.html";
-      }, 1000);
-    }
-  }
-  stopAutoPlay();
-});
-
-// -------------------- 上一句 --------------------
-prevBtn.addEventListener("click", () => {
-  if (waitingForItem) return;
-  showDialogue(index - 1);
-  stopAutoPlay();
-});
-
 // -------------------- 加速按钮 --------------------
 speedBtn.addEventListener("click", () => {
   isFast = !isFast;
@@ -146,15 +110,15 @@ speedBtn.addEventListener("click", () => {
   showDialogue(index);
 });
 
-// -------------------- 跳过 --------------------
+// -------------------- 跳过按钮 --------------------
 skipBtn.addEventListener("click", () => {
-  if (waitingForItem) return;
   clearInterval(typingInterval);
   dialogText.textContent = dialogues[index].text;
+  charIndex = dialogues[index].text.length;
   stopAutoPlay();
 });
 
-// -------------------- 自动播放 --------------------
+// -------------------- 自动播放按钮 --------------------
 autoBtn.addEventListener("click", () => {
   autoPlay = !autoPlay;
   if (autoPlay) {
@@ -166,7 +130,6 @@ autoBtn.addEventListener("click", () => {
 function startAutoPlay() {
   clearInterval(autoInterval);
   autoInterval = setInterval(() => {
-    if (waitingForItem) return;
     if (charIndex < dialogues[index].text.length) {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
@@ -184,60 +147,12 @@ function stopAutoPlay() {
   autoBtn.textContent = "自动播放";
 }
 
-// -------------------- 音乐控制 --------------------
-volumeRange.addEventListener("input", () => {
-  bgMusic.volume = volumeRange.value / 100;
-});
-
-musicBtn.addEventListener("click", () => {
-  if (bgMusic.paused) {
-    bgMusic.play();
-    musicBtn.textContent = "音乐暂停";
-  } else {
-    bgMusic.pause();
-    musicBtn.textContent = "音乐播放";
-  }
-});
-
-// -------------------- 侧边栏控制 --------------------
-toggleBtn.addEventListener("click", () => {
-  sidebar.classList.toggle("show");
-});
-
-// -------------------- 自动存档 --------------------
-function autoSave() {
-  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
-  const saveData = {
-    page: "storyPage1",
-    dialogueIndex: saveIndex,
-    charIndex: charIndex,
-    timestamp: Date.now()
-  };
-  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-  saves.push(saveData);
-  localStorage.setItem("storySaves", JSON.stringify(saves));
-
-  autoSaveNotice.classList.remove("hidden");
-  autoSaveNotice.classList.add("show");
-
-  setTimeout(() => {
-    autoSaveNotice.classList.remove("show");
-    autoSaveNotice.classList.add("hidden");
-  }, 1500);
-}
-
-// -------------------- 存档 / 读档 --------------------
-saveBtn.addEventListener("click", autoSave);
-loadBtn.addEventListener("click", () => {
-  window.location.href = "load.html";
-});
-
 // -------------------- 选择框 --------------------
 function showChoices() {
   choiceContainer.classList.remove("hidden");
   dialogBox.style.display = "none";
-  stopAutoPlay();
   clearInterval(typingInterval);
+  stopAutoPlay();
 }
 
 function hideChoices() {
@@ -279,6 +194,53 @@ function initAffection() {
     updateAffection(character, value);
   }
 }
+
+// -------------------- 自动存档 --------------------
+function autoSave() {
+  const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
+  const saveData = {
+    page: "storyPage1",
+    dialogueIndex: saveIndex,
+    charIndex: charIndex,
+    timestamp: Date.now()
+  };
+  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  saves.push(saveData);
+  localStorage.setItem("storySaves", JSON.stringify(saves));
+
+  autoSaveNotice.classList.remove("hidden");
+  autoSaveNotice.classList.add("show");
+
+  setTimeout(() => {
+    autoSaveNotice.classList.remove("show");
+    autoSaveNotice.classList.add("hidden");
+  }, 1500);
+}
+
+saveBtn.addEventListener("click", autoSave);
+loadBtn.addEventListener("click", () => {
+  window.location.href = "load.html";
+});
+
+// -------------------- 音乐控制 --------------------
+volumeRange.addEventListener("input", () => {
+  bgMusic.volume = volumeRange.value / 100;
+});
+
+musicBtn.addEventListener("click", () => {
+  if (bgMusic.paused) {
+    bgMusic.play();
+    musicBtn.textContent = "音乐暂停";
+  } else {
+    bgMusic.pause();
+    musicBtn.textContent = "音乐播放";
+  }
+});
+
+// -------------------- 侧边栏控制 --------------------
+toggleBtn.addEventListener("click", () => {
+  sidebar.classList.toggle("show");
+});
 
 // -------------------- 初始化 --------------------
 initAffection();

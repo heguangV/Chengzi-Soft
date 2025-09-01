@@ -1,22 +1,8 @@
-
-
-// -------------------- 页面载入效果 --------------------
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
 });
 
 // -------------------- DOM 元素 --------------------
-const musicBtn = document.getElementById("music-btn");
-const bgMusic = document.getElementById("bg-music");
-const volumeRange = document.getElementById("volume-range");
-
-const sidebar = document.getElementById("sidebar");
-const toggleBtn = document.getElementById("sidebar-toggle");
-
-const autoSaveNotice = document.getElementById("auto-save-notice");
-const saveBtn = document.getElementById("save-btn");
-const loadBtn = document.getElementById("load-btn");
-
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
 
@@ -30,6 +16,17 @@ const choiceContainer = document.getElementById("choice-container");
 const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box");
 
+const musicBtn = document.getElementById("music-btn");
+const bgMusic = document.getElementById("bg-music");
+const volumeRange = document.getElementById("volume-range");
+
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("sidebar-toggle");
+
+const autoSaveNotice = document.getElementById("auto-save-notice");
+const saveBtn = document.getElementById("save-btn");
+const loadBtn = document.getElementById("load-btn");
+
 // -------------------- 状态变量 --------------------
 let index = 0;
 let charIndex = 0;
@@ -40,15 +37,13 @@ let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
 
+// -------------------- 剧情控制 --------------------
 const dialogues = [
-  { name: "旁白", text: "一学期的大学生活，如同被风吹散的云烟，在不知不觉中走到了学姐约定的分别时刻" },
-  { name: "旁白", text: "你的手机屏幕映出一片淡淡的白光，反射在天花板上，与傍晚的晚霞交织在一起。" },
-  { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
-  { name: "旁白", text: "你一个学期就这样过去了。很忙，却又说不上忙了些什么。" },
-  { name: "旁白", text: "你努力回想，这一学期究竟有什么值得留恋的瞬间。" },
-  { name: "旁白", text: "除了和青梅的时光，似乎就只有学姐的存在让你记得。" },
-  { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
-  { name: "旁白", text: "你有些惆怅。" }
+  { name: "C", text: "时间飞逝 今天好像就是之前约定好的学姐离开的日子" },
+  { name: "C", text: "你看着晚霞映红的天花板发呆 手机中打开着的是学姐的对话框 忽然 手机振动了一下" },
+  { name: "A", text: "怎么不来送送我！我还在校门口等你呢（颜文字：生气）" },
+  { name: "C", text: "你从恍然中惊醒 从床上爬起来 慌乱间披上了件外套 向校门口飞奔而去。"},
+  { name: "B", text: "本来便不擅长跑步 又由于一学期没选上体育课 只感觉自己的双腿越发酸痛 呼吸也变得越发急促" },
 ];
 
 // -------------------- 打字机效果 --------------------
@@ -76,10 +71,8 @@ function showDialogue(idx) {
   nameBox.textContent = dialogues[index].name;
 
   typeText(dialogues[index].text, () => {
-    if (index === 999) {
-      autoSave();
-      setTimeout(showChoices, 500);
-    }
+    if (index === 999) autoSave();
+    if (index === 999) setTimeout(showChoices, 500);
   });
 }
 
@@ -89,16 +82,14 @@ nextBtn.addEventListener("click", () => {
     clearInterval(typingInterval);
     dialogText.textContent = dialogues[index].text;
     charIndex = dialogues[index].text.length;
-    if (index === 999) {
-      setTimeout(showChoices, 500);
-    }
+    if (index === 999) setTimeout(showChoices, 500);
   } else {
     if (index < dialogues.length - 1) {
       showDialogue(index + 1);
     } else {
       document.body.classList.add("fade-out");
       setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度不足2/storypage.html";
+        window.location.href = "../storypage2.0 与学姐好感度足够 2/storypage.html";
       }, 1000);
     }
   }
@@ -126,7 +117,7 @@ skipBtn.addEventListener("click", () => {
   stopAutoPlay();
 });
 
-// -------------------- 自动播放 --------------------
+// -------------------- 自动播放按钮 --------------------
 autoBtn.addEventListener("click", () => {
   autoPlay = !autoPlay;
   if (autoPlay) {
@@ -144,11 +135,8 @@ function startAutoPlay() {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
     } else {
-      if (index < dialogues.length - 1) {
-        showDialogue(index + 1);
-      } else {
-        stopAutoPlay();
-      }
+      if (index < dialogues.length - 1) showDialogue(index + 1);
+      else stopAutoPlay();
     }
   }, 2000);
 }
@@ -158,6 +146,32 @@ function stopAutoPlay() {
   autoPlay = false;
   autoBtn.textContent = "自动播放";
 }
+
+// -------------------- 选择框 --------------------
+function showChoices() {
+  choiceContainer.classList.remove("hidden");
+  dialogBox.style.display = "none";
+  clearInterval(typingInterval);
+  clearInterval(autoInterval);
+}
+
+function hideChoices() {
+  choiceContainer.classList.add("hidden");
+  dialogBox.style.display = "block";
+}
+
+// 合并选择按钮事件，避免重复绑定
+choiceBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const choice = btn.dataset.choice;
+    console.log("玩家选择了:", choice);
+    hideChoices();
+
+    if (choice === "A") showDialogue(index + 1);
+    else if (choice === "B") showDialogue(index + 2);
+    else showDialogue(index + 3);
+  });
+});
 
 // -------------------- 音乐控制 --------------------
 volumeRange.addEventListener("input", () => {
@@ -221,30 +235,6 @@ loadBtn.addEventListener("click", () => {
   window.location.href = "load.html";
 });
 
-// -------------------- 选择框 --------------------
-function showChoices() {
-  choiceContainer.classList.remove("hidden");
-  dialogBox.style.display = "none";
-  clearInterval(typingInterval);
-  clearInterval(autoInterval);
-}
-
-function hideChoices() {
-  choiceContainer.classList.add("hidden");
-  dialogBox.style.display = "block";
-}
-
-choiceBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const choice = btn.dataset.choice;
-    console.log("玩家选择了:", choice);
-    hideChoices();
-    if (choice === "A") showDialogue(index + 1);
-    else if (choice === "B") showDialogue(index + 2);
-    else showDialogue(index + 3);
-  });
-});
-
 // -------------------- 好感度系统 --------------------
 const affectionData = { fang: 50, other: 30 };
 
@@ -260,28 +250,8 @@ function updateAffection(character, value) {
 function initAffection() {
   const savedData = localStorage.getItem('affectionData');
   if (savedData) Object.assign(affectionData, JSON.parse(savedData));
-  for (const [character, value] of Object.entries(affectionData)) {
-    updateAffection(character, value);
-  }
+  for (const [character, value] of Object.entries(affectionData)) updateAffection(character, value);
 }
-
-choiceBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const choice = btn.dataset.choice;
-    console.log("玩家选择了:", choice);
-    hideChoices();
-    if (choice === "A") {
-      updateAffection('fang', affectionData.fang + 10);
-      showDialogue(index + 1);
-    } else if (choice === "B") {
-      updateAffection('fang', affectionData.fang - 5);
-      showDialogue(index + 2);
-    } else {
-      updateAffection('other', affectionData.other + 5);
-      showDialogue(index + 3);
-    }
-  });
-});
 
 // -------------------- 初始化 --------------------
 initAffection();
