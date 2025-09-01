@@ -137,7 +137,7 @@ class LoginSystem {
     // 登录验证
     goNextPage() {
         const email = document.getElementById('login-username').value.trim();
-        localStorage.setItem('isLoggedIn', 'False');
+        // 移除错误的登录状态设置
         const password = document.getElementById('login-password').value;
         const errorDiv = document.getElementById("login-error");
 
@@ -154,19 +154,25 @@ class LoginSystem {
         const user = users.find(u => u.email === email && u.password === password);
 
         if (user) {
-            this.hideModal();
+            // 设置登录状态为已登录
             localStorage.setItem('isLoggedIn', 'true');
+            console.log('✅ 用户登录成功:', email);
             
             // 如果成就系统可用，解锁"初次登录"成就
             if (window.achievementSystem) {
                 window.achievementSystem.unlockAchievement('first_login');
             }
             
-            // 延迟跳转到故事页面
+            // 隐藏模态框
+            this.hideModal();
+            
+            // 跳转到故事页面
             setTimeout(() => {
                 window.location.href = "./storypage/storypage.html";
-            }, 500);
+            }, 300);
         } else {
+            // 设置登录状态为未登录
+            localStorage.setItem('isLoggedIn', 'false');
             errorDiv.innerText = "账号或密码错误";
             errorDiv.style.display = "block";
         }

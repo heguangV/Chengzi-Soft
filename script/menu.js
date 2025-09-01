@@ -32,18 +32,12 @@ const auth = {
 
 // 功能列表点击事件
 document.addEventListener('DOMContentLoaded', function() {
-    // 开始游戏
-    document.getElementById('start').addEventListener('click', function() {
-        if (auth.isLoggedIn()) {
-            window.location.href = "./storypage/storypage.html";
-        } else {
-            if (window.loginSystem) {
-                window.loginSystem.showModal();
-            } else {
-                window.location.href = './login/login.html';
-            }
-        }
-    });
+    // 开始游戏按钮的事件处理已在login.js中实现，这里不再重复添加
+    // 仅保留登录状态检查函数
+    window.checkLoginStatus = function() {
+        const status = localStorage.getItem('isLoggedIn');
+        return status === 'true';
+    };
 
     // 加载存档
     document.getElementById('load').addEventListener('click', function() {
@@ -80,8 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'team.htm';
     });
 
-    // 为整个功能项区域添加点击事件
-    const functionItems = document.querySelectorAll('.function-item');
+    // 为除开始游戏外的功能项添加点击反馈动画
+    const functionItems = document.querySelectorAll('.function-item:not(#start)');
     functionItems.forEach(item => {
         item.addEventListener('click', function() {
             // 添加点击反馈动画
