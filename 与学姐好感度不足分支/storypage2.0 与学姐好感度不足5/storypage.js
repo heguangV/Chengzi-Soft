@@ -1,7 +1,43 @@
 // -------------------- 页面载入效果 --------------------
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
+  
+  // 添加空格键和鼠标点击实现下一句的功能
+  document.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+      e.preventDefault(); // 阻止空格键的默认行为（如页面滚动）
+      triggerNextDialogue();
+    }
+  });
+  
+  // 点击文档空白处也可以触发下一句
+  document.addEventListener("click", (e) => {
+    // 避免点击到其他按钮时也触发下一句
+    if (!e.target.closest("button") && !e.target.closest(".control-img") && 
+        !e.target.closest("#sidebar") && !e.target.closest("#sidebar-toggle")) {
+      triggerNextDialogue();
+    }
+  });
 });
+
+// 触发下一句的统一函数
+function triggerNextDialogue() {
+  if (charIndex < dialogues[index].text.length) {
+    clearInterval(typingInterval);
+    dialogText.textContent = dialogues[index].text;
+    charIndex = dialogues[index].text.length;
+    if (index === 999) {
+      setTimeout(showChoices, 500);
+    }
+  } else {
+    if (index < dialogues.length - 1) {
+      showDialogue(index + 1);
+    } else {
+      window.location.href = "../storypage2.0 与学姐好感度不足6/storypage.html";
+    }
+  }
+  stopAutoPlay();
+}
 
 // -------------------- DOM 元素 --------------------
 const musicBtn = document.getElementById("music-btn");
@@ -16,6 +52,8 @@ const loadBtn = document.getElementById("load-btn");
 
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
+const avatarContainer = document.querySelector(".character-avatar");
+const avatarImg = document.getElementById("character-avatar");
 
 const nextBtn = document.getElementById("next-btn");
 const prevBtn = document.getElementById("prev-btn");
@@ -85,7 +123,26 @@ function showDialogue(idx) {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  nameBox.textContent = dialogues[index].name;
+  // 修改角色名称和头像显示
+  let displayName = dialogues[index].name;
+  if (displayName === 'C') {
+    displayName = '旁白';
+    avatarContainer.style.display = 'none'; // 旁白不显示头像
+  } else if (displayName === 'B') {
+    displayName = '主角';
+    avatarImg.src = '../../男主.png';
+    avatarContainer.style.display = 'block'; // 显示男主头像
+  } else if (displayName.includes('学姐')) {
+    avatarImg.src = '../../学姐.jpeg';
+    avatarContainer.style.display = 'block'; // 显示学姐头像
+  } else if (displayName === 'BE') {
+    displayName = '结局';
+    avatarContainer.style.display = 'none'; // 结局不显示头像
+  } else {
+    avatarContainer.style.display = 'none'; // 其他角色不显示头像
+  }
+
+  nameBox.textContent = displayName;
   typeText(dialogues[index].text);
 }
 
@@ -113,13 +170,7 @@ loadBtn.addEventListener("click", () => window.location.href = "load.html");
 
 // -------------------- 对话控制按钮 --------------------
 nextBtn.addEventListener("click", () => {
-  if (charIndex < dialogues[index].text.length) {
-    clearInterval(typingInterval);
-    dialogText.textContent = dialogues[index].text;
-    charIndex = dialogues[index].text.length;
-  } else if (index < dialogues.length - 1) showDialogue(index + 1);
-  else window.location.href = "../storypage2.0 与学姐好感度不足6/storypage.html";
-  stopAutoPlay();
+  triggerNextDialogue();
 });
 
 prevBtn.addEventListener("click", () => { showDialogue(index - 1); stopAutoPlay(); });
