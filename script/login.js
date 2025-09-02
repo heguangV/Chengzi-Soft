@@ -66,7 +66,20 @@ class LoginSystem {
         const startBtn = document.getElementById('start');
         if (startBtn) {
             startBtn.addEventListener('click', () => {
-                this.showModal();
+                // 检查登录状态
+                const isLoggedIn = localStorage.getItem('isLoggedIn');
+                if (isLoggedIn === 'true') {
+                    // 添加黑屏转场效果
+                    const fadeTransition = document.getElementById('fadeTransition');
+                    fadeTransition.classList.add('active');
+                    
+                    // 延迟跳转，等待转场效果完成
+                    setTimeout(() => {
+                        window.location.href = ".\\与学姐好感度不足分支\\storypage2.0 与学姐好感度不足1\\storypage.html";
+                    }, 500);
+                } else {
+                    this.showModal();
+                }
             });
         }
     }
@@ -166,10 +179,14 @@ class LoginSystem {
             // 隐藏模态框
             this.hideModal();
             
-            // 跳转到故事页面
+            // 添加黑屏转场效果
+            const fadeTransition = document.getElementById('fadeTransition');
+            fadeTransition.classList.add('active');
+            
+            // 跳转到故事页面，与已登录用户跳转目标保持一致
             setTimeout(() => {
-                window.location.href = "./storypage/storypage.html";
-            }, 300);
+                window.location.href = ".\\与学姐好感度不足分支\\storypage2.0 与学姐好感度不足1\\storypage.html";
+            }, 500);
         } else {
             // 设置登录状态为未登录
             localStorage.setItem('isLoggedIn', 'false');
