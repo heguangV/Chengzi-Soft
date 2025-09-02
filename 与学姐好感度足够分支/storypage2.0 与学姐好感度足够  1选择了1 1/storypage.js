@@ -23,6 +23,8 @@ const dialogues = [
 // -------------------- DOM 元素 --------------------
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
+const characterAvatar = document.getElementById("character-avatar");
+const avatarContainer = document.querySelector(".character-avatar");
 
 const nextBtn = document.getElementById("next-btn");
 const prevBtn = document.getElementById("prev-btn");
@@ -77,7 +79,34 @@ function showDialogue(idx) {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  nameBox.textContent = dialogues[index].name;
+  // 获取当前对话的名称
+  let currentName = dialogues[index].name;
+  let displayName = currentName;
+  
+  // 根据name值修改显示名称和头像
+  if (currentName === 'C') {
+    // 旁白：隐藏头像
+    displayName = '旁白';
+    avatarContainer.style.display = 'none';
+  } else if (currentName === 'B') {
+    // 主角：显示男主头像
+    displayName = '主角';
+    characterAvatar.src = '../../男主.png';
+    characterAvatar.alt = '主角头像';
+    avatarContainer.style.display = 'block';
+  } else if (currentName === 'A' || currentName.includes('学姐')) {
+    // 学姐：显示学姐头像
+    displayName = '学姐';
+    characterAvatar.src = '../../学姐.jpeg';
+    characterAvatar.alt = '学姐头像';
+    avatarContainer.style.display = 'block';
+  } else {
+    // 其他角色：隐藏头像
+    avatarContainer.style.display = 'none';
+  }
+  
+  // 更新显示名称
+  nameBox.textContent = displayName;
 
   typeText(dialogues[index].text, () => {
     // 如果台词有选择框逻辑
