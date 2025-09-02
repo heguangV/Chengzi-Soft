@@ -133,7 +133,7 @@ function showDialogue(idx) {
     avatarImg.src = '../../男主.png';
     avatarContainer.style.display = 'block'; // 显示男主头像
   } else if (displayName.includes('学姐')) {
-    avatarImg.src = '../../学姐.jpeg';
+    avatarImg.src = '../../学姐.png';
     avatarContainer.style.display = 'block'; // 显示学姐头像
   } else if (displayName === 'BE') {
     displayName = '结局';

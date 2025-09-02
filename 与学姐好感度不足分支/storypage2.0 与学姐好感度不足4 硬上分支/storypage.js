@@ -138,7 +138,7 @@ function showDialogue(idx) {
     avatarContainer.style.display = 'block'; // 显示男主头像
   } else if (displayName === 'A' || displayName.includes('学姐')) {
     displayName = '学姐';
-    avatarImg.src = '../../学姐.jpeg';
+    avatarImg.src = '../../学姐.png';
     avatarContainer.style.display = 'block'; // 显示学姐头像
   } else {
     avatarContainer.style.display = 'none'; // 其他角色不显示头像

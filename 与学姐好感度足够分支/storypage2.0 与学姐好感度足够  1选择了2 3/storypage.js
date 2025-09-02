@@ -42,6 +42,30 @@ const dialogues = [
   { name: "C", text: "看着车渐渐远去 你的思绪仿佛也逐渐飘远 随着车消失在远处的一片苍白之中" },
   { name: "C", text: "两厢情愿" },
 ];
+let currentName = dialogues[index].name;
+  let displayName = currentName;
+  
+  // 根据name值修改显示名称和头像
+  if (currentName === 'C') {
+    // 旁白：隐藏头像
+    displayName = '旁白';
+    avatarContainer.style.display = 'none';
+  } else if (currentName === 'B') {
+    // 主角：显示男主头像
+    displayName = '主角';
+    characterAvatar.src = '../../男主.png';
+    characterAvatar.alt = '主角头像';
+    avatarContainer.style.display = 'block';
+  } else if (currentName === 'A' || currentName.includes('学姐')) {
+    // 学姐：显示学姐头像
+    displayName = '学姐';
+    characterAvatar.src = '../../学姐.png';
+    characterAvatar.alt = '学姐头像';
+    avatarContainer.style.display = 'block';
+  } else {
+    // 其他角色：隐藏头像
+    avatarContainer.style.display = 'none';
+  }
 
 // -------------------- 打字机效果 --------------------
 function typeText(text, callback) {

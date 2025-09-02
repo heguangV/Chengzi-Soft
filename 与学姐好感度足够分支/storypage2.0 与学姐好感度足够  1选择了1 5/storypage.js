@@ -12,6 +12,30 @@ const dialogues = [
   { name: "C", text: "她身着一件淡蓝色的衬衫 外面是一件短款的夹克 下身穿着一件高腰牛仔裤 头上戴着一只米色的棒球帽 虽然简约 但在她如同明星般的比例与气质的映衬下 还是让人难以移开目光 惹得走过的路人频频注目" },
   { name: "A", text: "怎么样 学姐的专业穿搭” 她的脸上扬起一种自豪感 仿佛在等待你的夸奖" },
 ];
+let currentName = dialogues[index].name;
+  let displayName = currentName;
+  
+  // 根据name值修改显示名称和头像
+  if (currentName === 'C') {
+    // 旁白：隐藏头像
+    displayName = '旁白';
+    avatarContainer.style.display = 'none';
+  } else if (currentName === 'B') {
+    // 主角：显示男主头像
+    displayName = '主角';
+    characterAvatar.src = '../../男主.png';
+    characterAvatar.alt = '主角头像';
+    avatarContainer.style.display = 'block';
+  } else if (currentName === 'A' || currentName.includes('学姐')) {
+    // 学姐：显示学姐头像
+    displayName = '学姐';
+    characterAvatar.src = '../../学姐.png';
+    characterAvatar.alt = '学姐头像';
+    avatarContainer.style.display = 'block';
+  } else {
+    // 其他角色：隐藏头像
+    avatarContainer.style.display = 'none';
+  }
 
 // -------------------- DOM 获取 --------------------
 const dialogText = document.getElementById("dialog-text");

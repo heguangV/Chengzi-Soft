@@ -88,7 +88,7 @@ function showDialogue(idx) {
   } else if (currentName === 'A' || currentName.includes('学姐')) {
     // 学姐：显示学姐头像
     displayName = '学姐';
-    characterAvatar.src = '../../学姐.jpeg';
+    characterAvatar.src = '../../学姐.png';
     characterAvatar.alt = '学姐头像';
     avatarContainer.style.display = 'block';
   } else {
