@@ -9,10 +9,14 @@
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             text-align: center;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
             margin: 0;
             padding: 20px;
             overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .game-container {
@@ -20,13 +24,17 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 0;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
+            overflow: hidden;
+            background: white;
         }
 
         /* 游戏区域样式 */
         .game-board {
             position: relative;
             margin-bottom: 0;
-            background-color: #ffebee;
+            background: linear-gradient(to bottom, #ffebee, #ffe4e9);
             border-radius: 10px;
             min-height: 500px;
             overflow: hidden;
@@ -50,25 +58,30 @@
         }
 
         .score, .time, .target {
-            padding: 10px 20px;
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            color: #ff4757;
+            transition: all 0.3s ease;
+        }
+
+        .score:hover, .time:hover, .target:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         /* 心形目标样式 */
-        .heart {
+        .target-item {
             position: absolute;
-            width: 50px;
-            height: 50px;
-            background-image: url('../0x300a0a0.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
             cursor: pointer;
             opacity: 0;
             transition: all 0.3s ease;
-            animation: fadeIn 0.3s forwards;
+            animation: fadeIn 0.3s forwards, float 3s ease-in-out infinite;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff4757' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         @keyframes fadeIn {
@@ -77,31 +90,66 @@
             }
         }
 
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-8px) rotate(3deg);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
         /* 增强的点击反馈效果 */
-        .heart.hit {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px rgba(255, 71, 87, 0.7);
+        .target-item.hit {
+            animation: hitAnimation 0.5s forwards;
+        }
+
+        @keyframes hitAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
         }
 
         /* 加分提示样式 */
         .score-popup {
             position: absolute;
             color: #ff4757;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
             pointer-events: none;
             animation: scorePopup 1s forwards;
             z-index: 20;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         @keyframes scorePopup {
             0% {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-15px) scale(1.3);
             }
             100% {
                 opacity: 0;
-                transform: translateY(-30px);
+                transform: translateY(-30px) scale(1);
             }
         }
 
@@ -111,36 +159,83 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 80px;
+            font-size: 100px;
             font-weight: bold;
             color: #ff4757;
             z-index: 30;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: pulse 1s infinite;
         }
 
         /* 按钮样式 */
         .button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 1.1em;
-            background-color: #4CAF50;
+            background: linear-gradient(to bottom, #4CAF50, #45a049);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: all 0.3s ease;
             margin: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* 暂停按钮样式 - 修改为||图形 */
-        .button.pause {
-            background-color: #f44336;
-            width: 40px;
-            padding: 10px 5px;
-            position: relative;
-            font-size: 0; /* 隐藏文字 */
+        .button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
         }
-        
-        .button.pause:hover {
-            background-color: #d32f2f;
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:active::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+
+        /* 暂停按钮样式 */
+        .button.pause {
+            background: linear-gradient(to bottom, #f44336, #d32f2f);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .button.pause::before, .button.pause::after {
@@ -149,16 +244,15 @@
             width: 6px;
             height: 20px;
             background-color: white;
-            top: 50%;
-            transform: translateY(-50%);
+            border-radius: 2px;
         }
         
         .button.pause::before {
-            left: 12px;
+            left: 18px;
         }
         
         .button.pause::after {
-            right: 12px;
+            right: 18px;
         }
         
         /* 开始按钮容器样式 */
@@ -174,15 +268,17 @@
         }
         
         .start-button-container .button {
-            padding: 15px 40px;
+            padding: 18px 50px;
             font-size: 1.5em;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
         
-        /* 游戏控制区域样式 - 调整位置到游戏信息区域旁边 */
+        /* 游戏控制区域样式 */
         .game-controls {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             z-index: 20;
         }
 
@@ -194,11 +290,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 235, 238, 0.9);
+            background: rgba(255, 235, 238, 0.95);
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 40;
+            backdrop-filter: blur(5px);
         }
 
         .pause-menu.active {
@@ -206,30 +303,19 @@
         }
 
         .pause-menu h2 {
-            color: #333;
+            color: #ff4757;
             margin-bottom: 30px;
-            font-size: 2em;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .pause-menu .button {
-            margin: 10px;
-            min-width: 150px;
-        }
-
-        .button:hover {
-            background-color: #45a049;
-        }
-
-        .button:active {
-            transform: scale(0.98);
+            margin: 15px;
+            min-width: 180px;
         }
 
         .button.restart {
-            background-color: #ff9800;
-        }
-
-        .button.restart:hover {
-            background-color: #e68a00;
+            background: linear-gradient(to bottom, #ff9800, #e68a00);
         }
 
         /* 游戏结束弹窗样式 */
@@ -240,44 +326,80 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
 
         .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
             text-align: center;
             width: 90%;
-            max-width: 400px;
+            max-width: 450px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            animation: modalAppear 0.3s forwards;
+        }
+
+        @keyframes modalAppear {
+            to {
+                transform: scale(1);
+            }
         }
 
         .modal h2 {
             margin-bottom: 20px;
-            color: #333;
+            color: #ff4757;
+            font-size: 2.2em;
         }
 
         .modal p {
             font-size: 1.2em;
             margin-bottom: 20px;
+            color: #555;
         }
 
         /* 响应式设计 */
         @media (max-width: 600px) {
             .game-board {
-                min-height: 300px;
+                min-height: 400px;
+                padding-top: 80px;
             }
 
             .game-info {
                 flex-direction: column;
                 gap: 10px;
+                top: 10px;
             }
 
             .score, .time, .target {
-                margin-bottom: 10px;
+                margin-bottom: 5px;
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            
+            .countdown {
+                font-size: 70px;
+            }
+            
+            .button {
+                padding: 10px 20px;
+            }
+            
+            .start-button-container .button {
+                padding: 15px 40px;
+                font-size: 1.3em;
+            }
+            
+            .modal-content {
+                padding: 25px;
+            }
+            
+            .modal h2 {
+                font-size: 1.8em;
             }
         }
     </style>

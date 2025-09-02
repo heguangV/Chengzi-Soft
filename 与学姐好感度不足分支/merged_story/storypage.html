@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>剧情页面 - 合并版</title>
+  <style>
+    /* 样式保持不变，与之前相同 */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      transition: opacity 1s ease;
+      opacity: 0;
+      background: url('images/background.png') no-repeat center center fixed;
+      background-size: cover;
+      font-family: "微软雅黑", sans-serif;
+    }
+
+    /* 页面加载后自动加上 fade-in */
+    body.fade-in {
+      opacity: 1;
+    }
+
+    /* 页面离开时用 fade-out */
+    body.fade-out {
+      opacity: 0;
+    }
+
+    /* 角色立绘 */
+    .character-img {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      max-height: 80%;
+      z-index: 1;
+    }
+
+    /* 对话框 */
+    .dialog-box {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 22vw;
+      max-width: 100%;
+      color: #fff;
+      padding: 1em 2em;
+      box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+      border-radius: 0;
+      box-sizing: border-box;
+      z-index: 2;
+    }
+
+    /* 角色名 */
+    .character-name {
+      font-weight: bold;
+      margin-bottom: 0.5em;
+      font-size: 0.9em;
+      margin-left: 5%;
+      margin-top: 0.5%;
+    }
+
+    /* 对话文字 */
+    .dialog-text {
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      transform: translateY(-50%);
+      width: 80%;
+      min-height: 3em;
+      font-size: 1em;
+      color: black;
+      z-index: 1;
+      pointer-events: none;
+      margin-top: 0;
+    }
+
+    /* 对话框图片 */
+    .dialog-img {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 100%;
+      height: auto;
+      z-index: -1;
+      object-fit: contain;
+    }
+
+    /* 控制按钮图片容器 */
+    .control-images {
+      position: absolute;
+      bottom: 25px;
+      right: 30px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      z-index: 1;
+    }
+
+    /* 控制按钮图片 */
+    .control-img {
+      width: 89px;
+      height: 26.4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      z-index: 2;
+      object-fit: contain;
+    }
+
+    .control-img:hover {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+
+    /* 侧边栏 */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translateX(-100%);
+      width: 220px;
+      height: 100%;
+      background: rgba(30, 30, 30, 0.5);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      padding: 1em;
+      transition: transform 0.3s ease;
+      z-index: 100;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    #sidebar.show {
+      transform: translateX(0);
+    }
+
+    /* 侧边栏按钮统一样式 */
+    #sidebar button {
+      width: 100%;
+      padding: 0.5em;
+      margin: 0;
+      border: none;
+      border-radius: 5px;
+      background: pink;
+      color: #000;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    /* 让三个按钮纵向排列，间距均匀 */
+    #sidebar .sidebar-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* 侧边栏触发按钮 */
+    #sidebar-toggle {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #000;
+      font-size: 24px;
+      line-height: 60px;
+      text-align: center;
+      cursor: pointer;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      z-index: 101;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    #sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* 音量控制 */
+    .volume-control {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .volume-control input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #555;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* 滑块 */
+    .volume-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #ffcc00;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #000;
+      transition: background 0.2s;
+    }
+
+    .volume-control input[type="range"]::-webkit-slider-thumb:hover {
+      background: #ffd633;
+    }
+
+    /* Firefox */
+    .volume-control input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: #ffcc00;
+      border-radius: 50%;
+      border: 2px solid #000;
+      cursor: pointer;
+    }
+
+    /* 选择框 */
+    #choice-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 40%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      z-index: 200;
+      background: none;
+      backdrop-filter: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .choice-btn {
+      padding: 0.8em 1.2em;
+      border: none;
+      border-radius: 8px;
+      width: 90%;
+      background: pink;
+      color: #000;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .choice-btn:hover {
+      background: rgba(255, 192, 203, 0.8);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    /* 特殊物品样式 */
+    #special-item {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 150;
+      cursor: pointer;
+      animation: shake 2s infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-2deg); }
+      50% { transform: rotate(2deg); }
+      75% { transform: rotate(-2deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    #special-item img {
+      width: 60px;
+      height: 60px;
+    }
+
+    /* 角色头像容器 */
+    .character-avatar {
+      position: absolute;
+      bottom: 150px;
+      right: 100px;
+      z-index: 10;
+      width: 200px;
+      height: 200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 角色头像图片 */
+    #character-avatar {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* 隐藏类 */
+    .hidden {
+      display: none !important;
+    }
+
+    /* 已自动存档的显示 */
+    #auto-save-notice {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 0.5em 1em;
+      border-radius: 8px;
+      font-size: 0.9em;
+      z-index: 300;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    #auto-save-notice.show {
+      opacity: 1;
+    }
+
+    /* 好感度条 */
+    .affection-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 50;
+    }
+
+    .affection-bar {
+      position: relative;
+      width: 200px;
+      height: 30px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .affection-bg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.8;
+    }
+
+    .affection-fill {
+      position: absolute;
+      height: 100%;
+      background: rgba(255, 192, 203, 0.7);
+      transition: width 0.3s ease;
+    }
+
+    .affection-text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      line-height: 30px;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      font-size: 0.9em;
+    }
+
+    /* 手机图像样式 */
+    #phone-image {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 100;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    #phone-image:hover {
+      transform: scale(1.05);
+    }
+
+    /* 手机聊天界面 */
+    #phone-chat-interface {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 320px;
+      height: 600px;
+      background: #f5f5f5;
+      border-radius: 30px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      overflow: hidden;
+      display: none;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    #phone-chat-interface.show {
+      display: block;
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* 手机状态栏 */
+    .phone-status-bar {
+      height: 25px;
+      background: #000;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 15px;
+      font-size: 12px;
+    }
+
+    /* 手机聊天标题栏 */
+    .chat-header {
+      height: 50px;
+      background: #ededed;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 15px;
+      border-bottom: 1px solid #d9d9d9;
+    }
+
+    .chat-back-btn {
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .chat-title {
+      font-weight: bold;
+    }
+
+    .chat-more-btn {
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* 聊天内容区域 */
+    .chat-messages {
+      height: calc(100% - 135px);
+      overflow-y: auto;
+      padding: 15px;
+      background: #f5f5f5;
+    }
+
+    /* 消息样式 */
+    .message {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message.received {
+      align-items: flex-start;
+    }
+
+    .message.sent {
+      align-items: flex-end;
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 18px;
+      margin-top: 5px;
+      position: relative;
+    }
+
+    .message.received .message-content {
+      background: white;
+      border-top-left-radius: 4px;
+    }
+
+    .message.sent .message-content {
+      background: #95ec69;
+      border-top-right-radius: 4px;
+    }
+
+    .message-time {
+      font-size: 12px;
+      color: #888;
+      margin-top: 3px;
+    }
+
+    /* 聊天输入区域 */
+    .chat-input-area {
+      height: 60px;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      border-top: 1px solid #d9d9d9;
+    }
+
+    .chat-input {
+      flex: 1;
+      height: 36px;
+      border: 1px solid #d9d9d9;
+      border-radius: 18px;
+      padding: 0 15px;
+      margin-right: 10px;
+      outline: none;
+    }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      background: #07c160;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 响应式 */
+    @media (max-width: 600px) {
+      .dialog-box {
+        width: 95%;
+        padding: 0.8em;
+      }
+
+      .dialog-text {
+        font-size: 1em;
+      }
+
+      .control-img {
+        width: 30px;
+        height: 30px;
+      }
+
+      #sidebar {
+        width: 70%;
+      }
+
+      #sidebar-toggle {
+        width: 25px;
+        height: 50px;
+        font-size: 20px;
+      }
+
+      .affection-container {
+        top: 10px;
+        right: 10px;
+      }
+
+      .affection-bar {
+        width: 150px;
+        height: 25px;
+      }
+
+      .affection-text {
+        line-height: 25px;
+        font-size: 0.8em;
+      }
+
+      #phone-chat-interface {
+        width: 90%;
+        height: 80%;
+      }
+    }
+    @keyframes phoneVibrate {
+      0% { transform: translateX(0) translateY(0); }
+      25% { transform: translateX(-2px) translateY(2px); }
+      50% { transform: translateX(2px) translateY(-2px); }
+      75% { transform: translateX(-2px) translateY(-2px); }
+      100% { transform: translateX(0) translateY(0); }
+    }
+    
+    .phone-vibrating {
+      animation: phoneVibrate 0.2s infinite;
+    }
+    
+    .phone-notification {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 20px;
+      height: 20px;
+      background-color: #ff4757;
+      border-radius: 50%;
+      color: white;
+      font-size: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 101;
+    }
+    @keyframes phoneVibrate {
+      0% { transform: translateX(0) translateY(0); }
+      25% { transform: translateX(-2px) translateY(2px); }
+      50% { transform: translateX(2px) translateY(-2px); }
+      75% { transform: translateX(-2px) translateY(-2px); }
+      100% { transform: translateX(0) translateY(0); }
+    }
+    
+    .phone-vibrating {
+      animation: phoneVibrate 0.2s infinite;
+    }
+    
+    .phone-notification {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 20px;
+      height: 20px;
+      background-color: #ff4757;
+      border-radius: 50%;
+      color: white;
+      font-size: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 101;
+    }
+  </style>
+</head>
+<body>
+  <!-- 角色立绘 - 使用正确的角色图像 -->
+  <img src="images/character.png" alt="角色" class="character-img">
+
+  <!-- 对话框 -->
+  <div class="dialog-box">
+    <div class="character-name">芳乃</div>
+    <div class="dialog-text" id="dialog-text"></div>
+    <div class="character-avatar">
+      <img src="" alt="角色头像" id="character-avatar">
+    </div>
+    <div class="dialog-controls">
+      <img src="images/kuang.png" alt="对话框" class="dialog-img">
+      <div class="control-images">
+        <img src="images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img">
+        <img src="images/jiasu.png" alt="加速" id="speed-btn" class="control-img">
+        <img src="images/zidong.png" alt="自动播放" id="auto-btn" class="control-img">
+        <img src="images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img">
+        <img src="images/xiayiju.png" alt="下一句" id="next-btn" class="control-img">
+      </div>
+    </div>
+  </div>
+
+  <!-- 好感度条 -->
+  <div class="affection-container">
+    <div class="affection-bar">
+      <div class="affection-bg" style="background-image: url('images/6.png')"></div>
+      <div class="affection-fill" data-character="fang" style="width: 50%"></div>
+      <div class="affection-text">芳乃: 50%</div>
+    </div>
+    <div class="affection-bar">
+      <div class="affection-bg" style="background-image: url('images/6.png')"></div>
+      <div class="affection-fill" data-character="other" style="width: 30%"></div>
+      <div class="affection-text">其他: 30%</div>
+    </div>
+  </div>
+
+  <!-- 侧边栏触发按钮 -->
+  <div id="sidebar-toggle">▶</div>
+
+  <!-- 侧边栏 -->
+  <div id="sidebar">
+    <h3>设置</h3>
+    <div class="sidebar-buttons">
+      <button id="main-menu-btn">回到主菜单</button>
+      <button id="load-btn">读档</button>
+      <button id="save-btn">存档</button>
+      <button id="music-btn">音乐暂停</button>
+    </div>
+
+    <div class="volume-control">
+      <label for="volume-range">音量</label>
+      <input type="range" id="volume-range" min="0" max="100" value="50">
+    </div>
+  </div>
+
+  <!-- 选择界面 -->
+  <div id="choice-container" class="hidden">
+    <button class="choice-btn" data-choice="A">选项A</button>
+    <button class="choice-btn" data-choice="B">选项B</button>
+    <button class="choice-btn" data-choice="C">选项C</button>
+  </div>
+  
+  <!-- 手机图像 - 常驻显示在右上方 -->
+  <div id="phone-image">
+    <img src="../../phone.png" alt="手机" style="width: 130px; height: 150px;">
+  </div>
+  
+  <!-- 手机聊天界面 -->
+  <div id="phone-chat-interface">
+    <div class="phone-status-bar">
+      <span>12:30</span>
+      <span>📶 100% 🔋</span>
+    </div>
+    <div class="chat-header">
+      <div class="chat-back-btn" id="chat-close-btn">←</div>
+      <div class="chat-title">学姐</div>
+      <div class="chat-more-btn">⋯</div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- 聊天消息将通过JS动态添加 -->
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" placeholder="输入消息...">
+      <button class="chat-send-btn">↵</button>
+    </div>
+  </div>
+  
+  <div id="auto-save-notice" class="hidden">已存档</div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      document.body.classList.add("fade-in");
+      
+      // 初始化好感度系统
+      initAffection();
+      
+      // 显示初始对话
+      showDialogue(0);
+      
+      // 添加空格键和鼠标点击实现下一句的功能
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          triggerNextDialogue();
+        }
+      });
+      
+      // 修改点击事件处理，排除手机图像和聊天界面
+      document.addEventListener("click", (e) => {
+        // 检查点击的是否是手机图像
+        const isPhoneImage = e.target.closest("#phone-image");
+        // 检查点击的是否在聊天界面内
+        const isInChatInterface = e.target.closest("#phone-chat-interface");
+        
+        // 如果聊天界面是打开的，阻止点击推进剧情
+        if (phoneChatInterface.classList.contains("show")) {
+          return;
+        }
+        
+        // 如果是等待手机响应的状态，只有点击手机才能继续
+        if (waitingForPhoneResponse) {
+          if (isPhoneImage) {
+            handlePhoneResponse();
+          }
+          return;
+        }
+        
+        if (!isPhoneImage && 
+            !isInChatInterface &&
+            !e.target.closest("button") && 
+            !e.target.closest(".control-img") && 
+            !e.target.closest("#sidebar") && 
+            !e.target.closest("#sidebar-toggle") &&
+            !e.target.closest("#special-item")) {
+          triggerNextDialogue();
+        }
+      });
+
+      // 初始化手机聊天界面
+      initPhoneChat();
+    });
+
+    // DOM元素
+    const musicBtn = document.getElementById("music-btn");
+    const volumeRange = document.getElementById("volume-range");
+    const sidebar = document.getElementById("sidebar");
+    const toggleBtn = document.getElementById("sidebar-toggle");
+    const mainMenuBtn = document.getElementById("main-menu-btn");
+    const saveBtn = document.getElementById("save-btn");
+    const loadBtn = document.getElementById("load-btn");
+    const dialogText = document.getElementById("dialog-text");
+    const nameBox = document.querySelector(".character-name");
+    const avatarContainer = document.querySelector(".character-avatar");
+    const avatarImg = document.getElementById("character-avatar");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const speedBtn = document.getElementById("speed-btn");
+    const skipBtn = document.getElementById("skip-btn");
+    const autoBtn = document.getElementById("auto-btn");
+    const choiceContainer = document.getElementById("choice-container");
+    const choiceBtns = document.querySelectorAll(".choice-btn");
+    const dialogBox = document.querySelector(".dialog-box");
+    const specialItem = document.getElementById("special-item");
+    const autoSaveNotice = document.getElementById("auto-save-notice");
+    const phoneImage = document.getElementById("phone-image");
+    const phoneChatInterface = document.getElementById("phone-chat-interface");
+    const chatCloseBtn = document.getElementById("chat-close-btn");
+    const chatMessages = document.getElementById("chat-messages");
+    const chatInput = document.querySelector(".chat-input");
+    const chatSendBtn = document.querySelector(".chat-send-btn");
+
+    // 状态变量
+    let index = 0;
+    let charIndex = 0;
+    let typingSpeed = 50;
+    let typingInterval = null;
+    let autoPlay = false;
+    let autoInterval = null;
+    let isFast = false;
+    let waitingForItem = false;
+    let isSpecialItemClicked = false;
+    let hasReceivedFinalMessage = false;
+    let waitingForPhoneResponse = false; // 新增：等待手机响应的状态
+    let phoneNotification = null; // 新增：手机通知标记
+
+    // 好感度数据
+    let affectionData = { fang: 50, other: 30 };
+
+    // 合并所有剧情对话 - 按照文件夹名称顺序排列
+    const dialogues = [
+      { name: "旁白", text: "一学期的大学生活，如同被风吹散的云烟，在不知不觉中走到了学姐约定的分别时刻" },
+      { name: "旁白", text: "你的手机屏幕映出一片淡淡的白光，反射在天花板上，与傍晚的晚霞交织在一起。" },
+      { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
+      { name: "旁白", text: "你一个学期就这样过去了。很忙，却又说不上忙了些什么。" },
+      { name: "旁白", text: "你努力回想，这一学期究竟有什么值得留恋的瞬间。" },
+      { name: "旁白", text: "除了和青梅的时光，似乎就只有学姐的存在让你记得。" },
+      { name: "B", text: "学姐就要走了啊。" },
+      { name: "B", text: "我真的很喜欢学姐……但她对我，大概只是普通朋友的态度吧。" },
+      { name: "B", text: "要分别了……我该向她表白吗？" },
+      { name: "B", text: "会不会……学姐也对我有一点点意思呢？" },
+      { name: "B", text: "哈哈，别傻了，现实哪有动漫里那么美好的双向奔赴。" },
+      { name: "B", text: "我……真的舍不得她。" },
+      { name: "B", text: "不过，就这样下去，也许挺好的，朋友以上恋人未满的状态。" },
+      { name: "B", text: "是啊，就算表白成功了，真的在一起，异地恋也撑不了多久，我们也没什么情感基础……"},
+      { name: "B", text: "学姐以后肯定也很忙没什么精力谈恋爱吧……"},
+      { name: "B", text: "你想到了你有很多的朋友，高中毕业表白之后，大学异地恋，没过多久就分手了，十分痛苦。" },
+      { name: "B", text: "异地对于没有情感基础的情侣来说还是太难。" },
+      { name: "B", text: "而且学姐对我并不是那么喜欢。" },
+      { name: "C", text: "想到这些，你的心里已经开始打退堂鼓。" },
+      { name: "C", text: "思绪乱成一锅粥，矛盾与犹豫交织在脑海里。" },
+      { name: "C", text: "最终你想到一个办法：还是看学姐的反应。" },
+      { name: "B", text: "如果她来向我表白了，那我当然接受。" },
+      { name: "B", text: "但是如果她没向我表白，那也就说明她对我并不是那么不舍了吧。" },
+      { name: "B", text: "那我也就不必去表白了。" },
+      // 好感度不足1的剧情
+      { name: "B", text: "可……这样我真的不会后悔吗？" },
+      { name: "B", text: "人怎么会这么矛盾呢……" },
+      // 这里移除了"忽然，手机轻轻振动了一下"的对话
+      { name: "C", text: "你拿起手机，屏幕上是一条简短的消息：" },
+      { name: "A", text: "“再见啦，学弟君~ 我已经在去机场的车上咯~ 以后有时间可以来看我的演出哦，我会为你留特等席的 (＾▽＾) ”" },
+      { name: "C", text: "你盯着屏幕，回忆着一个学期中与学姐共同度过的点滴时光。" },
+      { name: "C", text: "虽然琐碎，却也温暖而美好。" },
+      { name: "C", text: "你想到这些，迅速的打出了一句：学姐我还有很多话想和你说" },
+      { name: "C", text: "可你又想到了被拒绝之后的种种可能，又或是异地恋的各种可能，慢慢地将那句未发的消息删去了" },
+      
+      // 好感度不足2的剧情
+      { name: "B", text: "就这样吧。作为朋友，我以后还是能见到学姐，还是能看她的演出。" },
+      { name: "B", text: "如果捅破了这一层纱窗，可能什么都不剩了……" },
+      { name: "B", text: "要是被拒绝了，我也许连出现在她的世界里都不应该了吧……" },
+      { name: "B", text: "你像是下定了某种决心" },
+      { name: "B", text: "你在手机上打出：" },
+      { name: "B", text: "最终你按下了发送键" },
+      // 好感度不足5的剧情
+      { name: "B", text: "唉……" },
+      { name: "B", text: "稍微有些难过。" },
+      { name: "B", text: "好像尘埃落定了。虽然有些遗憾，但……也未必不好。" },
+      { name: "B", text: "也许……一辈子都不会忘记她吧。" },
+      { name: "C", text: "思绪渐渐飘远，世界的色彩慢慢褪去，屏幕的光映照下，一切都化作苍白。" },
+      { name: "BE", text: "此情可待成追忆，只是当时已惘然。" },
+    ];
+
+    // 聊天消息数据 - 初始只有前面的聊天记录
+    let chatData = [
+      { sender: "received", text: "学弟君，最近怎么样？", time: "10:30" },
+      { sender: "sent", text: "还不错，就是有点忙。学姐呢？", time: "10:32" },
+      { sender: "received", text: "我也还好，最近在准备毕业演出", time: "10:35" },
+      { sender: "received", text: "你会来看吗？", time: "10:35" },
+      { sender: "sent", text: "当然会！我一定会去的！", time: "10:36" },
+      { sender: "received", text: "太好了！我会给你留最好的位置 (＾▽＾)", time: "10:37" },
+      { sender: "received", text: "说起来，时间过得真快呢", time: "10:38" },
+      { sender: "received", text: "感觉昨天才刚认识你", time: "10:38" },
+      { sender: "sent", text: "是啊，一学期就这么过去了", time: "10:40" },
+      { sender: "sent", text: "和学姐在一起的时光真的很开心", time: "10:40" },
+      { sender: "received", text: "我也是哦，和你在一起很愉快", time: "10:42" },
+      { sender: "received", text: "可惜我马上就要毕业了...", time: "10:42" },
+      { sender: "sent", text: "嗯...", time: "10:45" }
+    ];
+
+    // 初始化手机聊天界面
+    function initPhoneChat() {
+      // 点击手机图像显示聊天界面
+      if (phoneImage) {
+        phoneImage.addEventListener("click", (e) => {
+          e.stopPropagation(); // 阻止事件冒泡
+          
+          // 如果是等待手机响应的状态，处理手机响应
+          if (waitingForPhoneResponse) {
+            handlePhoneResponse();
+            return;
+          }
+          
+          openChatInterface();
+        });
+      }
+
+      // 关闭聊天界面
+      if (chatCloseBtn) {
+        chatCloseBtn.addEventListener("click", () => {
+          closeChatInterface();
+        });
+      }
+
+      // 发送消息功能
+      if (chatSendBtn) {
+        chatSendBtn.addEventListener("click", sendMessage);
+      }
+
+      if (chatInput) {
+        chatInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            sendMessage();
+          }
+        });
+      }
+
+      // 加载聊天记录
+      loadChatMessages();
+    }
+
+    // 打开聊天界面
+    function openChatInterface() {
+      phoneChatInterface.classList.add("show");
+      // 暂停游戏
+      stopAutoPlay();
+      clearInterval(typingInterval);
+    }
+
+    // 关闭聊天界面
+    function closeChatInterface() {
+      phoneChatInterface.classList.remove("show");
+    }
+
+    // 让手机震动并显示通知
+    function makePhoneVibrate() {
+      if (!phoneImage) return;
+      
+      // 添加震动动画
+      phoneImage.classList.add("phone-vibrating");
+      
+      // 添加通知标记
+      phoneNotification = document.createElement("div");
+      phoneNotification.classList.add("phone-notification");
+      phoneNotification.textContent = "1";
+      phoneImage.appendChild(phoneNotification);
+      
+      // 设置等待手机响应的状态
+      waitingForPhoneResponse = true;
+      
+      // 暂停自动播放
+      stopAutoPlay();
+    }
+
+    // 处理手机响应
+    function handlePhoneResponse() {
+      // 移除震动效果和通知
+      if (phoneImage) {
+        phoneImage.classList.remove("phone-vibrating");
+        if (phoneNotification && phoneImage.contains(phoneNotification)) {
+          phoneImage.removeChild(phoneNotification);
+        }
+      }
+      
+      // 添加最后的消息到聊天记录
+      addFinalMessageToChat();
+      
+      // 自动打开聊天界面
+      openChatInterface();
+      
+      // 继续对话
+      waitingForPhoneResponse = false;
+      
+      // 2秒后自动关闭聊天界面并继续剧情
+      setTimeout(() => {
+        closeChatInterface();
+        showDialogue(index + 1);
+      }, 2000);
+    }
+
+    // 加载聊天消息
+    function loadChatMessages() {
+      if (!chatMessages) return;
+      
+      chatMessages.innerHTML = "";
+      
+      chatData.forEach(msg => {
+        const messageEl = document.createElement("div");
+        messageEl.classList.add("message", msg.sender);
+        
+        const contentEl = document.createElement("div");
+        contentEl.classList.add("message-content");
+        contentEl.textContent = msg.text;
+        
+        const timeEl = document.createElement("div");
+        timeEl.classList.add("message-time");
+        timeEl.textContent = msg.time;
+        
+        messageEl.appendChild(contentEl);
+        messageEl.appendChild(timeEl);
+        chatMessages.appendChild(messageEl);
+      });
+      
+      // 滚动到底部
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // 添加最后的消息到聊天记录
+    function addFinalMessageToChat() {
+      if (hasReceivedFinalMessage) return;
+      
+      hasReceivedFinalMessage = true;
+      
+      // 添加最后的消息
+      chatData.push({
+        sender: "received", 
+        text: "再见啦，学弟君~ 我已经在去机场的车上咯~ 以后有时间可以来看我的演出哦，我会为你留特等席的 (＾▽＾)", 
+        time: "12:30"
+      });
+      
+      // 重新加载聊天记录
+      loadChatMessages();
+    }
+
+    // 发送消息
+    function sendMessage() {
+      if (!chatInput || !chatMessages || chatInput.value.trim() === "") return;
+      
+      const now = new Date();
+      const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      const messageEl = document.createElement("div");
+      messageEl.classList.add("message", "sent");
+      
+      const contentEl = document.createElement("div");
+      contentEl.classList.add("message-content");
+      contentEl.textContent = chatInput.value;
+      
+      const timeEl = document.createElement("div");
+      timeEl.classList.add("message-time");
+      timeEl.textContent = time;
+      
+      messageEl.appendChild(contentEl);
+      messageEl.appendChild(timeEl);
+      chatMessages.appendChild(messageEl);
+      
+      // 清空输入框
+      chatInput.value = "";
+      
+      // 滚动到底部
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // 模拟回复
+      setTimeout(() => {
+        simulateReply();
+      }, 1000);
+    }
+
+    // 模拟回复
+    function simulateReply() {
+      if (!chatMessages) return;
+      
+      const now = new Date();
+      const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      const replies = [
+        "抱歉，我现在有点忙，晚点回复你",
+        "好的，我知道了",
+        "谢谢你的关心",
+        "我会想你的",
+        "保持联系哦"
+      ];
+      
+      const randomReply = replies[Math.floor(Math.random() * replies.length)];
+      
+      const messageEl = document.createElement("div");
+      messageEl.classList.add("message", "received");
+      
+      const contentEl = document.createElement("div");
+      contentEl.classList.add("message-content");
+      contentEl.textContent = randomReply;
+      
+      const timeEl = document.createElement("div");
+      timeEl.classList.add("message-time");
+      timeEl.textContent = time;
+      
+      messageEl.appendChild(contentEl);
+      messageEl.appendChild(timeEl);
+      chatMessages.appendChild(messageEl);
+      
+      // 滚动到底部
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // 触发下一句的统一函数
+    function triggerNextDialogue() {
+      if (waitingForItem) return;
+      
+      if (charIndex < dialogues[index].text.length) {
+        clearInterval(typingInterval);
+        dialogText.textContent = dialogues[index].text;
+        charIndex = dialogues[index].text.length;
+        
+        if (shouldShowSpecialItem()) {
+          specialItem.classList.remove("hidden");
+          waitingForItem = true;
+        }
+      } else {
+        // 检查是否需要让手机震动（第26条对话之后）
+        if (index === 25) {
+          makePhoneVibrate();
+          return; // 停止继续推进对话，等待玩家点击手机
+        }
+        
+        if (index < dialogues.length - 1) {
+          showDialogue(index + 1);
+        } else {
+          alert("游戏结束");
+        }
+      }
+      stopAutoPlay();
+    }
+
+    // 特殊物品显示判断
+    function shouldShowSpecialItem() {
+      return index === 10 && !isSpecialItemClicked;
+    }
+
+    // 特殊物品点击事件
+    if (specialItem) {
+      specialItem.addEventListener("click", () => {
+        alert("你获得了特殊物品！");
+        specialItem.classList.add("hidden");
+        waitingForItem = false;
+        isSpecialItemClicked = true;
+        showDialogue(index + 1);
+      });
+    }
+
+    // 打字机效果
+    function typeText(text, callback) {
+      clearInterval(typingInterval);
+      charIndex = 0;
+      dialogText.textContent = "";
+
+      typingInterval = setInterval(() => {
+        if (charIndex < text.length) {
+          dialogText.textContent += text[charIndex];
+          charIndex++;
+        }
+        
+        if (charIndex >= text.length) {
+          clearInterval(typingInterval);
+          if (callback) callback();
+          
+          // 检查是否需要显示特殊物品
+          if (shouldShowSpecialItem()) {
+            specialItem.classList.remove("hidden");
+            waitingForItem = true;
+          }
+        }
+      }, typingSpeed);
+    }
+
+    // 显示对话
+    function showDialogue(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= dialogues.length) idx = dialogues.length - 1;
+      index = idx;
+
+      let displayName = dialogues[index].name;
+      if (displayName === 'C') {
+        displayName = '旁白';
+        avatarContainer.style.display = 'none';
+      } else if (displayName === 'B') {
+        displayName = '主角';
+        avatarImg.src = '../../男主.png';
+        avatarContainer.style.display = 'block';
+      } else if (displayName.includes('学姐')) {
+        avatarImg.src = '../../学姐.png';
+        avatarContainer.style.display = 'block';
+      } else if (displayName === 'BE') {
+        displayName = '结局';
+        avatarContainer.style.display = 'none';
+      } else {
+        avatarContainer.style.display = 'none';
+      }
+
+      nameBox.textContent = displayName;
+      typeText(dialogues[index].text);
+      
+      if (index % 10 === 0) {
+        autoSave();
+      }
+    }
+
+    // 按钮事件处理
+    if (nextBtn) {
+      nextBtn.addEventListener("click", triggerNextDialogue);
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => { 
+        showDialogue(index - 1); 
+        stopAutoPlay(); 
+      });
+    }
+
+    if (speedBtn) {
+      speedBtn.addEventListener("click", () => {
+        isFast = !isFast;
+        typingSpeed = isFast ? 10 : 50;
+        // 修改按钮图片而不是文本
+        speedBtn.src = isFast ? "images/jiasu-active.png" : "images/jiasu.png";
+        showDialogue(index);
+      });
+    }
+
+    if (skipBtn) {
+      skipBtn.addEventListener("click", () => {
+        clearInterval(typingInterval);
+        dialogText.textContent = dialogues[index].text;
+        charIndex = dialogues[index].text.length;
+        stopAutoPlay();
+      });
+    }
+
+    if (autoBtn) {
+      autoBtn.addEventListener("click", () => {
+        autoPlay = !autoPlay;
+        if (autoPlay) {
+          // 修改按钮图片而不是文本
+          autoBtn.src = "images/zidong-active.png";
+          startAutoPlay();
+        } else {
+          stopAutoPlay();
+        }
+      });
+    }
+
+    function startAutoPlay() {
+      clearInterval(autoInterval);
+      autoInterval = setInterval(() => {
+        if (waitingForItem || waitingForPhoneResponse) return;
+        if (charIndex < dialogues[index].text.length) {
+          clearInterval(typingInterval);
+          dialogText.textContent = dialogues[index].text;
+          charIndex = dialogues[index].text.length;
+        } else {
+          if (index < dialogues.length - 1) showDialogue(index + 1);
+          else stopAutoPlay();
+        }
+      }, 2000);
+    }
+
+    function stopAutoPlay() {
+      clearInterval(autoInterval);
+      autoPlay = false;
+      // 恢复自动播放按钮图片
+      if (autoBtn) autoBtn.src = "images/zidong.png";
+    }
+
+    // 音乐控制 - 背景音乐文件暂未提供
+    if (volumeRange) {
+      volumeRange.addEventListener("input", () => { 
+        // 音量控制暂时禁用
+      });
+    }
+
+    if (musicBtn) {
+      musicBtn.addEventListener("click", () => {
+        // 切换按钮文本以表示功能
+        const isPlaying = musicBtn.textContent === "音乐暂停";
+        musicBtn.textContent = isPlaying ? "音乐播放" : "音乐暂停";
+      });
+    }
+
+    // 侧边栏控制
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => { 
+        sidebar.classList.toggle("show"); 
+      });
+    }
+
+    if (mainMenuBtn) {
+      mainMenuBtn.addEventListener("click", () => { 
+        alert("返回主菜单"); 
+      });
+    }
+
+    // 自动存档
+    function autoSave() {
+      const saveIndex = !choiceContainer.classList.contains("hidden") ? 3 : index;
+      const saveData = {
+        page: "storyPage1",
+        dialogueIndex: saveIndex,
+        charIndex: charIndex,
+        timestamp: Date.now()
+      };
+      let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+      saves.push(saveData);
+      localStorage.setItem("storySaves", JSON.stringify(saves));
+
+      if (autoSaveNotice) {
+        autoSaveNotice.classList.remove("hidden");
+        autoSaveNotice.classList.add("show");
+
+        setTimeout(() => {
+          autoSaveNotice.classList.remove("show");
+          autoSaveNotice.classList.add("hidden");
+        }, 1500);
+      }
+    }
+
+    // 存档/读档
+    if (saveBtn) {
+      saveBtn.addEventListener("click", autoSave);
+    }
+
+    if (loadBtn) {
+      loadBtn.addEventListener("click", () => { 
+        alert("读档功能"); 
+      });
+    }
+
+    // 选择框
+    function showChoices() {
+      choiceContainer.classList.remove("hidden");
+      dialogBox.style.display = "none";
+      stopAutoPlay();
+      clearInterval(typingInterval);
+    }
+
+    function hideChoices() {
+      choiceContainer.classList.add("hidden");
+      dialogBox.style.display = "block";
+    }
+
+    if (choiceBtns && choiceBtns.length > 0) {
+      choiceBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const choice = btn.dataset.choice;
+          hideChoices();
+
+          if (choice === "A") updateAffection('fang', affectionData.fang + 10);
+          else if (choice === "B") updateAffection('fang', affectionData.fang - 5);
+          else updateAffection('other', affectionData.other + 5);
+
+          if (choice === "A") showDialogue(index + 1);
+          else if (choice === "B") showDialogue(index + 2);
+          else showDialogue(index + 3);
+        });
+      });
+    }
+
+    // 好感度系统
+    function updateAffection(character, value) {
+      affectionData[character] = Math.max(0, Math.min(100, value));
+      const bar = document.querySelector(`.affection-fill[data-character="${character}"]`);
+      if (bar) {
+        const text = bar.parentElement.querySelector('.affection-text');
+        bar.style.width = `${affectionData[character]}%`;
+        if (text) {
+          text.textContent = `${character === 'fang' ? '芳乃' : '其他'}: ${affectionData[character]}%`;
+        }
+        localStorage.setItem('affectionData', JSON.stringify(affectionData));
+      }
+    }
+
+    function initAffection() {
+      const savedData = localStorage.getItem('affectionData');
+      if (savedData) {
+        try {
+          Object.assign(affectionData, JSON.parse(savedData));
+        } catch (e) {
+          console.error("Error parsing affection data:", e);
+        }
+      }
+      
+      for (const [character, value] of Object.entries(affectionData)) {
+        updateAffection(character, value);
+      }
+    }  </script>
+</body>
+</html>
