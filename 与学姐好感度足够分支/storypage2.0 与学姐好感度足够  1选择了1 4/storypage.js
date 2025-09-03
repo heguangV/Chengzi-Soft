@@ -50,6 +50,14 @@ const dialogues = [
   { name: "B", text: "这不能怪我啊！ 明明订好了闹钟为什么会不响啊！！" }, 
   { name: "舍友", text: "明明是你自己说要再睡一会就拍掉了…" }, 
   { name: "C", text: "不管了！ 去水族馆要紧" }, 
+  { name: "C", text: "你飞奔下楼 骑上一辆共享单车 （希望不会是坏掉的） 天遂人愿 你勉强在约定的时间中赶到了学校的水族馆前" },
+  { name: "C", text: "她站在水族馆门口 以一副幽怨的眼神注视着你 伸出手指在你的脑袋上敲了一下" },
+  { name: "A", text: "“头发都没梳好 还说自己起床了！ 我教你的穿搭技巧倒是有好好在学…”" },
+  { name: "A", text: "用手轻轻梳理着你的头发 一边打量着你全身的穿着" },
+  { name: "B", text: "这可是我花了一晚上才挑选出来的 要不然怎么会起晚） 想着 你也观察起她的穿着" },
+  { name: "C", text: "她身着一件淡蓝色的衬衫 外面是一件短款的夹克 下身穿着一件高腰牛仔裤 头上戴着一只米色的棒球帽 虽然简约 但在她如同明星般的比例与气质的映衬下 还是让人难以移开目光 惹得走过的路人频频注目" },
+  { name: "A", text: "怎么样 学姐的专业穿搭” 她的脸上扬起一种自豪感 仿佛在等待你的夸奖" },
+  
 ];
 
 let currentName = dialogues[index].name;
@@ -305,6 +313,30 @@ choiceBtns.forEach(btn => {
       showDialogue(index + 3);
     }
   });
+});
+
+// -------------------- 空格和点击触发下一句 --------------------
+// 空格键触发下一句
+window.addEventListener('keydown', (e) => {
+  // 只有在空格键被按下且选择框未激活时才触发
+  if (e.code === 'Space' && !isChoiceActive) {
+    e.preventDefault(); // 阻止默认行为，避免页面滚动
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
+});
+
+// 鼠标点击触发下一句
+window.addEventListener('click', (e) => {
+  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
+  if (!isChoiceActive && 
+      !e.target.closest('button') && 
+      !e.target.closest('input') && 
+      !e.target.closest('#sidebar') && 
+      !e.target.closest('#chat-input')) {
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
 });
 
 // -------------------- 初始化 --------------------

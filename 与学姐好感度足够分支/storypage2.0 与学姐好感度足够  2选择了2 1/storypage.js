@@ -58,6 +58,7 @@ const dialogBox = document.querySelector(".dialog-box");
 // -------------------- 状态 --------------------
 let index = 0, charIndex = 0, typingSpeed = 50, typingInterval = null;
 let autoPlay = false, autoInterval = null, isFast = false;
+let isChoiceActive = false; // 新增：标记选择是否激活
 
 const affectionData = { fang: 50, other: 30 };
 
@@ -176,6 +177,30 @@ function initAffection() {
   if (saved) Object.assign(affectionData, JSON.parse(saved));
   Object.entries(affectionData).forEach(([character, val]) => updateAffection(character, val, index));
 }
+
+// -------------------- 空格和点击触发下一句 --------------------
+// 空格键触发下一句
+window.addEventListener('keydown', (e) => {
+  // 只有在空格键被按下且选择框未激活时才触发
+  if (e.code === 'Space' && !isChoiceActive) {
+    e.preventDefault(); // 阻止默认行为，避免页面滚动
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
+});
+
+// 鼠标点击触发下一句
+window.addEventListener('click', (e) => {
+  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
+  if (!isChoiceActive && 
+      !e.target.closest('button') && 
+      !e.target.closest('input') && 
+      !e.target.closest('#sidebar') && 
+      !e.target.closest('#chat-input')) {
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
+});
 
 // -------------------- 初始化 --------------------
 initAffection();

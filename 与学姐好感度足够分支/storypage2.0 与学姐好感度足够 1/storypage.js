@@ -38,6 +38,7 @@ let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
+let isChoiceActive = false; // 新增：标记选择是否激活
 
 // -------------------- 剧情控制 --------------------
 const dialogues = [
@@ -46,6 +47,11 @@ const dialogues = [
   { name: "A", text: "怎么不来送送我！我还在校门口等你呢（颜文字：生气）" },
   { name: "C", text: "你从恍然中惊醒 从床上爬起来 慌乱间披上了件外套 向校门口飞奔而去。"},
   { name: "B", text: "本来便不擅长跑步 又由于一学期没选上体育课 只感觉自己的双腿越发酸痛 呼吸也变得越发急促" },
+  { name: "B", text: "忽然 你只感觉一阵柔和的风从身后吹过 你身上的痛苦好像在风的吹拂中烟消云散 你不由得加快了脚步 终于看到了在门口等候的学姐" },
+  { name: "C", text: "你来到了学姐身边 但即将离开的学姐脸上却是一幅复杂的申请 一时间 你们两个人竟都想不出来如何开口 空气仿佛都已经凝固在了这一刻" },
+  { name: "A", text: "看着你被汗水打湿的 亦或是被风吹乱的刘海 自然地伸出手 帮你梳理整齐" },
+  { name: "B", text: "你看着学姐的手 心里闪回着与学姐间的点点滴滴 虽然时间不长 但这一份回忆已经要比天边的那一抹骄阳还要炽热 看着眼前这幅即将离自己远去的脸 不由得心头一紧" },
+  { name: "B", text: " ", hasChoice: true, choiceType: "final" }, // 添加choiceType标记为最终选择
 ];
 
 // -------------------- 打字机效果 --------------------
@@ -76,51 +82,93 @@ function showDialogue(idx) {
   
   // 根据name值修改显示名称和头像
   if (currentName === 'C') {
-    // 旁白：隐藏头像
     displayName = '旁白';
     avatarContainer.style.display = 'none';
   } else if (currentName === 'B') {
-    // 主角：显示男主头像
     displayName = '主角';
     characterAvatar.src = '../../男主.png';
     characterAvatar.alt = '主角头像';
     avatarContainer.style.display = 'block';
   } else if (currentName === 'A' || currentName.includes('学姐')) {
-    // 学姐：显示学姐头像
     displayName = '学姐';
     characterAvatar.src = '../../学姐.png';
     characterAvatar.alt = '学姐头像';
     avatarContainer.style.display = 'block';
   } else {
-    // 其他角色：隐藏头像
     avatarContainer.style.display = 'none';
   }
   
-  // 更新显示名称
   nameBox.textContent = displayName;
 
   typeText(dialogues[index].text, () => {
     if (index === 999) autoSave();
-    if (index === 999) setTimeout(showChoices, 500);
+    
+    // 检查是否是选择对话
+    if (dialogues[index].hasChoice) {
+      console.log(`检测到选择对话，索引: ${index}`);
+      // 强制显示选择框并阻止剧情推进
+      forceShowChoices();
+    }
   });
+}
+
+// -------------------- 强制显示选择框 --------------------
+function forceShowChoices() {
+  console.log("强制显示选择框并阻止剧情推进");
+  
+  // 设置选择状态为激活
+  isChoiceActive = true;
+  
+  // 显示选择框
+  choiceContainer.classList.remove("hidden");
+  choiceContainer.style.display = "flex";
+  
+  // 设置选择按钮文本
+  if (index === 9) {
+    choiceBtns[0].textContent = "1. 抓住学姐的手";
+    choiceBtns[1].textContent = "2. 默默看着学姐";
+    choiceBtns[2].style.display = "none"; // 隐藏第三个选项
+  }
+  
+  // 隐藏对话框和控制按钮
+  dialogBox.style.display = "none";
+  document.querySelector(".control-images").style.display = "none";
+  
+  // 清除所有定时器
+  clearInterval(typingInterval);
+  clearInterval(autoInterval);
+  stopAutoPlay();
+  
+  // 禁用侧边栏功能防止跳过选择
+  toggleBtn.style.pointerEvents = "none";
+}
+
+// -------------------- 隐藏选择框 --------------------
+function hideChoices() {
+  isChoiceActive = false;
+  choiceContainer.classList.add("hidden");
+  choiceContainer.style.display = "none";
+  dialogBox.style.display = "block";
+  document.querySelector(".control-images").style.display = "flex";
+  toggleBtn.style.pointerEvents = "auto";
 }
 
 // -------------------- 下一句按钮 --------------------
 nextBtn.addEventListener("click", () => {
+  // 如果选择框激活，阻止剧情推进
+  if (isChoiceActive) {
+    console.log("选择框激活中，无法推进剧情");
+    return;
+  }
+  
   if (charIndex < dialogues[index].text.length) {
     clearInterval(typingInterval);
     dialogText.textContent = dialogues[index].text;
     charIndex = dialogues[index].text.length;
-    if (index === 999) setTimeout(showChoices, 500);
   } else {
     if (index < dialogues.length - 1) {
       showDialogue(index + 1);
-    } else {
-      document.body.classList.add("fade-out");
-      setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度足够 2/storypage.html";
-      }, 1000);
-    }
+    } 
   }
   stopAutoPlay();
 });
@@ -140,14 +188,44 @@ speedBtn.addEventListener("click", () => {
 });
 
 // -------------------- 跳过按钮 --------------------
-skipBtn.addEventListener("click", () => {
-  clearInterval(typingInterval);
-  dialogText.textContent = dialogues[index].text;
-  stopAutoPlay();
+choiceBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (!isChoiceActive) return; // 如果选择框未激活，不处理点击
+    
+    const choice = btn.dataset.choice;
+    console.log("玩家选择了:", choice);
+    
+    // 根据选择进行跳转
+    if (index === 9) {
+      hideChoices();
+      
+      if (choice === "A") {
+        // 选择1：抓住学姐的手
+        // 请替换为实际的文件路径
+        document.body.classList.add("fade-out");
+        setTimeout(() => {
+          window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 1/storypage.html";
+        }, 1000);
+      } else if (choice === "B") {
+        // 选择2：默默看着学姐
+        // 请替换为实际的文件路径
+        document.body.classList.add("fade-out");
+        setTimeout(() => {
+          window.location.href = "../storypage2.0 与学姐好感度足够  1选择了2 1/storypage.html";
+        }, 1000);
+      }
+    }
+  });
 });
 
 // -------------------- 自动播放按钮 --------------------
 autoBtn.addEventListener("click", () => {
+  // 如果选择框激活，阻止自动播放
+  if (isChoiceActive) {
+    console.log("选择框激活中，无法自动播放");
+    return;
+  }
+  
   autoPlay = !autoPlay;
   if (autoPlay) {
     autoBtn.textContent = "停止自动";
@@ -160,6 +238,12 @@ autoBtn.addEventListener("click", () => {
 function startAutoPlay() {
   clearInterval(autoInterval);
   autoInterval = setInterval(() => {
+    // 如果选择框激活，停止自动播放
+    if (isChoiceActive) {
+      stopAutoPlay();
+      return;
+    }
+    
     if (charIndex < dialogues[index].text.length) {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
@@ -170,36 +254,17 @@ function startAutoPlay() {
   }, 2000);
 }
 
-function stopAutoPlay() {
-  clearInterval(autoInterval);
-  autoPlay = false;
-  autoBtn.textContent = "自动播放";
-}
-
-// -------------------- 选择框 --------------------
-function showChoices() {
-  choiceContainer.classList.remove("hidden");
-  dialogBox.style.display = "none";
+// -------------------- 跳过按钮 --------------------
+skipBtn.addEventListener("click", () => {
+  // 如果选择框激活，阻止跳过
+  if (isChoiceActive) {
+    console.log("选择框激活中，无法跳过");
+    return;
+  }
+  
   clearInterval(typingInterval);
-  clearInterval(autoInterval);
-}
-
-function hideChoices() {
-  choiceContainer.classList.add("hidden");
-  dialogBox.style.display = "block";
-}
-
-// 合并选择按钮事件，避免重复绑定
-choiceBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const choice = btn.dataset.choice;
-    console.log("玩家选择了:", choice);
-    hideChoices();
-
-    if (choice === "A") showDialogue(index + 1);
-    else if (choice === "B") showDialogue(index + 2);
-    else showDialogue(index + 3);
-  });
+  dialogText.textContent = dialogues[index].text;
+  stopAutoPlay();
 });
 
 // -------------------- 音乐控制 --------------------
@@ -281,6 +346,30 @@ function initAffection() {
   if (savedData) Object.assign(affectionData, JSON.parse(savedData));
   for (const [character, value] of Object.entries(affectionData)) updateAffection(character, value);
 }
+
+// -------------------- 空格和点击触发下一句 --------------------
+// 空格键触发下一句
+window.addEventListener('keydown', (e) => {
+  // 只有在空格键被按下且选择框未激活时才触发
+  if (e.code === 'Space' && !isChoiceActive) {
+    e.preventDefault(); // 阻止默认行为，避免页面滚动
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
+});
+
+// 鼠标点击触发下一句
+window.addEventListener('click', (e) => {
+  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
+  if (!isChoiceActive && 
+      !e.target.closest('button') && 
+      !e.target.closest('input') && 
+      !e.target.closest('#sidebar') && 
+      !e.target.closest('#chat-input')) {
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
+});
 
 // -------------------- 初始化 --------------------
 initAffection();

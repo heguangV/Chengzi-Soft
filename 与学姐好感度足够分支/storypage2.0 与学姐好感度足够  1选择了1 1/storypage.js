@@ -18,6 +18,19 @@ const dialogues = [
   { name: "A", text: "“不是已经约定好要走了吗 可不能反悔啊 你不是也说好相信我能成功的吗？”" },
   { name: "B", text: "“看着眼前几近落泪的学姐 已经全然没有了平时的学姐架子 柔美的面容在泪水的映衬下更加显得复杂 我鬼使神差般得更加用力地握住了学姐的手”" },
   { name: "A", text: "“为什么 你还是不相信我一个人能取得成绩吗？”她试着抽出自己的手”" },
+  { name: "A", text: "你看着学姐在夕阳照射下泛红的双眼 从前的自信是什么时候消失的呢？ 这时候 体育馆中学姐那幅痛苦的脸庞再次在你脑海中浮现" },
+  { name: "B", text: "“这可能只是我的私心…我无论如何都想陪在你的身边”" },
+  { name: "B", text: "“我不想你再一个人痛苦 就让我来分担吧”" },
+  { name: "B", text: "“我会为我的这一份私心奉献我的一切的 就让我陪着你走过这段通往顶峰的道路吧 就在这个最熟悉不过的地方”" },
+  { name: "B", text: "“留下来吧…”" },
+  { name: "A", text: " 学姐仰起头 注视着你的双眼 如水般温柔的目光中仿佛在寻找着什么" },
+  { name: "A", text: "许久 脸上重新浮现出笑容 将手慢慢的抽回 向我挥了挥手" },
+  { name: "B", text: "我看着她远去的身影 还想说些什么 或是做些什么 但却又无从开口 只能看着学姐逐渐远去 或许 我还不够成为她留下的理由吧" },
+  { name: "C", text: "学姐的车渐渐远去 徒留下你呆站在原地 " }, // TODO: （手机振动）
+  { name: "A", text: "毕竟是工作上的大事 不能很快的做决定 等我的好消息哦（颜文字：开心）" },
+  { name: "A", text: "我会一直相信你的 可不能反悔哦" },
+  { name: "C", text: "此刻 晚霞格外恢弘" },
+  
 ];
 
 // -------------------- DOM 元素 --------------------
@@ -283,3 +296,35 @@ function bindControlButtons() {
   autoBtn.addEventListener("click", toggleAutoPlay);
   choiceBtns.forEach(btn => btn.addEventListener("click", handleChoice));
 }
+
+// -------------------- 空格和点击触发下一句 --------------------
+// 空格键触发下一句
+window.addEventListener('keydown', (e) => {
+  // 只有在空格键被按下且选择框未激活时才触发
+  if (e.code === 'Space' && !isChoiceActive) {
+    e.preventDefault(); // 阻止默认行为，避免页面滚动
+    // 模拟下一句按钮点击
+    if (typeof handleNext === 'function') {
+      handleNext();
+    } else {
+      nextBtn.click();
+    }
+  }
+});
+
+// 鼠标点击触发下一句
+window.addEventListener('click', (e) => {
+  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
+  if (!isChoiceActive && 
+      !e.target.closest('button') && 
+      !e.target.closest('input') && 
+      !e.target.closest('#sidebar') && 
+      !e.target.closest('#chat-input')) {
+    // 模拟下一句按钮点击
+    if (typeof handleNext === 'function') {
+      handleNext();
+    } else {
+      nextBtn.click();
+    }
+  }
+});

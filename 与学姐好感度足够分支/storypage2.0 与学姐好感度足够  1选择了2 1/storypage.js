@@ -39,12 +39,18 @@ let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
+let isChoiceActive = false; // 新增：标记选择是否激活
 
 // -------------------- 对话数据 --------------------
 const dialogues = [
   { name: "B", text: "你的头发早已整齐 但是学姐的手却迟迟游移着不肯离去 你看出了她的不舍 于是向前一步 将学姐抱入了怀中" },
   { name: "B", text: "在那边也要继续加油哦 我会一直在心里为你加油的 你的演出可要记得为我留下一个视野最好的座位哦！”说罢 嘴角挤出一抹逞强的笑容" },
   { name: "A", text: "看着你的笑脸 不由得湿了眼眶 用略显吃力的声音回答 “我一定会努力的 毕竟我可是你的最厉害的学姐呢！”" },
+  { name: "C", text: "在浅尝辄止的拥抱过后 她抽回了双手 向你摆出了一个再见的手势后 转身踏上了车" },
+  { name: "B", text: "你看着车门被轻轻关上 摇下的车窗露出了她的笑容" },
+  { name: "B", text: "“原来我的笑 也是这么地难堪吗”" },
+   { name: "C", text: "看着车渐渐远去 你的思绪仿佛也逐渐飘远 随着车消失在远处的一片苍白之中" },
+  { name: "C", text: "两厢情愿" },
 ];
 
 // -------------------- 显示对话 --------------------
@@ -270,6 +276,30 @@ musicBtn.addEventListener("click", () => {
 // -------------------- 侧边栏控制 --------------------
 toggleBtn.addEventListener("click", () => {
   sidebar.classList.toggle("show");
+});
+
+// -------------------- 空格和点击触发下一句 --------------------
+// 空格键触发下一句
+window.addEventListener('keydown', (e) => {
+  // 只有在空格键被按下且选择框未激活时才触发
+  if (e.code === 'Space' && !isChoiceActive) {
+    e.preventDefault(); // 阻止默认行为，避免页面滚动
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
+});
+
+// 鼠标点击触发下一句
+window.addEventListener('click', (e) => {
+  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
+  if (!isChoiceActive && 
+      !e.target.closest('button') && 
+      !e.target.closest('input') && 
+      !e.target.closest('#sidebar') && 
+      !e.target.closest('#chat-input')) {
+    // 模拟下一句按钮点击
+    nextBtn.click();
+  }
 });
 
 // -------------------- 初始化 --------------------
