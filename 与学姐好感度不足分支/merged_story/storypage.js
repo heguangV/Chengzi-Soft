@@ -192,12 +192,12 @@ function showDialogue(idx) {
     displayName = '旁白';
     avatarContainer.style.display = 'none';
   } else if (displayName === 'B') {
-    displayName = '主角';
-    avatarImg.src = '../../男主.png';
-    avatarContainer.style.display = 'block';
+      displayName = '主角';
+      avatarImg.src = '../../../../男主.png';
+      avatarContainer.style.display = 'block';
   } else if (displayName.includes('学姐')) {
-    avatarImg.src = '../../学姐.png';
-    avatarContainer.style.display = 'block';
+        avatarImg.src = 'images/学姐.png';
+        avatarContainer.style.display = 'block';
   } else if (displayName === 'BE') {
     displayName = '结局';
     avatarContainer.style.display = 'none';
