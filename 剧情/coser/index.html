@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漫展的约定</title>
+  <link rel="stylesheet" href="../../css/storypage.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <!-- 背景 - 使用绝对路径确保能找到 -->
+  <img src="images/comiket_bg.png.png" alt="漫展背景" class="background-img" onerror="handleImageError(this, 'background')">
+
+  <!-- 角色立绘 - 添加错误处理 -->
+  <img src="../../男主.png" alt="主角" class="character-avatar" id="main-character" onerror="handleImageError(this, 'character')">
+  <img src="../../学姐.png" alt="学姐" class="character-avatar" id="senpai-img" onerror="handleImageError(this, 'character')">
+ 
+  
+  <!-- 对话框 -->
+  <div class="dialog-box">
+    <div class="character-name" id="speaker-name">系统</div>
+    <div class="dialog-text" id="dialog-text"></div>
+    <div class="dialog-controls">
+      <img src="images/kuang.png" alt="对话框" class="dialog-img" onerror="handleImageError(this, 'dialog')">
+      <div class="control-images">
+        <img src="images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/jiasu.png" alt="加速" id="speed-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/zidong.png" alt="自动播放" id="auto-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/xiayiju.png" alt="下一句" id="next-btn" class="control-img" onerror="handleImageError(this, 'control')">
+      </div>
+    </div>
+  </div>
+
+  <!-- 好感度条 -->
+  <div class="affection-container">
+    <div class="affection-bar">
+      <div class="affection-bg" style="background-image: url('images/kuang.png');" onerror="handleBgError(this)"></div>
+      <div class="affection-fill" data-character="senpai" style="width: 30%"></div>
+      <div class="affection-text">学姐: 30%</div>
+    </div>
+  </div>
+
+  <!-- 侧边栏触发按钮 -->
+  <div id="sidebar-toggle">▶</div>
+
+  <!-- 侧边栏 -->
+  <div id="sidebar">
+    <h3>设置</h3>
+    <div class="sidebar-buttons">
+      <button id="main-menu-btn">回到主菜单</button>
+      <button id="load-btn">读档</button>
+      <button id="save-btn">存档</button>
+      <button id="music-btn">音乐暂停</button>
+    </div>
+
+    <div class="volume-control">
+      <label for="volume-range">音量</label>
+      <input type="range" id="volume-range" min="0" max="100" value="50">
+    </div>
+  </div>
+
+  <audio id="bg-music" src="audio/bg-music.mp3" loop onerror="handleAudioError()"></audio>
+
+  <!-- 选择界面 -->
+  <div id="choice-container" class="hidden">
+    <button class="choice-btn" data-choice="join">主动提出一起去</button>
+    <button class="choice-btn" data-choice="support">表示支持</button>
+    <button class="choice-btn" data-choice="photograph">展现摄影技能</button>
+  </div>
+<div id="phone-image">
+    <img src="../../phone.png" alt="手机" style="width: 130px; height: 150px;">
+  </div>
+ <div id="phone-chat-interface">
+    <div class="phone-status-bar">
+      <span>12:30</span>
+      <span>📶 100% 🔋</span>
+    </div>
+    <div class="chat-header">
+      <div class="chat-back-btn" id="chat-close-btn">←</div>
+      <div class="chat-title">学姐</div>
+      <div class="chat-more-btn">⋯</div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- 聊天消息将通过JS动态添加 -->
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" placeholder="输入消息...">
+      <button class="chat-send-btn">↵</button>
+    </div>
+  </div>
+  
+  <div id="auto-save-notice" class="hidden">已存档</div>
+
+   <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
+
+  <script>
+    // 图片错误处理函数
+    function handleImageError(img, type) {
+      console.error('图片加载失败:', img.src);
+      switch(type) {
+        case 'background':
+          img.style.backgroundColor = '#87CEEB'; // 天空蓝作为背景
+          break;
+        case 'character':
+          img.style.backgroundColor = '#f0f0f0';
+          img.style.border = '2px dashed #ccc';
+          break;
+        case 'dialog':
+          img.parentElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+          break;
+        case 'control':
+          img.style.backgroundColor = '#eee';
+          img.style.border = '1px solid #999';
+          break;
+      }
+    }
+
+    function handleBgError(element) {
+      console.error('背景图片加载失败');
+      element.style.backgroundColor = 'rgba(255, 192, 203, 0.3)';
+    }
+
+    function handleAudioError() {
+      console.warn('背景音乐加载失败');
+    }
+  </script>
+</body>
+</html>

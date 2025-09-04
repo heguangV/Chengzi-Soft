@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>运动会与期末周事件</title>
+  <link rel="stylesheet" href="../../css/storypage.css">
+
+</head>
+<body>
+  <!-- 对话框 -->
+  <div class="dialog-box">
+    <div class="character-name">芳乃</div>
+    <div class="dialog-text" id="dialog-text"></div>
+    <div class="character-avatar">
+      <img src="" alt="角色头像" id="character-avatar">
+    </div>
+    <div class="dialog-controls">
+      <img src="images/kuang.png" alt="对话框" class="dialog-img">
+      <div class="control-images">
+        <img src="images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img">
+        <img src="images/jiasu.png" alt="加速" id="speed-btn" class="control-img">
+        <img src="images/zidong.png" alt="自动播放" id="auto-btn" class="control-img">
+        <img src="images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img">
+        <img src="images/xiayiju.png" alt="下一句" id="next-btn" class="control-img">
+      </div>
+    </div>
+  </div>
+
+  <!-- 好感度条 -->
+  <div class="affection-container">
+    <div class="affection-bar">
+      <div class="affection-bg" style="background-image: url('images/6.png')"></div>
+      <div class="affection-fill" data-character="fang" style="width: 50%"></div>
+      <div class="affection-text">芳乃: 50%</div>
+    </div>
+  </div>
+
+  <!-- 侧边栏触发按钮 -->
+  <div id="sidebar-toggle">▶</div>
+
+  <!-- 侧边栏 -->
+  <div id="sidebar">
+    <h3>设置</h3>
+    <div class="sidebar-buttons">
+      <button id="main-menu-btn">回到主菜单</button>
+      <button id="load-btn">读档</button>
+      <button id="save-btn">存档</button>
+      <button id="music-btn">音乐暂停</button>
+    </div>
+
+    <div class="volume-control">
+      <label for="volume-range">音量</label>
+      <input type="range" id="volume-range" min="0" max="100" value="50">
+    </div>
+  </div>
+
+  <audio id="bg-music" src="music/bg-music.mp3" loop></audio>
+
+  <!-- 选择界面 -->
+  <div id="choice-container" class="hidden">
+    <button class="choice-btn" data-choice="A">选择一：学姐我背你去医务室吧，扭伤了还是先少走一点，让医生看看情况。</button>
+    <button class="choice-btn" data-choice="B">选择二：学姐我先扶你到边上的长椅，我记得有应急的轮椅，我去推过来。</button>
+    <button class="choice-btn" data-choice="C">选择三：学姐，我先帮你吧鞋带松一下吧，勒着可能更疼。</button>
+  </div>
+
+  <!-- 小游戏容器 -->
+  <div id="mini-game-container" class="mini-game hidden">
+    <h3>抢课小游戏</h3>
+    <p>点击按钮抢课！</p>
+    <button id="game-action-btn" class="game-button">抢课！</button>
+    <p id="game-result"></p>
+  </div>
+  <div id="phone-image">
+    <img src="../../phone.png" alt="手机" style="width: 130px; height: 150px;">
+  </div>
+
+ <div id="phone-chat-interface">
+    <div class="phone-status-bar">
+      <span>12:30</span>
+      <span>📶 100% 🔋</span>
+    </div>
+    <div class="chat-header">
+      <div class="chat-back-btn" id="chat-close-btn">←</div>
+      <div class="chat-title">学姐</div>
+      <div class="chat-more-btn">⋯</div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- 聊天消息将通过JS动态添加 -->
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" placeholder="输入消息...">
+      <button class="chat-send-btn">↵</button>
+    </div>
+  </div>
+  
+  <div id="auto-save-notice" class="hidden">已存档</div>
+
+   <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
+
+
+<script src="index.js"></script>
+</body>
+</html>
