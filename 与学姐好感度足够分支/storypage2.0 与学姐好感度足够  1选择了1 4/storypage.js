@@ -6,6 +6,8 @@ window.addEventListener("DOMContentLoaded", () => {
 // -------------------- DOM 元素 --------------------
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
+const avatarContainer = document.getElementById("character-avatar-container");
+const characterAvatar = document.getElementById("character-avatar");
 
 const nextBtn = document.getElementById("next-btn");
 const prevBtn = document.getElementById("prev-btn");
@@ -40,11 +42,18 @@ let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
 let waitingForItem = false;
+let isChoiceActive = false;
+
+// 初始化phoneModule命名空间
+window.phoneModule = window.phoneModule || {};
+// 初始化手机相关状态
+window.phoneModule.waitingForPhoneResponse = false; // 等待手机响应的状态
+window.phoneModule.phoneNotification = null; // 手机通知标记
+window.phoneModule.hasReceivedFinalMessage = false;
+window.phoneModule.phoneVibrationTriggered = false; // 手机振动触发标记
 
 // -------------------- 剧情数据 --------------------
 const dialogues = [
-  { name: "A", text: "说好了今天要去水族馆的 该不会还没起床吧（颜文字：生气）" },
-  { name: "A", text: "(糟糕)怎么会 我这就来！！！" },
   { name: "B", text: "时光飞逝 下半学期已过去大半 ..." },
   { name: "C", text: "今天 是你们约定好去水族馆的日子 而你起晚了" },
   { name: "B", text: "这不能怪我啊！ 明明订好了闹钟为什么会不响啊！！" }, 
@@ -57,10 +66,34 @@ const dialogues = [
   { name: "B", text: "这可是我花了一晚上才挑选出来的 要不然怎么会起晚） 想着 你也观察起她的穿着" },
   { name: "C", text: "她身着一件淡蓝色的衬衫 外面是一件短款的夹克 下身穿着一件高腰牛仔裤 头上戴着一只米色的棒球帽 虽然简约 但在她如同明星般的比例与气质的映衬下 还是让人难以移开目光 惹得走过的路人频频注目" },
   { name: "A", text: "怎么样 学姐的专业穿搭” 她的脸上扬起一种自豪感 仿佛在等待你的夸奖" },
-  
 ];
 
-let currentName = dialogues[index].name;
+// -------------------- 判断是否触发手机振动 --------------------
+function shouldTriggerPhoneVibration(idx) {
+  // 在第0句触发手机振动
+  return idx === 0;
+}
+
+// -------------------- 打字机效果 --------------------
+function typeText(text, callback) {
+  clearInterval(typingInterval);
+  typingInterval = setInterval(() => {
+    dialogText.textContent += text[charIndex];
+    charIndex++;
+    if (charIndex >= text.length) {
+      clearInterval(typingInterval);
+      if (callback) callback();
+    }
+  }, typingSpeed);
+}
+
+// -------------------- 显示某条对话 --------------------
+function showDialogue(idx) {
+  if (idx < 0) idx = 0;
+  if (idx >= dialogues.length) idx = dialogues.length - 1;
+  index = idx;
+
+  const currentName = dialogues[index].name;
   let displayName = currentName;
   
   // 根据name值修改显示名称和头像
@@ -81,44 +114,28 @@ let currentName = dialogues[index].name;
     characterAvatar.alt = '学姐头像';
     avatarContainer.style.display = 'block';
   } else {
-    // 其他角色：隐藏头像
+    // 其他角色：显示名称，隐藏头像
+    displayName = currentName;
     avatarContainer.style.display = 'none';
   }
-// -------------------- 打字机效果 --------------------
-function typeText(text, callback) {
-  clearInterval(typingInterval);
-  typingInterval = setInterval(() => {
-    dialogText.textContent += text[charIndex];
-    charIndex++;
-    if (charIndex >= text.length) {
-      clearInterval(typingInterval);
-      if (callback) callback();
+  
+  nameBox.textContent = displayName;
+
+  // 判断是否触发手机振动（使用phone.js中的振动逻辑）
+  if (shouldTriggerPhoneVibration(index) && !window.phoneModule.phoneVibrationTriggered) {
+    // 使用phone.js中的振动函数
+    if (window.makePhoneVibrate) {
+      window.makePhoneVibrate();
     }
-  }, typingSpeed);
-}
-
-// -------------------- 判断是否显示特殊物品 --------------------
-function shouldShowSpecialItem(idx) {
-  // 这里示例：第一句显示物品，你可以改成任意条件
-  return idx === 0;
-}
-
-// -------------------- 显示某条对话 --------------------
-function showDialogue(idx) {
-  if (idx < 0) idx = 0;
-  if (idx >= dialogues.length) idx = dialogues.length - 1;
-  index = idx;
-
-  nameBox.textContent = dialogues[index].name;
-
-  // 判断是否出现特殊物品
-  if (shouldShowSpecialItem(index) && !specialItem.dataset.clicked) {
-    specialItem.style.top = `${Math.random() * 60 + 20}%`;
-    specialItem.style.left = `${Math.random() * 60 + 20}%`;
-    specialItem.classList.remove("hidden");
     waitingForItem = true;
+    window.phoneModule.waitingForPhoneResponse = true;
+    window.phoneModule.phoneVibrationTriggered = true;
     charIndex = 0;
-    dialogText.textContent = "";
+    dialogText.textContent = dialogues[index].text;
+    
+    // 强制停止任何正在进行的打字效果
+    clearInterval(typingInterval);
+    
     return;
   }
 
@@ -126,6 +143,78 @@ function showDialogue(idx) {
   charIndex = 0;
   dialogText.textContent = "";
   typeText(dialogues[index].text);
+}
+
+// -------------------- 处理手机响应 --------------------
+// -------------------- 处理手机响应 --------------------
+function handlePhoneResponse() {
+  // 使用phone.js中的函数打开聊天界面
+  if (window.openChatInterface) {
+    window.openChatInterface();
+  }
+  
+  // 清空聊天记录
+  const chatMessages = document.getElementById("chat-messages");
+  if (chatMessages) {
+    chatMessages.innerHTML = "";
+  }
+  
+  // 临时禁用phone.js的随机回复功能
+  const originalSimulateReply = window.phoneModule.simulateReply;
+  window.phoneModule.simulateReply = function() {
+    // 空函数，禁用随机回复
+  };
+  
+  // 添加学姐的消息
+  addMessageToChat("received", "说好了今天要去水族馆的 该不会还没起床吧（颜文字：生气）");
+  
+  // 预设男主的回复
+  setTimeout(() => {
+    addMessageToChat("sent", "(糟糕)怎么会 我这就来！！！");
+    
+    // 2秒后自动关闭聊天界面并继续剧情
+    setTimeout(() => {
+      // 恢复原来的simulateReply函数
+      window.phoneModule.simulateReply = originalSimulateReply;
+      
+      // 使用phone.js中的函数关闭聊天界面
+      if (window.closeChatInterface) {
+        window.closeChatInterface();
+      }
+      window.phoneModule.waitingForPhoneResponse = false;
+      showDialogue(index + 1);
+    }, 2000);
+  }, 1500);
+}
+
+// -------------------- 添加消息到聊天记录 --------------------
+function addMessageToChat(sender, text) {
+  const chatMessages = document.getElementById("chat-messages");
+  if (!chatMessages) {
+    console.error('Chat messages element not found!');
+    return;
+  }
+  
+  const now = new Date();
+  const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+  
+  const messageEl = document.createElement("div");
+  messageEl.classList.add("message", sender);
+  
+  const contentEl = document.createElement("div");
+  contentEl.classList.add("message-content");
+  contentEl.textContent = text;
+  
+  const timeEl = document.createElement("div");
+  timeEl.classList.add("message-time");
+  timeEl.textContent = time;
+  
+  messageEl.appendChild(contentEl);
+  messageEl.appendChild(timeEl);
+  chatMessages.appendChild(messageEl);
+  
+  // 滚动到底部
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // -------------------- 点击特殊物品 --------------------
@@ -140,7 +229,7 @@ specialItem.addEventListener("click", () => {
 
 // -------------------- 下一句 --------------------
 nextBtn.addEventListener("click", () => {
-  if (waitingForItem) return;
+  if (waitingForItem || window.phoneModule.waitingForPhoneResponse) return;
 
   if (charIndex < dialogues[index].text.length) {
     clearInterval(typingInterval);
@@ -152,7 +241,7 @@ nextBtn.addEventListener("click", () => {
     } else {
       document.body.classList.add("fade-out");
       setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 5/storypage.html";
+        window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
       }, 1000);
     }
   }
@@ -161,7 +250,7 @@ nextBtn.addEventListener("click", () => {
 
 // -------------------- 上一句 --------------------
 prevBtn.addEventListener("click", () => {
-  if (waitingForItem) return;
+  if (waitingForItem || window.phoneModule.waitingForPhoneResponse) return;
   showDialogue(index - 1);
   stopAutoPlay();
 });
@@ -176,7 +265,7 @@ speedBtn.addEventListener("click", () => {
 
 // -------------------- 跳过 --------------------
 skipBtn.addEventListener("click", () => {
-  if (waitingForItem) return;
+  if (waitingForItem || window.phoneModule.waitingForPhoneResponse) return;
   clearInterval(typingInterval);
   dialogText.textContent = dialogues[index].text;
   stopAutoPlay();
@@ -194,7 +283,7 @@ autoBtn.addEventListener("click", () => {
 function startAutoPlay() {
   clearInterval(autoInterval);
   autoInterval = setInterval(() => {
-    if (waitingForItem) return;
+    if (waitingForItem || window.phoneModule.waitingForPhoneResponse) return;
     if (charIndex < dialogues[index].text.length) {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
@@ -265,10 +354,12 @@ function showChoices() {
   dialogBox.style.display = "none";
   clearInterval(typingInterval);
   clearInterval(autoInterval);
+  isChoiceActive = true;
 }
 function hideChoices() {
   choiceContainer.classList.add("hidden");
   dialogBox.style.display = "block";
+  isChoiceActive = false;
 }
 choiceBtns.forEach(btn => {
   btn.addEventListener("click", () => {
@@ -319,7 +410,7 @@ choiceBtns.forEach(btn => {
 // 空格键触发下一句
 window.addEventListener('keydown', (e) => {
   // 只有在空格键被按下且选择框未激活时才触发
-  if (e.code === 'Space' && !isChoiceActive) {
+  if (e.code === 'Space' && !isChoiceActive && !window.phoneModule.waitingForPhoneResponse) {
     e.preventDefault(); // 阻止默认行为，避免页面滚动
     // 模拟下一句按钮点击
     nextBtn.click();
@@ -330,6 +421,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('click', (e) => {
   // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
   if (!isChoiceActive && 
+      !window.phoneModule.waitingForPhoneResponse &&
       !e.target.closest('button') && 
       !e.target.closest('input') && 
       !e.target.closest('#sidebar') && 
@@ -337,6 +429,32 @@ window.addEventListener('click', (e) => {
     // 模拟下一句按钮点击
     nextBtn.click();
   }
+});
+
+// -------------------- 手机点击事件处理 --------------------
+document.addEventListener('DOMContentLoaded', function() {
+  // 等待phone.js初始化完成
+  setTimeout(function() {
+    const phoneImage = document.getElementById("phone-image");
+    if (phoneImage) {
+      // 移除phone.js可能绑定的事件，重新绑定我们的事件
+      phoneImage.onclick = null;
+      phoneImage.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        // 如果是等待手机响应的状态，处理手机响应
+        if (window.phoneModule.waitingForPhoneResponse) {
+          handlePhoneResponse();
+          return;
+        }
+        
+        // 否则使用phone.js的普通打开功能
+        if (window.openChatInterface) {
+          window.openChatInterface();
+        }
+      });
+    }
+  }, 1000);
 });
 
 // -------------------- 初始化 --------------------

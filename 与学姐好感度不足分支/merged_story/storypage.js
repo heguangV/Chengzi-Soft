@@ -238,7 +238,6 @@
       // 添加通知标记
       phoneNotification = document.createElement("div");
       phoneNotification.classList.add("phone-notification");
-      phoneNotification.textContent = "1";
       phoneImage.appendChild(phoneNotification);
       
       // 设置等待手机响应的状态

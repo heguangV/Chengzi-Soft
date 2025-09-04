@@ -6,14 +6,18 @@
   <title>剧情页面</title>
   <link rel="stylesheet" href="../../css/storypage.css">
   <script src="storypage.js" defer></script>
-  <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
+  
 </head>
 <body>
   <!-- 背景 -->
   <img src="../../storypage2.0/images/background.png" alt="背景图" class="background-img">
 
-  <!-- 角色立绘 -->
-  <img src="character.png" alt="角色" class="character-img">
+
+
+  <!-- 角色头像 -->
+  <div id="character-avatar-container" class="character-avatar-container">
+    <img id="character-avatar" class="character-avatar" src="" alt="角色头像" />
+  </div>
 
   <!-- 对话框 -->
   <div class="dialog-box">
@@ -34,12 +38,12 @@
   <!-- 好感度条 -->
   <div class="affection-container">
     <div class="affection-bar">
-      <div class="affection-bg" style="background-image: url('images/6.png')"></div>
+      <div class="affection-bg" style="background-image: url('../../storypage2.0/images/6.png')"></div>
       <div class="affection-fill" data-character="fang" style="width: 50%"></div>
       <div class="affection-text">芳乃: 50%</div>
     </div>
     <div class="affection-bar">
-      <div class="affection-bg" style="background-image: url('images/6.png')"></div>
+      <div class="affection-bg" style="background-image: url('../../storypage2.0/images/6.png')"></div>
       <div class="affection-fill" data-character="other" style="width: 30%"></div>
       <div class="affection-text">其他: 30%</div>
     </div>
@@ -98,5 +102,6 @@
       <button class="chat-send-btn">↵</button>
     </div>
   </div>
+  <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
 </body>
 </html>

@@ -5,6 +5,14 @@ window.addEventListener("DOMContentLoaded", () => {
   // 初始化好感度显示
   initAffection();
 
+  // 初始化手机模块
+  if (window.phoneModule && window.phoneModule.initPhoneElements) {
+    window.phoneModule.initPhoneElements();
+    if (window.phoneModule.initPhoneChat) {
+      window.phoneModule.initPhoneChat();
+    }
+  }
+
   // 显示第一句对话
   showDialogue(0);
 
@@ -27,8 +35,7 @@ const dialogues = [
   { name: "A", text: "许久 脸上重新浮现出笑容 将手慢慢的抽回 向我挥了挥手" },
   { name: "B", text: "我看着她远去的身影 还想说些什么 或是做些什么 但却又无从开口 只能看着学姐逐渐远去 或许 我还不够成为她留下的理由吧" },
   { name: "C", text: "学姐的车渐渐远去 徒留下你呆站在原地 " }, // TODO: （手机振动）
-  { name: "A", text: "毕竟是工作上的大事 不能很快的做决定 等我的好消息哦（颜文字：开心）" },
-  { name: "A", text: "我会一直相信你的 可不能反悔哦" },
+
   { name: "C", text: "此刻 晚霞格外恢弘" },
   
 ];
@@ -69,6 +76,13 @@ let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
+
+// 等待物品交互的状态
+let waitingForItem = false;
+// 游戏是否处于激活状态（可以继续推进）
+let isGameActive = true;
+// 选择框是否处于激活状态
+let isChoiceActive = false;
 
 // -------------------- 打字机效果 --------------------
 function typeText(text, callback) {
@@ -121,6 +135,101 @@ function showDialogue(idx) {
   // 更新显示名称
   nameBox.textContent = displayName;
 
+  // 检查是否需要触发手机振动
+  if (index === 12 ) {
+  // 设置对话文本
+ dialogText.textContent = '学姐的车渐渐远去 徒留下你呆站在原地';
+  charIndex = dialogText.textContent.length;
+  
+  // 触发手机振动
+  if (window.phoneModule && window.phoneModule.makePhoneVibrate) {
+    window.phoneModule.makePhoneVibrate();
+    waitingForItem = true;
+    if (window.phoneModule) {
+      window.phoneModule.waitingForPhoneResponse = true;
+    }
+  }
+  
+  // 强制停止打字效果
+  clearInterval(typingInterval);
+  return;
+}
+
+// 添加处理手机响应的函数
+window.phoneModule.handlePhoneResponse = function() {
+  const { phoneImage, phoneNotification } = window.phoneModule;
+  
+  // 移除震动效果和通知
+  if (phoneImage) {
+    phoneImage.classList.remove('phone-vibrating');
+    if (phoneNotification && phoneImage.contains(phoneNotification)) {
+      phoneImage.removeChild(phoneNotification);
+    }
+  }
+  
+  // 添加最后的消息到聊天记录
+  window.phoneModule.addFinalMessageToChat();
+  
+  // 自动打开聊天界面
+  if (window.phoneModule.openChatInterface) {
+    window.phoneModule.openChatInterface();
+  }
+  
+  // 重置等待手机响应的状态
+  window.phoneModule.waitingForPhoneResponse = false;
+};
+
+// 添加最后的消息到聊天记录并继续游戏
+window.phoneModule.addFinalMessageToChat = function() {
+  if (!window.phoneModule.hasReceivedFinalMessage) {
+    const { chatMessages, chatData } = window.phoneModule;
+    
+    if (!chatMessages) return;
+    
+    window.phoneModule.hasReceivedFinalMessage = true;
+    
+    // 第一条消息 - 学姐发送
+    chatData.push({
+      sender: "received", 
+      text: "毕竟是工作上的大事 不能很快的做决定 等我的好消息哦（颜文字：开心）", 
+      time: "12:30"
+    });
+    
+    // 重新加载聊天记录
+    window.phoneModule.loadChatMessages();
+    
+    // 1.5秒后发送第二条消息
+    setTimeout(() => {
+      // 第二条消息 - 学姐发送
+      chatData.push({
+        sender: "received", 
+        text: "我会一直相信你的 可不能反悔哦", 
+        time: "12:31"
+      });
+      
+      // 重新加载聊天记录
+      window.phoneModule.loadChatMessages();
+      
+      // 再等1.5秒后关闭聊天界面并继续剧情
+      setTimeout(() => {
+        if (window.phoneModule.closeChatInterface) {
+          window.phoneModule.closeChatInterface();
+        }
+        
+        // 继续剧情
+        if (window.showDialogue && window.index !== undefined) {
+          window.showDialogue(window.index + 1);
+        }
+        
+        // 重置状态
+        waitingForItem = false;
+        isGameActive = true;
+        
+      }, 1500);
+    }, 1500);
+  }
+};
+
   typeText(dialogues[index].text, () => {
     // 如果台词有选择框逻辑
     if (index === 999) setTimeout(showChoices, 500);
@@ -129,6 +238,11 @@ function showDialogue(idx) {
 
 // -------------------- 下一句按钮 --------------------
 function handleNext() {
+  // 检查是否处于等待手机响应状态
+  if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+    return; // 不执行任何操作，直到用户点击手机
+  }
+  
   if (charIndex < dialogues[index].text.length) {
     // 打字机未打完，直接显示完整文字
     clearInterval(typingInterval);
@@ -141,7 +255,7 @@ function handleNext() {
       // 最后一条台词淡出跳转
       document.body.classList.add("fade-out");
       setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 2/storypage.html";
+        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
       }, 1000);
     }
   }
@@ -171,6 +285,11 @@ function handleSkip() {
 
 // -------------------- 自动播放按钮 --------------------
 function toggleAutoPlay() {
+  // 如果处于等待手机响应状态，不允许开启自动播放
+  if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+    return;
+  }
+  
   autoPlay = !autoPlay;
   if (autoPlay) {
     autoBtn.textContent = "停止自动";
@@ -183,6 +302,12 @@ function toggleAutoPlay() {
 function startAutoPlay() {
   clearInterval(autoInterval);
   autoInterval = setInterval(() => {
+    // 检查是否处于等待手机响应状态
+    if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+      stopAutoPlay();
+      return;
+    }
+    
     if (charIndex < dialogues[index].text.length) {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
@@ -205,11 +330,13 @@ function showChoices() {
   dialogBox.style.display = "none";
   clearInterval(typingInterval);
   clearInterval(autoInterval);
+  isChoiceActive = true;
 }
 
 function hideChoices() {
   choiceContainer.classList.add("hidden");
   dialogBox.style.display = "block";
+  isChoiceActive = false;
 }
 
 function handleChoice(event) {
@@ -301,8 +428,12 @@ function bindControlButtons() {
 // 空格键触发下一句
 window.addEventListener('keydown', (e) => {
   // 只有在空格键被按下且选择框未激活时才触发
-  if (e.code === 'Space' && !isChoiceActive) {
+  if (e.code === 'Space' && !isChoiceActive && isGameActive) {
     e.preventDefault(); // 阻止默认行为，避免页面滚动
+    // 检查是否处于等待手机响应状态
+    if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+      return; // 不执行任何操作，直到用户点击手机
+    }
     // 模拟下一句按钮点击
     if (typeof handleNext === 'function') {
       handleNext();
@@ -319,7 +450,12 @@ window.addEventListener('click', (e) => {
       !e.target.closest('button') && 
       !e.target.closest('input') && 
       !e.target.closest('#sidebar') && 
-      !e.target.closest('#chat-input')) {
+      !e.target.closest('#chat-input') && 
+      isGameActive) {
+    // 检查是否处于等待手机响应状态
+    if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+      return; // 不执行任何操作，直到用户点击手机
+    }
     // 模拟下一句按钮点击
     if (typeof handleNext === 'function') {
       handleNext();
@@ -328,3 +464,74 @@ window.addEventListener('click', (e) => {
     }
   }
 });
+
+// -------------------- 手机响应处理 --------------------
+// 确保window.phoneModule存在
+window.phoneModule = window.phoneModule || {};
+
+// 添加最后的消息到聊天记录并继续游戏
+window.phoneModule.addFinalMessageToChat = function() {
+  if (!window.phoneModule.hasReceivedFinalMessage) {
+    // 添加两条特定消息
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+      // 第一条消息 - 学姐发送
+      const message1 = document.createElement('div');
+      message1.classList.add('chat-message', 'received');
+      message1.innerHTML = `<div class="message-bubble">毕竟是工作上的大事 不能很快的做决定 等我的好消息哦（颜文字：开心）</div>`;
+      chatMessages.appendChild(message1);
+      
+      // 第二条消息 - 学姐发送
+      const message2 = document.createElement('div');
+      message2.classList.add('chat-message', 'received');
+      message2.innerHTML = `<div class="message-bubble">我会一直相信你的 可不能反悔哦</div>`;
+      chatMessages.appendChild(message2);
+      
+      // 滚动到底部
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      window.phoneModule.hasReceivedFinalMessage = true;
+      
+      // 3秒后关闭聊天界面并继续剧情
+      setTimeout(() => {
+        if (window.phoneModule.closeChatInterface) {
+          window.phoneModule.closeChatInterface();
+        }
+        
+        // 继续剧情
+        if (window.showDialogue) {
+          window.showDialogue(index + 1);
+        }
+        
+        // 重置状态
+        waitingForItem = false;
+        isGameActive = true;
+        
+      }, 3000);
+    }
+  }
+};
+
+// 处理手机响应（如果需要覆盖默认实现）
+window.phoneModule.handlePhoneResponse = function() {
+  const { phoneImage, phoneNotification } = window.phoneModule;
+  
+  // 移除震动效果和通知
+  if (phoneImage) {
+    phoneImage.classList.remove('phone-vibrating');
+    if (phoneNotification && phoneImage.contains(phoneNotification)) {
+      phoneImage.removeChild(phoneNotification);
+    }
+  }
+  
+  // 添加最后的消息到聊天记录
+  window.phoneModule.addFinalMessageToChat();
+  
+  // 自动打开聊天界面
+  if (window.phoneModule.openChatInterface) {
+    window.phoneModule.openChatInterface();
+  }
+  
+  // 重置等待手机响应的状态
+  window.phoneModule.waitingForPhoneResponse = false;
+};

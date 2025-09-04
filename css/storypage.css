@@ -1,4 +1,4 @@
-    * {
+* {
       box-sizing: border-box;
     }
     body {
@@ -8,7 +8,7 @@
       overflow: hidden;
       transition: opacity 1s ease;
       opacity: 0;
-      background: url('images/background.png') no-repeat center center fixed;
+      background: url('../storypage2.0/images/background.png') no-repeat center center fixed;
       background-size: cover;
       font-family: "微软雅黑", sans-serif;
       /* 禁用文本选择 */

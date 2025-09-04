@@ -24,6 +24,8 @@ const autoBtn = document.getElementById("auto-btn");
 const choiceContainer = document.getElementById("choice-container");
 const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box");
+const characterAvatarContainer = document.getElementById('character-avatar-container');
+const characterAvatar = document.getElementById('character-avatar');
 
 // -------------------- 状态变量 --------------------
 let index = 0;
@@ -34,7 +36,6 @@ let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
-let isChoiceActive = false; // 新增：标记选择是否激活
 
 // -------------------- 下一句按钮 --------------------
 nextBtn.addEventListener("click", () => {
@@ -63,7 +64,26 @@ function showDialogue(idx) {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  nameBox.textContent = dialogues[index].name;
+  // 名称映射逻辑
+  let displayName = dialogues[index].name;
+  
+  // 根据名称映射设置显示名称和头像
+  if (dialogues[index].name === 'C') {
+    displayName = '旁白';
+    characterAvatarContainer.style.display = 'none'; // 隐藏头像
+  } else if (dialogues[index].name === 'B') {
+    displayName = '男主';
+    characterAvatar.src = '../../男主.png';
+    characterAvatarContainer.style.display = 'block'; // 显示头像
+  } else if (dialogues[index].name === 'A' || dialogues[index].name === '芳乃') {
+    displayName = '学姐';
+    characterAvatar.src = '../../学姐.png';
+    characterAvatarContainer.style.display = 'block'; // 显示头像
+  } else {
+    characterAvatarContainer.style.display = 'none'; // 默认隐藏头像
+  }
+
+  nameBox.textContent = displayName;
 
   typeText(dialogues[index].text, () => {
     if (index === 999) autoSave();
@@ -269,30 +289,6 @@ choiceBtns.forEach(btn => {
       showDialogue(index + 3);
     }
   });
-});
-
-// -------------------- 空格和点击触发下一句 --------------------
-// 空格键触发下一句
-window.addEventListener('keydown', (e) => {
-  // 只有在空格键被按下且选择框未激活时才触发
-  if (e.code === 'Space' && !isChoiceActive) {
-    e.preventDefault(); // 阻止默认行为，避免页面滚动
-    // 模拟下一句按钮点击
-    nextBtn.click();
-  }
-});
-
-// 鼠标点击触发下一句
-window.addEventListener('click', (e) => {
-  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
-  if (!isChoiceActive && 
-      !e.target.closest('button') && 
-      !e.target.closest('input') && 
-      !e.target.closest('#sidebar') && 
-      !e.target.closest('#chat-input')) {
-    // 模拟下一句按钮点击
-    nextBtn.click();
-  }
 });
 
 // -------------------- 初始化 --------------------

@@ -15,19 +15,7 @@ window.phoneModule.hasReceivedFinalMessage = false;
 
 // 聊天消息数据
 window.phoneModule.chatData = [
-  { sender: "received", text: "学弟君，最近怎么样？", time: "10:30" },
-  { sender: "sent", text: "还不错，就是有点忙。学姐呢？", time: "10:32" },
-  { sender: "received", text: "我也还好，最近在准备毕业演出", time: "10:35" },
-  { sender: "received", text: "你会来看吗？", time: "10:35" },
-  { sender: "sent", text: "当然会！我一定会去的！", time: "10:36" },
-  { sender: "received", text: "太好了！我会给你留最好的位置 (＾▽＾)", time: "10:37" },
-  { sender: "received", text: "说起来，时间过得真快呢", time: "10:38" },
-  { sender: "received", text: "感觉昨天才刚认识你", time: "10:38" },
-  { sender: "sent", text: "是啊，一学期就这么过去了", time: "10:40" },
-  { sender: "sent", text: "和学姐在一起的时光真的很开心", time: "10:40" },
-  { sender: "received", text: "我也是哦，和你在一起很愉快", time: "10:42" },
-  { sender: "received", text: "可惜我马上就要毕业了...", time: "10:42" },
-  { sender: "sent", text: "嗯...", time: "10:45" }
+
 ];
 
 // 初始化手机DOM元素
@@ -198,24 +186,9 @@ window.phoneModule.loadChatMessages = function() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 };
 
-// 添加最后的消息到聊天记录
-window.phoneModule.addFinalMessageToChat = function() {
-  const { hasReceivedFinalMessage, chatData } = window.phoneModule;
+
   
-  if (hasReceivedFinalMessage) return;
-  
-  window.phoneModule.hasReceivedFinalMessage = true;
-  
-  // 添加最后的消息
-  chatData.push({
-    sender: "received", 
-    text: "再见啦，学弟君~ 我已经在去机场的车上咯~ 以后有时间可以来看我的演出哦，我会为你留特等席的 (＾▽＾)", 
-    time: "12:30"
-  });
-  
-  // 重新加载聊天记录
-  window.phoneModule.loadChatMessages();
-};
+
 
 // 发送消息
 window.phoneModule.sendMessage = function() {
@@ -268,7 +241,7 @@ window.phoneModule.simulateReply = function() {
     "谢谢你的关心",
     "我会想你的",
     "保持联系哦",
-    "再见啦，学弟君~ 我已经在去机场的车上咯~ 以后有时间可以来看我的演出哦，我会为你留特等席的 (＾▽＾)"
+ 
   ];
   
   const randomReply = replies[Math.floor(Math.random() * replies.length)];

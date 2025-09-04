@@ -1,5 +1,33 @@
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
+
+  // 空格键触发下一句
+  document.addEventListener("keydown", (e) => {
+    // 只有在没有选择框显示且按下空格键时才触发
+    if (e.code === "Space" && choiceContainer.classList.contains("hidden")) {
+      e.preventDefault(); // 阻止空格键默认行为（页面滚动）
+      nextBtn.click(); // 模拟点击下一句按钮
+    }
+  });
+
+  // 鼠标左键点击触发下一句
+  document.addEventListener("click", (e) => {
+    // 只有在没有选择框显示且点击的不是其他按钮时才触发
+    if (choiceContainer.classList.contains("hidden") && 
+        !e.target.closest("#next-btn") && 
+        !e.target.closest("#prev-btn") && 
+        !e.target.closest("#speed-btn") && 
+        !e.target.closest("#skip-btn") && 
+        !e.target.closest("#auto-btn") && 
+        !e.target.closest("#sidebar") && 
+        !e.target.closest("#sidebar-toggle") &&
+        !e.target.closest("#save-btn") &&
+        !e.target.closest("#load-btn") &&
+        !e.target.closest("#music-btn") &&
+        !e.target.closest(".volume-control")) {
+      nextBtn.click(); // 模拟点击下一句按钮
+    }
+  });
 });
 
 // -------------------- 剧情台词 --------------------
@@ -20,6 +48,8 @@ const autoBtn = document.getElementById("auto-btn");
 const choiceContainer = document.getElementById("choice-container");
 const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box"); // 获取对话框
+const avatarContainer = document.getElementById("character-avatar-container");
+const characterAvatar = document.getElementById("character-avatar");
 
 // -------------------- 状态变量 --------------------
 let index = 0;
@@ -28,7 +58,6 @@ let typingSpeed = 50;
 let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
-let isChoiceActive = false; // 新增：标记选择是否激活
 let isFast = false;
 
 // -------------------- 下一句按钮 --------------------
@@ -60,8 +89,37 @@ function showDialogue(idx) {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  nameBox.textContent = dialogues[index].name;
-
+  let currentName = dialogues[index].name;
+  let displayName = currentName;
+  
+  // 根据name值修改显示名称和头像
+  if (currentName === 'C') {
+    // 旁白：隐藏头像
+    displayName = '旁白';
+    if (avatarContainer) avatarContainer.style.display = 'none';
+  } else if (currentName === 'B') {
+    // 主角：显示男主头像
+    displayName = '主角';
+    if (characterAvatar) {
+      characterAvatar.src = '../../男主.png';
+      characterAvatar.alt = '主角头像';
+    }
+    if (avatarContainer) avatarContainer.style.display = 'block';
+  } else if (currentName === 'A' || currentName.includes('学姐')) {
+    // 学姐：显示学姐头像
+    displayName = '学姐';
+    if (characterAvatar) {
+      characterAvatar.src = '../../学姐.png';
+      characterAvatar.alt = '学姐头像';
+    }
+    if (avatarContainer) avatarContainer.style.display = 'block';
+  } else {
+    // 其他角色：隐藏头像
+    if (avatarContainer) avatarContainer.style.display = 'none';
+  }
+  
+  // 更新显示名称
+  nameBox.textContent = displayName;
   typeText(dialogues[index].text, () => {
     // 如果是特定台词可自动存档或显示选择框
     if (index === 999) {
@@ -270,30 +328,6 @@ choiceBtns.forEach(btn => {
     else if (choice === "B") showDialogue(index + 2);
     else showDialogue(index + 3);
   });
-});
-
-// -------------------- 空格和点击触发下一句 --------------------
-// 空格键触发下一句
-window.addEventListener('keydown', (e) => {
-  // 只有在空格键被按下且选择框未激活时才触发
-  if (e.code === 'Space' && !isChoiceActive) {
-    e.preventDefault(); // 阻止默认行为，避免页面滚动
-    // 模拟下一句按钮点击
-    nextBtn.click();
-  }
-});
-
-// 鼠标点击触发下一句
-window.addEventListener('click', (e) => {
-  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
-  if (!isChoiceActive && 
-      !e.target.closest('button') && 
-      !e.target.closest('input') && 
-      !e.target.closest('#sidebar') && 
-      !e.target.closest('#chat-input')) {
-    // 模拟下一句按钮点击
-    nextBtn.click();
-  }
 });
 
 // -------------------- 初始化 --------------------

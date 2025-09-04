@@ -24,6 +24,8 @@ const dialogues = [
 // -------------------- DOM 元素 --------------------
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
+const avatarContainer = document.getElementById("character-avatar-container");
+const characterAvatar = document.getElementById("character-avatar");
 
 const nextBtn = document.getElementById("next-btn");
 const prevBtn = document.getElementById("prev-btn");
@@ -79,7 +81,27 @@ function showDialogue(idx) {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  nameBox.textContent = dialogues[index].name;
+  // 角色名称映射
+  const name = dialogues[index].name;
+  let displayName = name;
+  
+  if (name === "C") {
+    displayName = "旁白";
+    // 隐藏头像
+    avatarContainer.style.display = "none";
+  } else if (name === "B") {
+    displayName = "男主";
+    // 显示主角头像
+    avatarContainer.style.display = "block";
+    characterAvatar.src = "../../男主.png";
+  } else if (name === "A" || name === "芳乃") {
+    displayName = "学姐";
+    // 显示学姐头像
+    avatarContainer.style.display = "block";
+    characterAvatar.src = "../../学姐.png";
+  }
+  
+  nameBox.textContent = displayName;
 
   typeText(dialogues[index].text, () => {
     // 特定台词显示选择框或自动存档

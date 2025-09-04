@@ -2,6 +2,27 @@
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
 
+  // 初始化头像显示
+  if (avatarContainer && characterAvatar) {
+    // 初始隐藏头像，等待剧情显示时设置
+    avatarContainer.style.display = 'none';
+    
+    // 预加载头像图片
+    const preloadImages = () => {
+      const images = [
+        '../../学姐.png',
+        '../../男主.png'
+      ];
+      
+      images.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    };
+    
+    preloadImages();
+  }
+
   // 初始化好感度显示
   initAffection();
 
@@ -10,6 +31,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // 绑定按钮事件
   bindControlButtons();
+
+  // 确保window.phoneModule存在
+  window.phoneModule = window.phoneModule || {};
 });
 
 // -------------------- 剧情台词 --------------------
@@ -39,11 +63,15 @@ const autoSaveNotice = document.getElementById("auto-save-notice");
 const choiceContainer = document.getElementById("choice-container");
 const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box");
+const avatarContainer = document.querySelector(".character-avatar-container");
+const characterAvatar = document.querySelector(".character-avatar");
 
 // -------------------- 状态变量 --------------------
 let index = 0, charIndex = 0, typingSpeed = 50, typingInterval = null;
 let autoPlay = false, autoInterval = null, isFast = false;
-let isChoiceActive = false; // 新增：标记选择是否激活
+let isChoiceActive = false; // 标记选择是否激活
+let waitingForItem = false; // 等待物品交互的状态
+let isGameActive = true; // 游戏是否处于激活状态（可以继续推进）
 
 const affectionData = { fang: 50, other: 30 };
 
@@ -63,8 +91,45 @@ function typeText(text, callback) {
 
 // -------------------- 显示某条对话 --------------------
 function showDialogue(idx) {
+  // 检查是否处于等待手机响应状态
+  if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+    return; // 不执行任何操作，直到用户点击手机
+  }
+  
   index = Math.max(0, Math.min(idx, dialogues.length - 1));
-  nameBox.textContent = dialogues[index].name;
+  
+  // 根据name值修改显示名称和头像
+  let currentName = dialogues[index].name;
+  let displayName = currentName;
+  
+  // 根据name值修改显示名称和头像
+  if (currentName === 'C') {
+    // 旁白：隐藏头像
+    displayName = '旁白';
+    if (avatarContainer) avatarContainer.style.display = 'none';
+  } else if (currentName === 'B') {
+    // 主角：显示男主头像
+    displayName = '主角';
+    if (characterAvatar) {
+      characterAvatar.src = '../../男主.png';
+      characterAvatar.alt = '主角头像';
+    }
+    if (avatarContainer) avatarContainer.style.display = 'block';
+  } else if (currentName === 'A' || currentName.includes('学姐')) {
+    // 学姐：显示学姐头像
+    displayName = '学姐';
+    if (characterAvatar) {
+      characterAvatar.src = '../../学姐.png';
+      characterAvatar.alt = '学姐头像';
+    }
+    if (avatarContainer) avatarContainer.style.display = 'block';
+  } else {
+    // 其他角色：隐藏头像
+    if (avatarContainer) avatarContainer.style.display = 'none';
+  }
+  
+  // 更新显示名称
+  nameBox.textContent = displayName;
 
   typeText(dialogues[index].text, () => {
     // 如果到特殊台词需要显示选择框或自动存档，可在这里扩展
@@ -87,8 +152,12 @@ function handleNext() {
   } else if (index < dialogues.length - 1) {
     showDialogue(index + 1);
   } else {
-      setTimeout(showChoices, 500);
-
+    // 直接跳转到下一个页面，不显示选项
+    updateAffection('fang', affectionData.fang + 10);
+    document.body.classList.add("fade-out");
+    setTimeout(() => {
+      window.location.href = "../storypage2.0 与学姐好感度足够  3选择了1 1/storypage.html";
+    }, 1000);
   }
   stopAutoPlay();
 }
@@ -166,8 +235,8 @@ saveBtn.addEventListener("click", () => { saveGame(); alert("已存档！"); });
 loadBtn.addEventListener("click", () => window.location.href = "load.html");
 
 // -------------------- 选择框 --------------------
-function showChoices() { choiceContainer.classList.remove("hidden"); dialogBox.style.display = "none"; clearInterval(typingInterval); clearInterval(autoInterval); }
-function hideChoices() { choiceContainer.classList.add("hidden"); dialogBox.style.display = "block"; }
+function showChoices() { choiceContainer.classList.remove("hidden"); dialogBox.style.display = "none"; clearInterval(typingInterval); clearInterval(autoInterval); isChoiceActive = true; }
+function hideChoices() { choiceContainer.classList.add("hidden"); dialogBox.style.display = "block"; isChoiceActive = false; }
 
 function handleChoice(event) {
   const choice = event.currentTarget.dataset.choice;
@@ -209,28 +278,104 @@ function bindControlButtons() {
   speedBtn.addEventListener("click", toggleSpeed);
   skipBtn.addEventListener("click", handleSkip);
   autoBtn.addEventListener("click", toggleAutoPlay);
+  
+  // 空格键触发下一句
+  window.addEventListener('keydown', (e) => {
+    // 只有在空格键被按下且选择框未激活时才触发
+    if (e.code === 'Space' && !isChoiceActive && isGameActive) {
+      e.preventDefault(); // 阻止默认行为，避免页面滚动
+      // 检查是否处于等待手机响应状态
+      if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+        return; // 不执行任何操作，直到用户点击手机
+      }
+      // 模拟下一句按钮点击
+      handleNext();
+    }
+  });
+  
+  // 鼠标点击触发下一句
+  window.addEventListener('click', (e) => {
+    // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
+    if (!isChoiceActive && 
+        !e.target.closest('button') && 
+        !e.target.closest('input') && 
+        !e.target.closest('#sidebar') && 
+        !e.target.closest('#chat-input') && 
+        isGameActive) {
+      // 检查是否处于等待手机响应状态
+      if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
+        return; // 不执行任何操作，直到用户点击手机
+      }
+      // 模拟下一句按钮点击
+      handleNext();
+    }
+  });
 }
 
-// -------------------- 空格和点击触发下一句 --------------------
-// 空格键触发下一句
-window.addEventListener('keydown', (e) => {
-  // 只有在空格键被按下且选择框未激活时才触发
-  if (e.code === 'Space' && !isChoiceActive) {
-    e.preventDefault(); // 阻止默认行为，避免页面滚动
-    // 模拟下一句按钮点击
-    nextBtn.click();
+// -------------------- 手机响应处理 --------------------
+// 添加最后的消息到聊天记录并继续游戏
+window.phoneModule.addFinalMessageToChat = function() {
+  if (!window.phoneModule.hasReceivedFinalMessage) {
+    // 添加两条特定消息
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+      // 第一条消息 - 学姐发送
+      const message1 = document.createElement('div');
+      message1.classList.add('chat-message', 'received');
+      message1.innerHTML = `<div class="message-bubble">毕竟是工作上的大事 不能很快的做决定 等我的好消息哦（颜文字：开心）</div>`;
+      chatMessages.appendChild(message1);
+      
+      // 第二条消息 - 学姐发送
+      const message2 = document.createElement('div');
+      message2.classList.add('chat-message', 'received');
+      message2.innerHTML = `<div class="message-bubble">我会一直相信你的 可不能反悔哦</div>`;
+      chatMessages.appendChild(message2);
+      
+      // 滚动到底部
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      window.phoneModule.hasReceivedFinalMessage = true;
+      
+      // 3秒后关闭聊天界面并继续剧情
+      setTimeout(() => {
+        if (window.phoneModule.closeChatInterface) {
+          window.phoneModule.closeChatInterface();
+        }
+        
+        // 继续剧情
+        if (window.showDialogue) {
+          window.showDialogue(index + 1);
+        }
+        
+        // 重置状态
+        waitingForItem = false;
+        isGameActive = true;
+        
+      }, 3000);
+    }
   }
-});
+};
 
-// 鼠标点击触发下一句
-window.addEventListener('click', (e) => {
-  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
-  if (!isChoiceActive && 
-      !e.target.closest('button') && 
-      !e.target.closest('input') && 
-      !e.target.closest('#sidebar') && 
-      !e.target.closest('#chat-input')) {
-    // 模拟下一句按钮点击
-    nextBtn.click();
+// 处理手机响应（如果需要覆盖默认实现）
+window.phoneModule.handlePhoneResponse = function() {
+  const { phoneImage, phoneNotification } = window.phoneModule;
+  
+  // 移除震动效果和通知
+  if (phoneImage) {
+    phoneImage.classList.remove('phone-vibrating');
+    if (phoneNotification && phoneImage.contains(phoneNotification)) {
+      phoneImage.removeChild(phoneNotification);
+    }
   }
-});
+  
+  // 添加最后的消息到聊天记录
+  window.phoneModule.addFinalMessageToChat();
+  
+  // 自动打开聊天界面
+  if (window.phoneModule.openChatInterface) {
+    window.phoneModule.openChatInterface();
+  }
+  
+  // 重置等待手机响应的状态
+  window.phoneModule.waitingForPhoneResponse = false;
+};

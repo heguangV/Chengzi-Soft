@@ -27,6 +27,10 @@ const autoSaveNotice = document.getElementById("auto-save-notice");
 const saveBtn = document.getElementById("save-btn");
 const loadBtn = document.getElementById("load-btn");
 
+// 头像相关元素
+const characterAvatarContainer = document.getElementById('character-avatar-container');
+const characterAvatar = document.getElementById('character-avatar');
+
 // -------------------- 状态变量 --------------------
 let index = 0;
 let charIndex = 0;
@@ -50,30 +54,7 @@ const dialogues = [
   { name: "A", text: "“说好了 可就不能反悔了哦 我们要永远在一起”" }, 
   { name: "C", text: "在这温软的对话之间 周围好像变得越来越亮 我相信 我们的未来也会想这样无比耀眼吧…" }, 
 ];
-let currentName = dialogues[index].name;
-  let displayName = currentName;
-  
-  // 根据name值修改显示名称和头像
-  if (currentName === 'C') {
-    // 旁白：隐藏头像
-    displayName = '旁白';
-    avatarContainer.style.display = 'none';
-  } else if (currentName === 'B') {
-    // 主角：显示男主头像
-    displayName = '主角';
-    characterAvatar.src = '../../男主.png';
-    characterAvatar.alt = '主角头像';
-    avatarContainer.style.display = 'block';
-  } else if (currentName === 'A' || currentName.includes('学姐')) {
-    // 学姐：显示学姐头像
-    displayName = '学姐';
-    characterAvatar.src = '../../学姐.png';
-    characterAvatar.alt = '学姐头像';
-    avatarContainer.style.display = 'block';
-  } else {
-    // 其他角色：隐藏头像
-    avatarContainer.style.display = 'none';
-  }
+
 
 // -------------------- 打字机效果 --------------------
 function typeText(text, callback) {
@@ -97,7 +78,33 @@ function showDialogue(idx) {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  nameBox.textContent = dialogues[index].name;
+  // 名称映射逻辑
+  let currentName = dialogues[index].name;
+  let displayName = currentName;
+  
+  // 根据name值修改显示名称和头像
+  if (currentName === 'C') {
+    // 旁白：隐藏头像
+    displayName = '旁白';
+    characterAvatarContainer.style.display = 'none';
+  } else if (currentName === 'B') {
+    // 主角：显示男主头像
+    displayName = '男主';
+    characterAvatar.src = '../../男主.png';
+    characterAvatar.alt = '主角头像';
+    characterAvatarContainer.style.display = 'block';
+  } else if (currentName === 'A' || currentName === '芳乃') {
+    // 学姐：显示学姐头像
+    displayName = '学姐';
+    characterAvatar.src = '../../学姐.png';
+    characterAvatar.alt = '学姐头像';
+    characterAvatarContainer.style.display = 'block';
+  } else {
+    // 其他角色：隐藏头像
+    characterAvatarContainer.style.display = 'none';
+  }
+
+  nameBox.textContent = displayName;
 
   typeText(dialogues[index].text, () => {
     if (index === 999) autoSave();
@@ -113,15 +120,13 @@ nextBtn.addEventListener("click", () => {
     charIndex = dialogues[index].text.length;
     if (index === 999) setTimeout(showChoices, 500);
   } else {
-    if (index < dialogues.length - 1) {
-      showDialogue(index + 1);
-    } else {
-      document.body.classList.add("fade-out");
-      setTimeout(() => {
-        window.location.href = "";
-      }, 1000);
+      if (index < dialogues.length - 1) {
+        showDialogue(index + 1);
+      } else {
+        // 游戏结束，显示提示而不跳转
+        alert("游戏结束！");
+      }
     }
-  }
   stopAutoPlay();
 });
 
@@ -165,7 +170,11 @@ function startAutoPlay() {
       dialogText.textContent = dialogues[index].text;
     } else {
       if (index < dialogues.length - 1) showDialogue(index + 1);
-      else stopAutoPlay();
+      else {
+        // 游戏结束，显示提示而不跳转
+        alert("游戏结束！");
+        stopAutoPlay();
+      }
     }
   }, 2000);
 }
