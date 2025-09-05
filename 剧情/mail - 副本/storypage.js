@@ -236,6 +236,7 @@ function updateCharacterDisplay(name) {
 
 // -------------------- 下一句 --------------------
 function handleNext() {
+  if (window.phoneOpen) return;
   const currentDialogues = dialogues[currentBranch];
   if (!currentDialogues) return;
 
@@ -308,7 +309,7 @@ function goToNextScene(url) {
 
 // -------------------- 自动播放 --------------------
 function toggleAutoPlay() { autoPlay = !autoPlay; autoBtn.textContent = autoPlay ? "停止自动" : "自动播放"; autoPlay ? startAutoPlay() : stopAutoPlay(); }
-function startAutoPlay() { clearInterval(autoInterval); autoInterval = setInterval(handleNext, 3000); }
+function startAutoPlay() { clearInterval(autoInterval); autoInterval = setInterval(function() { if (!window.phoneOpen) handleNext(); }, 3000); }
 function stopAutoPlay() { clearInterval(autoInterval); autoPlay = false; autoBtn.textContent = "自动播放"; }
 
 // -------------------- 速度控制 --------------------
@@ -323,10 +324,10 @@ function adjustVolume() { bgMusic.volume = volumeRange.value / 100; }
 
 // -------------------- 初始化绑定 --------------------
 function bindControlButtons() {
-  nextBtn.addEventListener("click", handleNext);
-  prevBtn.addEventListener("click", handlePrev);
-  speedBtn.addEventListener("click", toggleSpeed);
-  autoBtn.addEventListener("click", toggleAutoPlay);
+  nextBtn.addEventListener("click", function() { if (!window.phoneOpen) handleNext(); });
+  prevBtn.addEventListener("click", function() { if (!window.phoneOpen) handlePrev(); });
+  speedBtn.addEventListener("click", function() { if (!window.phoneOpen) toggleSpeed(); });
+  autoBtn.addEventListener("click", function() { if (!window.phoneOpen) toggleAutoPlay(); });
   choiceBtns.forEach(btn => btn.addEventListener("click", handleChoice));
   musicBtn.addEventListener("click", toggleMusic);
   volumeRange.addEventListener("input", adjustVolume);
@@ -395,4 +396,28 @@ window.addEventListener("DOMContentLoaded", () => {
   showDialogue('common', 0);
   bindControlButtons();
   checkImages();
+
+  // 空格键推进剧情
+  window.addEventListener('keydown', function(e) {
+    if (e.code === 'Space' && !e.repeat && !window.phoneOpen) {
+      if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable)) return;
+      e.preventDefault();
+      handleNext();
+    }
+  });
+  // 鼠标左键点击推进剧情（排除按钮、输入框、侧边栏等区域）
+  window.addEventListener('click', function(e) {
+    if (
+      !e.target.closest('button') &&
+      !e.target.closest('input') &&
+      !e.target.closest('#sidebar') &&
+      !e.target.closest('#chat-input') &&
+      !e.target.closest('.choice-btn') &&
+      !e.target.closest('.chat-input') &&
+      !e.target.closest('.chat-send-btn') &&
+      !window.phoneOpen
+    ) {
+      handleNext();
+    }
+  });
 });
