@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // -------------------- 剧情对话 --------------------
   const dialogues = [
     { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。" },
-    { name: "旁白", text: "上课的日子有些枯燥，时间过的却很快，运动会悄悄接近了。" },
+    { name: "旁白", text: "上课的日子有些枯燥，时间过的却很快，运动会悄然接近了。" },
     { name: "旁白", text: "偶然间你得知了学姐也会参加这次运动会的800米项目，让本对运动不敢兴趣的你也决定前去观看。" },
     { name: "旁白", text: "到了学姐比赛那天，你买好能量饮料，备好一些糖果，前往操场。" },
     { name: "旁白", text: "女子800米准备处，你看见了学姐热身的身影。" },
@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (savedData) affectionData = JSON.parse(savedData);
     updateAffection(0);
   }
+  
 
   function showNotice(message) {
     const notice = document.createElement('div');
@@ -120,33 +121,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // -------------------- 显示某条对话 --------------------
   function showDialogue(idx) {
-    if (idx < 0) idx = 0;
-    if (idx >= dialogues.length) idx = dialogues.length - 1;
-    index = idx;
+  if (idx < 0) idx = 0;
+  if (idx >= dialogues.length) idx = dialogues.length - 1;
+  index = idx;
+
+  // 检查是否需要触发手机震动
+  if (dialogues[index].triggerPhone) {
+    // 调用phone.js中的函数使手机震动
+    if (window.makePhoneVibrate) {
+      window.makePhoneVibrate();
+    }
+    
+    // 暂停剧情推进
+    stopAutoPlay();
+    clearInterval(typingInterval);
+    return;
+  }
 
     let currentName = dialogues[index].name;
     nameBox.textContent = currentName;
 
-    // 根据角色显示不同头像 - 简化显示逻辑
-    if (currentName === "旁白") {
-      avatarContainer.style.display = 'none';
-    } else if (currentName === "学姐") {
-      // 确保头像容器可见
-      avatarContainer.style.display = 'flex';
-      // 设置头像图片路径并确保可见 - 使用正确的相对路径
-      characterAvatar.src = "../../学姐.png";
-      characterAvatar.style.display = 'block';
-      console.log('Loading 学姐.png');
-    } else if (currentName === "你") {
-      // 确保头像容器可见
-      avatarContainer.style.display = 'flex';
-      // 设置头像图片路径并确保可见 - 使用正确的相对路径
-      characterAvatar.src = "../../男主.png";
-      characterAvatar.style.display = 'block';
-      console.log('Loading 男主.png');
-    } else {
-      avatarContainer.style.display = 'none';
-    }
+    // 根据角色显示不同头像
+  if (currentName === "旁白") {
+    avatarContainer.style.display = 'none';
+  } else if (currentName === "学姐") {
+    characterAvatar.src = "../../学姐.png";
+    characterAvatar.style.display = 'block';
+    avatarContainer.style.display = 'flex';
+    console.log('Loading 学姐.png');
+  } else if (currentName === "你") {
+    characterAvatar.src = "../../男主.png";
+    characterAvatar.style.display = 'block';
+    avatarContainer.style.display = 'flex';
+    console.log('Loading 男主.png');
+  } else {
+    avatarContainer.style.display = 'none';
+
+  
+}
 
     typeText(dialogues[index].text, () => {
       if (dialogues[index].hasChoice) {
@@ -239,9 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
         { name: "旁白", text: "而后你推着轮椅把学姐送回了她的宿舍楼下。" }
       );
       updateAffection(30);
-    }
-    
-    // 继续剧情，已移除小游戏部分，确保剧情正常推进
+    }        // 继续剧情，已移除小游戏部分，确保剧情正常推进
     dialogues.push(
       { name: "旁白", text: "转眼到了期末周，期间你和学姐聊了不少。" },
       { name: "旁白", text: "学姐还和你介绍了BIT的热带风味冰红茶传说，据说只要在期末周抢到足够多的热带风味冰红茶，你的期末成绩就一定不会挂科。" },
@@ -254,25 +264,25 @@ document.addEventListener('DOMContentLoaded', function() {
       { name: "旁白", text: "在学姐的帮助下，你感觉自己的学习能力进一步提升了。" },
       { name: "旁白", text: "在学姐的帮助下和自己的努力下，你顺利通过了期末考试。" },
       { name: "旁白", text: "寒假到了……" },
-      { "name": "旁白", "text": "手机振动" },
-{ "name": "学姐", "text": "今天有空吗 我有点事情想找你商量一下..." },
-{ "name": "男主", "text": "我还在学校 随时听候差遣！" },
-{ "name": "学姐", "text": "那就在操场见吧 我等你哦" },
-{ "name": "男主", "text": "没想到 因为买不到车票留在学校 还能遇上这种事..." },
-{ "name": "旁白", "text": "操场上" },
-{ "name": "学姐", "text": "..." },
-{ "name": "学姐", "text": "其实 按照原定计划 这个学期结束后 我就要离开这里了 去国外继续学习工作" },
-{ "name": "男主", "text": "诶...?" },
-{ "name": "男主", "text": "怎么这么突然？" },
-{ "name": "学姐", "text": "其实 因为我的工作比较多 在学校的这几年一直没能交到什么朋友..." },
-{ "name": "学姐", "text": "由于家庭的影响 我从小就被要求做到最好 这种病态的意识让我忽略了日常的人际关系" },
-{ "name": "学姐", "text": "在这次运动会失利了之后 我也便决心离开这里了 反正这几年来也没有什么想留恋的" },
-{ "name": "男主", "text": "..." },
-{ "name": "学姐", "text": "但是真到了要走的时候 到有点放不下你 虽然只相处了半个学期 但是和你待在一起的感觉总是很难忘呢" },
-{ "name": "学姐", "text": "...我后天就要走了 有空的话记得来送送我哦" },
-{ "name": "男主", "text": "...我会来的...相信你在那边能取得成功的" },
-{ "name": "男主", "text": "看着学姐面带微笑的样子 想挽留的话仍然是没有说出口 到最后只能转变成一句祝愿" },
-{ "name": "男主", "text": "我真的有资格 留下她吗？" }
+      { name: "旁白", "text": "手机振动",triggerPhone: true  },
+{ name: "学姐", text: "今天有空吗 我有点事情想找你商量一下..." },
+{ name: "你", text: "我还在学校 随时听候差遣！" },
+{ name: "学姐", text: "那就在操场见吧 我等你哦" },
+{ name: "你", text: "没想到 因为买不到车票留在学校 还能遇上这种事..." },
+{ name: "旁白", text: "操场上" },
+{ name: "学姐", text: "..." },
+{ name: "学姐", text: "其实 按照原定计划 这个学期结束后 我就要离开这里了 去国外继续学习工作" },
+{ name: "你", text: "诶...?" },
+{ name: "你", text: "怎么这么突然？" },
+{ name: "学姐", text: "其实 因为我的工作比较多 在学校的这几年一直没能交到什么朋友..." },
+{ name: "学姐", text: "由于家庭的影响 我从小就被要求做到最好 这种病态的意识让我忽略了日常的人际关系" },
+{ name: "学姐", text: "在这次运动会失利了之后 我也便决心离开这里了 反正这几年来也没有什么想留恋的" },
+{ name: "你", text: "..." },
+{ name: "学姐", text: "但是真到了要走的时候 到有点放不下你 虽然只相处了半个学期 但是和你待在一起的感觉总是很难忘呢" },
+{ name: "学姐", text: "...我后天就要走了 有空的话记得来送送我哦" },
+{ name: "你", text: "...我会来的...相信你在那边能取得成功啊" },
+{ name: "你", text: "看着学姐面带微笑的样子 想挽留的话仍然是没有说出口 到最后只能转变下一句祝愿" },
+{ name: "你", text: "我真的有资格 留下她吗？" }
     );
     
     // 显示下一句对话
@@ -534,7 +544,10 @@ document.addEventListener('DOMContentLoaded', function() {
       stopAutoPlay();
     }
   });
-
+if (window.phoneModule && window.phoneModule.initPhoneElements) {
+    window.phoneModule.initPhoneElements();
+    window.phoneModule.initPhoneChat();
+  }
   // 初始化
   initAffection();
   showDialogue(0)
@@ -542,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
   /*
   // 创建一个测试函数，用于快速测试小游戏逻辑
   function testMiniGame() {
-    // 直接添加包含热带风味冰红茶的用户到dialogues数组末尾
+    // 直接添加包含热带风味冰红茶的对话到dialogues数组末尾
     const newDialogues = [
       { name: "旁白", text: "转眼到了期末周，期间你和学姐聊了不少。" },
       { name: "旁白", text: "学姐还和你介绍了BIT的热带风味冰红茶传说，据说只要在期末周抢到足够多的热带风味冰红茶，你的期末成绩就一定不会挂科。" },

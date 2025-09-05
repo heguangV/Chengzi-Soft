@@ -264,6 +264,55 @@ window.phoneModule.simulateReply = function() {
   // 滚动到底部
   chatMessages.scrollTop = chatMessages.scrollHeight;
 };
+window.phoneModule.addFinalMessageToChat = function() {
+  if (window.phoneModule.hasReceivedFinalMessage) return;
+  
+  window.phoneModule.hasReceivedFinalMessage = true;
+  
+  // 添加特定的消息序列
+  const finalMessages = [
+    { sender: "received", text: "今天有空吗 我有点事情想找你商量一下...", time: "12:30" },
+    { sender: "sent", text: "我还在学校 随时听候差遣！", time: "12:31" },
+    { sender: "received", text: "那就在操场见吧 我等你哦", time: "12:32" }
+  ];
+  
+  // 添加到聊天数据
+  window.phoneModule.chatData.push(...finalMessages);
+  
+  // 重新加载聊天消息
+  window.phoneModule.loadChatMessages();
+};
+
+// 修改handlePhoneResponse函数（应该在文件顶部附近定义）
+window.phoneModule.handlePhoneResponse = function() {
+  const { phoneImage, phoneNotification } = window.phoneModule;
+  
+  // 移除震动效果和通知
+  if (phoneImage) {
+    phoneImage.classList.remove("phone-vibrating");
+    if (phoneNotification && phoneImage.contains(phoneNotification)) {
+      phoneImage.removeChild(phoneNotification);
+    }
+  }
+  
+  // 添加特定的消息到聊天记录
+  window.phoneModule.addFinalMessageToChat();
+  
+  // 自动打开聊天界面
+  window.phoneModule.openChatInterface();
+  
+  // 继续对话
+  window.phoneModule.waitingForPhoneResponse = false;
+  
+  // 2秒后自动关闭聊天界面并继续剧情
+  setTimeout(() => {
+    window.phoneModule.closeChatInterface();
+    if (window.showDialogue && window.index !== undefined) {
+      // 跳过触发手机的对话，直接显示下一句
+      window.showDialogue(window.index + 1);
+    }
+  }, 2000);
+};
 
 // 自动发送"再见了"消息并关闭手机
 window.phoneModule.autoSendFarewellMessage = function(showDialogueFunc, currentIndexParam) {

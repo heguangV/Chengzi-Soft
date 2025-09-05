@@ -351,12 +351,4 @@ function bindControlButtons() {
   choiceBtns.forEach(btn => {
     btn.addEventListener("click", handleChoice);
   });
-  
-  // 绑定空格键实现下一句功能
-  document.addEventListener("keydown", (e) => {
-    if (e.code === "Space") {
-      e.preventDefault(); // 阻止默认行为（页面滚动）
-      handleNext();
-    }
-  });
 }

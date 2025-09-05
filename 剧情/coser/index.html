@@ -9,25 +9,24 @@
 </head>
 <body>
   <!-- 背景 - 使用绝对路径确保能找到 -->
-  <img src="images/comiket_bg.png.png" alt="漫展背景" class="background-img" onerror="handleImageError(this, 'background')">
+  <img src="./images/comiket_bg.png" alt="漫展背景" class="background-img" onerror="handleImageError(this, 'background')">
 
   <!-- 角色立绘 - 添加错误处理 -->
-  <img src="../../男主.png" alt="主角" class="character-avatar" id="main-character" onerror="handleImageError(this, 'character')">
-  <img src="../../学姐.png" alt="学姐" class="character-avatar" id="senpai-img" onerror="handleImageError(this, 'character')">
- 
-  
+   <img src="../../男主.png" alt="主角" class="character-avatar" id="main-character">
+  <img src="../../学姐.png" alt="学姐" class="character-avatar" id="senpai-img">
+  <img src="none" alt="朋友" class="character-avatar" id="friend-img">
   <!-- 对话框 -->
   <div class="dialog-box">
     <div class="character-name" id="speaker-name">系统</div>
     <div class="dialog-text" id="dialog-text"></div>
     <div class="dialog-controls">
-      <img src="images/kuang.png" alt="对话框" class="dialog-img" onerror="handleImageError(this, 'dialog')">
+      <img src="./images/kuang.png" alt="对话框" class="dialog-img" onerror="handleImageError(this, 'dialog')">
       <div class="control-images">
-        <img src="images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img" onerror="handleImageError(this, 'control')">
-        <img src="images/jiasu.png" alt="加速" id="speed-btn" class="control-img" onerror="handleImageError(this, 'control')">
-        <img src="images/zidong.png" alt="自动播放" id="auto-btn" class="control-img" onerror="handleImageError(this, 'control')">
-        <img src="images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img" onerror="handleImageError(this, 'control')">
-        <img src="images/xiayiju.png" alt="下一句" id="next-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="./images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="./images/jiasu.png" alt="加速" id="speed-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="./images/zidong.png" alt="自动播放" id="auto-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="./images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="./images/xiayiju.png" alt="下一句" id="next-btn" class="control-img" onerror="handleImageError(this, 'control')">
       </div>
     </div>
   </div>
@@ -35,7 +34,7 @@
   <!-- 好感度条 -->
   <div class="affection-container">
     <div class="affection-bar">
-      <div class="affection-bg" style="background-image: url('images/kuang.png');" onerror="handleBgError(this)"></div>
+      <div class="affection-bg" style="background-image: url('./images/6.png')" onerror="handleBgError(this)"></div>
       <div class="affection-fill" data-character="senpai" style="width: 30%"></div>
       <div class="affection-text">学姐: 30%</div>
     </div>
@@ -60,7 +59,7 @@
     </div>
   </div>
 
-  <audio id="bg-music" src="audio/bg-music.mp3" loop onerror="handleAudioError()"></audio>
+  <audio id="bg-music" src="./bgm/comiket_bgm.mp3" loop onerror="handleAudioError()"></audio>
 
   <!-- 选择界面 -->
   <div id="choice-container" class="hidden">
@@ -68,31 +67,8 @@
     <button class="choice-btn" data-choice="support">表示支持</button>
     <button class="choice-btn" data-choice="photograph">展现摄影技能</button>
   </div>
-<div id="phone-image">
-    <img src="../../phone.png" alt="手机" style="width: 130px; height: 150px;">
-  </div>
- <div id="phone-chat-interface">
-    <div class="phone-status-bar">
-      <span>12:30</span>
-      <span>📶 100% 🔋</span>
-    </div>
-    <div class="chat-header">
-      <div class="chat-back-btn" id="chat-close-btn">←</div>
-      <div class="chat-title">学姐</div>
-      <div class="chat-more-btn">⋯</div>
-    </div>
-    <div class="chat-messages" id="chat-messages">
-      <!-- 聊天消息将通过JS动态添加 -->
-    </div>
-    <div class="chat-input-area">
-      <input type="text" class="chat-input" placeholder="输入消息...">
-      <button class="chat-send-btn">↵</button>
-    </div>
-  </div>
-  
-  <div id="auto-save-notice" class="hidden">已存档</div>
 
-   <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
+  <div id="auto-save-notice" class="hidden">已存档</div>
 
   <script>
     // 图片错误处理函数
