@@ -1,3 +1,4 @@
+
 // -------------------- 图片错误处理 --------------------
 function handleImageError(img, type) {
   console.error('图片加载失败:', img.src);
@@ -497,4 +498,3 @@ if (loadBtn) {
         window.location.href = "../savepage/savepage2.0/save.htm";
     });
 }
-
