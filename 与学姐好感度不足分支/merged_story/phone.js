@@ -1,3 +1,14 @@
+// 全局监听手机聊天界面开关，自动设置 window.phoneOpen
+window.phoneOpen = false;
+document.addEventListener("DOMContentLoaded", function() {
+  var phoneChatInterface = document.getElementById("phone-chat-interface");
+  if (phoneChatInterface) {
+    var observer = new MutationObserver(function() {
+      window.phoneOpen = phoneChatInterface.classList.contains("show");
+    });
+    observer.observe(phoneChatInterface, { attributes: true, attributeFilter: ["class"] });
+  }
+});
 window.phoneModule = window.phoneModule || {};
 
 // DOM元素 - 手机相关
@@ -125,6 +136,11 @@ window.phoneModule.makePhoneVibrate = function() {
   if (window.stopAutoPlay) {
     window.stopAutoPlay();
   }
+  setTimeout(() => {
+  if (window.onPhoneVibrationComplete) {
+    window.onPhoneVibrationComplete();
+  }
+}, 20000); 
 };
 
 // 处理手机响应
@@ -148,13 +164,11 @@ window.phoneModule.handlePhoneResponse = function() {
   // 继续对话
   window.phoneModule.waitingForPhoneResponse = false;
   
-  // 2秒后自动关闭聊天界面并继续剧情
+  // 2秒后自动关闭聊天界面，不再自动推进剧情
   setTimeout(() => {
     window.phoneModule.closeChatInterface();
-    if (window.showDialogue && window.index !== undefined) {
-      window.showDialogue(window.index + 1);
-    }
-  }, 2000);
+    // 不自动调用 showDialogue
+  }, 5000);
 };
 
 // 加载聊天消息
@@ -271,9 +285,9 @@ window.phoneModule.addFinalMessageToChat = function() {
   
   // 添加特定的消息序列
   const finalMessages = [
-    { sender: "received", text: "今天有空吗 我有点事情想找你商量一下...", time: "12:30" },
-    { sender: "sent", text: "我还在学校 随时听候差遣！", time: "12:31" },
-    { sender: "received", text: "那就在操场见吧 我等你哦", time: "12:32" }
+    { sender: "received", text: "今天有空吗 我有点事情想找你商量一下...", time: "12:30" },500,
+    { sender: "sent", text: "我还在学校 随时听候差遣！", time: "12:31" },500,
+    { sender: "received", text: "那就在操场见吧 我等你哦", time: "12:32" },500,
   ];
   
   // 添加到聊天数据
@@ -304,14 +318,11 @@ window.phoneModule.handlePhoneResponse = function() {
   // 继续对话
   window.phoneModule.waitingForPhoneResponse = false;
   
-  // 2秒后自动关闭聊天界面并继续剧情
+  // 2秒后自动关闭聊天界面，不再自动推进剧情
   setTimeout(() => {
     window.phoneModule.closeChatInterface();
-    if (window.showDialogue && window.index !== undefined) {
-      // 跳过触发手机的对话，直接显示下一句
-      window.showDialogue(window.index + 1);
-    }
-  }, 2000);
+    // 不自动调用 showDialogue
+  }, 5000);
 };
 
 // 自动发送"再见了"消息并关闭手机
@@ -366,9 +377,7 @@ window.phoneModule.autoSendFarewellMessage = function(showDialogueFunc, currentI
       // 如果找不到元素，重置暂停标志并直接继续剧情
       window.gamePaused = false;
       setTimeout(() => {
-        if (showDialogue) {
-          showDialogue(currentIndex + 1);
-        }
+  // 不再自动推进剧情
       }, 500);
       return;
     }
@@ -429,10 +438,7 @@ window.phoneModule.autoSendFarewellMessage = function(showDialogueFunc, currentI
               // 重置暂停标志
               window.gamePaused = false;
               
-              if (typeof showDialogue === 'function') {
-                console.log('Continuing story with next dialogue...');
-                showDialogue(currentIndex + 1);
-              }
+              // 不再自动推进剧情
             }, 2000);
           }, 1500);
         } else {
@@ -441,9 +447,7 @@ window.phoneModule.autoSendFarewellMessage = function(showDialogueFunc, currentI
           setTimeout(() => {
             if (phoneChatInterface) phoneChatInterface.classList.remove('show');
             window.gamePaused = false; // 重置暂停标志
-            if (showDialogue) {
-              showDialogue(currentIndex + 1);
-            }
+            // 不再自动推进剧情
           }, 1000);
         }
       }, 500);
@@ -453,9 +457,7 @@ window.phoneModule.autoSendFarewellMessage = function(showDialogueFunc, currentI
       setTimeout(() => {
         if (phoneChatInterface) phoneChatInterface.classList.remove('show');
         window.gamePaused = false; // 重置暂停标志
-        if (window.showDialogue) {
-          window.showDialogue(currentIndex + 1);
-        }
+  // 不再自动推进剧情
       }, 1000);
     }
   }, 300);

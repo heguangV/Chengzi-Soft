@@ -60,6 +60,16 @@ window.addEventListener("DOMContentLoaded", () => {
   bindScreenClick();
   checkImages(); // 添加图片检查
   console.log("漫展约定事件初始化完成");
+
+  // 监听手机界面开关，控制剧情推进
+  window.phoneOpen = false;
+  const phoneChatInterface = document.getElementById("phone-chat-interface");
+  if (phoneChatInterface) {
+    const observer = new MutationObserver(() => {
+      window.phoneOpen = phoneChatInterface.classList.contains("show");
+    });
+    observer.observe(phoneChatInterface, { attributes: true, attributeFilter: ["class"] });
+  }
 });
 
 // -------------------- 剧情台词 --------------------
@@ -85,7 +95,7 @@ const dialogues = {
     { name: "学姐", text: "（穿着精致的COS服）「怎么样？这套衣服还不错吧？」" },
     { name: "你", text: "「超级棒！学姐真的很适合这个角色！」" },
     { name: "学姐", text: "「谢谢～那我们出发吧！今天要玩个痛快！」", effect: { senpai: +10 } },
-    { name: "系统", text: "你们在漫展度过了愉快的一天，关系更加亲近了。", nextScene: "next_scene.html" }
+  { name: "系统", text: "你们在漫展度过了愉快的一天，关系更加亲近了。", nextScene: "../../剧情/sport/index.html" }
   ],
   
   support: [
@@ -96,7 +106,7 @@ const dialogues = {
     { name: "系统", text: "漫展结束后，学姐在空间发了很多精美的COS照片。" },
     { name: "系统", text: "你在下面点赞评论，学姐很快回复了你。" },
     { name: "学姐", text: "「谢谢支持！下次漫展一起来玩吧～」" },
-    { name: "系统", text: "虽然没能一起去，但你们通过这种方式保持了联系。", nextScene: "next_scene.html" }
+  { name: "系统", text: "虽然没能一起去，但你们通过这种方式保持了联系。", nextScene: "../../剧情/sport/index.html" }
   ],
   
   photograph: [
@@ -112,7 +122,7 @@ const dialogues = {
     { name: "学姐", text: "（跑过来看相机）「哇！拍得真好！你太专业了！」" },
     { name: "朋友", text: "「哇哦～专属摄影师就是不一样呢！」" },
     { name: "学姐", text: "（脸红）「今天真的多亏你了...谢谢！」", effect: { senpai: +15 } },
-    { name: "系统", text: "你为学姐拍出了精美的照片，她在朋友圈特别感谢了你。", nextScene: "next_scene.html" }
+  { name: "系统", text: "你为学姐拍出了精美的照片，她在朋友圈特别感谢了你。", nextScene: "../../剧情/sport/index.html" }
   ]
 };
 
@@ -176,9 +186,7 @@ function toggleCharacterImage(speaker) {
   // 先隐藏所有角色
   const characterImages = document.querySelectorAll('.character-img');
   characterImages.forEach(img => {
-    if (img.id !== 'main-character') {
-      img.classList.add('hidden');
-    }
+    img.classList.add('hidden');
   });
 
   // 根据说话人显示对应的角色
@@ -192,8 +200,11 @@ function toggleCharacterImage(speaker) {
     case '老师':
       if (friendImg) friendImg.classList.remove('hidden'); // 使用朋友立绘代替老师
       break;
+    case '主角':
     default:
       // 系统或其他对话时显示主角
+      const mainCharacterImg = document.getElementById('main-character');
+      if (mainCharacterImg) mainCharacterImg.classList.remove('hidden');
       break;
   }
 }
@@ -325,6 +336,7 @@ function initAffection() {
 // -------------------- 屏幕点击继续 --------------------
 function bindScreenClick() {
   document.body.addEventListener('click', function(event) {
+    if (window.phoneOpen) return;
     if (!event.target.closest('.choice-btn') && 
         !event.target.closest('.control-images') &&
         !event.target.closest('#sidebar') &&
@@ -332,6 +344,14 @@ function bindScreenClick() {
       handleNext();
     }
   });
+  // 空格键推进剧情
+  document.addEventListener('keydown', function(e) {
+    if (window.phoneOpen) return;
+    if (e.code === 'Space' && !e.repeat) {
+      handleNext();
+    }
+  });
+  if (window.phoneOpen) return;
 }
 
 // -------------------- 自动播放控制 --------------------

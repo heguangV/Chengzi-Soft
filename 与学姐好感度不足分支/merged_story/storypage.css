@@ -44,6 +44,9 @@
 
   .background-img,
 .character-img {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
   max-width: 100%;
 }
 
@@ -308,8 +311,8 @@
       position: absolute;
       bottom: 20%;
       max-height: 140%;
-      mask-image: linear-gradient(
-      to bottom,
+      transform: translate(-50%, 0);
+      to bottom :
       rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
       rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
     );

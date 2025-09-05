@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let isChoiceActive = false;
   let isMiniGameActive = false;
 
+  let isPaused = false;
   // -------------------- 剧情对话 --------------------
   const dialogues = [
     { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。" },
@@ -125,23 +126,10 @@ document.addEventListener('DOMContentLoaded', function() {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  // 检查是否需要触发手机震动
-  if (dialogues[index].triggerPhone) {
-    // 调用phone.js中的函数使手机震动
-    if (window.makePhoneVibrate) {
-      window.makePhoneVibrate();
-    }
-    
-    // 暂停剧情推进
-    stopAutoPlay();
-    clearInterval(typingInterval);
-    return;
-  }
+  let currentName = dialogues[index].name;
+  nameBox.textContent = currentName;
 
-    let currentName = dialogues[index].name;
-    nameBox.textContent = currentName;
-
-    // 根据角色显示不同头像
+  // 根据角色显示不同头像
   if (currentName === "旁白") {
     avatarContainer.style.display = 'none';
   } else if (currentName === "学姐") {
@@ -156,21 +144,57 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Loading 男主.png');
   } else {
     avatarContainer.style.display = 'none';
+  }
 
-  
-}
 
-    typeText(dialogues[index].text, () => {
-      if (dialogues[index].hasChoice) {
-        forceShowChoices();
-      }
-      // 以下代码已被注释，禁用小游戏功能，确保剧情正常推进
-      /*
-      else if (dialogues[index].hasMiniGame) {
-        showMiniGame();
-      }
-      */
-    });
+  // 检查是否需要触发手机震动
+  if (dialogues[index].triggerPhone) {
+    // 设置全局暂停状态
+    isPaused = true;
+    stopAutoPlay();
+    clearInterval(typingInterval);
+    dialogText.textContent = dialogues[index].text;
+    charIndex = dialogues[index].text.length;
+    // 调用phone.js中的函数使手机震动
+    if (window.makePhoneVibrate) {
+      window.makePhoneVibrate();
+      // 添加回调函数，当手机震动结束后恢复剧情
+      window.onPhoneVibrationComplete = function() {
+        isPaused = false;
+        if (index < dialogues.length - 1) {
+          showDialogue(index + 1);
+        }
+      };
+    }
+    // 监听 window.phoneOpen 状态变化，关闭手机界面时恢复剧情
+    if (!window._phoneOpenListenerAdded) {
+      window._phoneOpenListenerAdded = true;
+      let lastPhoneOpen = window.phoneOpen;
+      setInterval(function() {
+        if (lastPhoneOpen && !window.phoneOpen && isPaused) {
+          // 手机界面刚刚关闭且剧情暂停，恢复剧情
+          isPaused = false;
+          if (index < dialogues.length - 1) {
+            showDialogue(index + 1);
+          }
+        }
+        lastPhoneOpen = window.phoneOpen;
+      }, 300);
+    }
+    return; // 暂停剧情，等待手机震动结束或手机界面关闭后继续
+  }
+
+  typeText(dialogues[index].text, () => {
+    if (dialogues[index].hasChoice) {
+      forceShowChoices();
+    }
+    // 以下代码已被注释，禁用小游戏功能，确保剧情正常推进
+    /*
+    else if (dialogues[index].hasMiniGame) {
+      showMiniGame();
+    }
+    */
+  });
   }
 
   // -------------------- 强制显示选择框 --------------------
@@ -265,16 +289,13 @@ document.addEventListener('DOMContentLoaded', function() {
       { name: "旁白", text: "在学姐的帮助下和自己的努力下，你顺利通过了期末考试。" },
       { name: "旁白", text: "寒假到了……" },
       { name: "旁白", "text": "手机振动",triggerPhone: true  },
-{ name: "学姐", text: "今天有空吗 我有点事情想找你商量一下..." },
-{ name: "你", text: "我还在学校 随时听候差遣！" },
-{ name: "学姐", text: "那就在操场见吧 我等你哦" },
 { name: "你", text: "没想到 因为买不到车票留在学校 还能遇上这种事..." },
 { name: "旁白", text: "操场上" },
 { name: "学姐", text: "..." },
 { name: "学姐", text: "其实 按照原定计划 这个学期结束后 我就要离开这里了 去国外继续学习工作" },
 { name: "你", text: "诶...?" },
 { name: "你", text: "怎么这么突然？" },
-{ name: "学姐", text: "其实 因为我的工作比较多 在学校的这几年一直没能交到什么朋友..." },
+{ name: "学姐", text: "其实 因为我的工作比较多 在学校的几年一直没能交到什么朋友..." },
 { name: "学姐", text: "由于家庭的影响 我从小就被要求做到最好 这种病态的意识让我忽略了日常的人际关系" },
 { name: "学姐", text: "在这次运动会失利了之后 我也便决心离开这里了 反正这几年来也没有什么想留恋的" },
 { name: "你", text: "..." },
@@ -427,9 +448,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // -------------------- 事件监听器 --------------------
+
   nextBtn.addEventListener("click", () => {
-    if (isChoiceActive || isMiniGameActive) return;
-    
+    if (window.phoneOpen) return; // 手机界面打开时禁止推进剧情
+    if (isPaused || isChoiceActive || isMiniGameActive) return;
     if (charIndex < dialogues[index].text.length) {
       clearInterval(typingInterval);
       dialogText.textContent = dialogues[index].text;
@@ -443,11 +465,13 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   prevBtn.addEventListener("click", () => {
+    if (isPaused) return;
     showDialogue(index - 1);
     stopAutoPlay();
   });
 
   speedBtn.addEventListener("click", () => {
+    if (isPaused) return;
     isFast = !isFast;
     typingSpeed = isFast ? 10 : 50;
     speedBtn.textContent = isFast ? "原速" : "加速";
@@ -455,6 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   autoBtn.addEventListener("click", () => {
+    if (isPaused) return;
     if (isChoiceActive || isMiniGameActive) return;
     
     autoPlay = !autoPlay;
@@ -501,25 +526,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 添加键盘空格键事件监听器
   document.addEventListener('keydown', (e) => {
-    // 空格键(32)触发下一句
-    if (e.keyCode === 32) {
+    if (window.phoneOpen) return; // 手机界面打开时禁止推进剧情
+    if (isPaused) return;
+    // 统一空格键推进逻辑
+    if (e.code === 'Space') {
+      e.preventDefault(); // 阻止页面滚动
       if (isChoiceActive || isMiniGameActive) return;
-      
-      if (charIndex < dialogues[index].text.length) {
-        clearInterval(typingInterval);
-        dialogText.textContent = dialogues[index].text;
-        charIndex = dialogues[index].text.length;
-      } else {
-        if (index < dialogues.length - 1) {
-          showDialogue(index + 1);
-        }
-      }
-      stopAutoPlay();
+      // 模拟点击下一句按钮，保持与其它文件一致
+      nextBtn.click();
     }
   });
 
   // 添加鼠标左键点击事件监听器
   document.addEventListener('click', (e) => {
+    if (window.phoneOpen) return; // 手机界面打开时禁止推进剧情
+    if (isPaused) return;
     // 确保点击的不是其他交互元素
     if (e.target.tagName !== 'BUTTON' && 
         e.target.tagName !== 'INPUT' && 
@@ -529,9 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         !e.target.closest('input') &&
         !e.target.closest('img') &&
         !e.target.closest('#sidebar-toggle')) {
-      
       if (isChoiceActive || isMiniGameActive) return;
-      
       if (charIndex < dialogues[index].text.length) {
         clearInterval(typingInterval);
         dialogText.textContent = dialogues[index].text;

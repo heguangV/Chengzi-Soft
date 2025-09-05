@@ -9,12 +9,12 @@
 </head>
 <body>
   <!-- 背景 - 使用绝对路径确保能找到 -->
-  <img src="./images/comiket_bg.png" alt="漫展背景" class="background-img" onerror="handleImageError(this, 'background')">
+  
 
-  <!-- 角色立绘 - 添加错误处理 -->
-   <img src="../../男主.png" alt="主角" class="character-avatar" id="main-character">
-  <img src="../../学姐.png" alt="学姐" class="character-avatar" id="senpai-img">
-  <img src="none" alt="朋友" class="character-avatar" id="friend-img">
+  <!-- 角色立绘 - 统一使用 character-img class -->
+  <img src="../../男主.png" alt="主角" class="character-img" id="main-character">
+  <img src="../../学姐.png" alt="学姐" class="character-img" id="senpai-img">
+  <img src="../../青梅.png" alt="朋友" class="character-img hidden" id="friend-img">
   <!-- 对话框 -->
   <div class="dialog-box">
     <div class="character-name" id="speaker-name">系统</div>
@@ -68,38 +68,32 @@
     <button class="choice-btn" data-choice="photograph">展现摄影技能</button>
   </div>
 
+  <div id="phone-image">
+    <img src="../../phone.png" alt="手机" style="width: 130px; height: 150px;">
+  </div>
+
+ <div id="phone-chat-interface">
+    <div class="phone-status-bar">
+      <span>12:30</span>
+      <span>📶 100% 🔋</span>
+    </div>
+    <div class="chat-header">
+      <div class="chat-back-btn" id="chat-close-btn">←</div>
+      <div class="chat-title">学姐</div>
+      <div class="chat-more-btn">⋯</div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- 聊天消息将通过JS动态添加 -->
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" placeholder="输入消息...">
+      <button class="chat-send-btn">↵</button>
+    </div>
+  </div>
+
   <div id="auto-save-notice" class="hidden">已存档</div>
+   <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
 
-  <script>
-    // 图片错误处理函数
-    function handleImageError(img, type) {
-      console.error('图片加载失败:', img.src);
-      switch(type) {
-        case 'background':
-          img.style.backgroundColor = '#87CEEB'; // 天空蓝作为背景
-          break;
-        case 'character':
-          img.style.backgroundColor = '#f0f0f0';
-          img.style.border = '2px dashed #ccc';
-          break;
-        case 'dialog':
-          img.parentElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-          break;
-        case 'control':
-          img.style.backgroundColor = '#eee';
-          img.style.border = '1px solid #999';
-          break;
-      }
-    }
-
-    function handleBgError(element) {
-      console.error('背景图片加载失败');
-      element.style.backgroundColor = 'rgba(255, 192, 203, 0.3)';
-    }
-
-    function handleAudioError() {
-      console.warn('背景音乐加载失败');
-    }
-  </script>
+ 
 </body>
 </html>

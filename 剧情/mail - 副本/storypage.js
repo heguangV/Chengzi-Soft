@@ -6,6 +6,14 @@ window.addEventListener("DOMContentLoaded", () => {
   bindControlButtons();
   bindScreenClick();
   console.log("游戏初始化完成");
+
+  // 空格键推进剧情，手机界面打开时无效
+  document.addEventListener('keydown', function(e) {
+    if (window.phoneOpen) return;
+    if (e.code === 'Space' && !e.repeat) {
+      handleNext();
+    }
+  });
 });
 
 // -------------------- 剧情台词 --------------------
@@ -29,10 +37,10 @@ const dialogues = {
     { "name": "旁白", "text": "……" },
     { "name": "旁白", "text": "你成功加到了学姐的QQ，也加入到了新生群，看到了校园地图。" },
     { "name": "旁白", "text": "你继续逛着迎新会，闲来无事翻看了学姐QQ空间，发现你们兴趣爱好非常相同，并且学姐还是一名coser。" },
-    { name: "系统", text: "周末的天街商场人头攒动，美食区的空气里混杂着各种令人食指大动的香气。" },
-    { name: "系统", text: "你正纠结于是吃火锅还是拉面时，一个熟悉的身影闯入了你的视线。" },
-    { name: "系统", text: "是学姐。她正和一位朋友有说有笑，似乎也面临着同样的选择困难。" },
-    { name: "系统", text: "你犹豫着要不要上前打招呼。", triggerChoice: "main" }
+  { name: "旁白", text: "周末的天街商场人头攒动，美食区的空气里混杂着各种令人食指大动的香气。" },
+  { name: "旁白", text: "你正纠结于是吃火锅还是拉面时，一个熟悉的身影闯入了你的视线。" },
+  { name: "旁白", text: "是学姐。她正和一位朋友有说有笑，似乎也面临着同样的选择困难。" },
+  { name: "旁白", text: "你犹豫着要不要上前打招呼。", triggerChoice: "main" }
   ],
   
   approach: [
@@ -45,21 +53,21 @@ const dialogues = {
     { name: "你", text: "「当然好啊！求之不得。」" },
     { name: "朋友", text: "「哈哈，爽快！那就这么定了！我知道那边有家店味道不错，走吧！」 （说着便热情地在前面带路）" },
     { name: "学姐", text: "（看着你，无奈又觉得好笑地笑了笑）「好吧...那就一起吧。她总是这样风风火火的，你别介意。」", effect: { senpai: +15 } },
-    { name: "系统", text: "你们三人一起享用了一顿愉快的晚餐。你和学姐的距离似乎拉近了不少。", nextScene: "../coser/index.html" }
+  { name: "旁白", text: "你们三人一起享用了一顿愉快的晚餐。你和学姐的距离似乎拉近了不少。", nextScene: "../coser/index.html" }
   ],
   
   observe: [
-    { name: "系统", text: "你决定不上前打扰，只是在不远处的一个角落坐下，偶尔望向她们的方向。" },
-    { name: "系统", text: "学姐和朋友似乎终于决定了吃什么，笑着向一家餐厅走去。" },
-    { name: "系统", text: "学姐无意中回头，似乎瞥见了你，略微停顿了一下，但最终还是被朋友拉走了。" },
-    { name: "系统", text: "一次平静的周末，什么也没有发生。", effect: { senpai: 0 } },
-    { name: "系统", text: "你独自一人吃完了晚饭。", nextScene: "../coser/index.html" }
+  { name: "旁白", text: "你决定不上前打扰，只是在不远处的一个角落坐下，偶尔望向她们的方向。" },
+  { name: "旁白", text: "学姐和朋友似乎终于决定了吃什么，笑着向一家餐厅走去。" },
+  { name: "旁白", text: "学姐无意中回头，似乎瞥见了你，略微停顿了一下，但最终还是被朋友拉走了。" },
+  { name: "旁白", text: "一次平静的周末，什么也没有发生。", effect: { senpai: 0 } },
+  { name: "旁白", text: "你独自一人吃完了晚饭。", nextScene: "../coser/index.html" }
   ],
   
   leave: [
-    { name: "系统", text: "你犹豫了一下，最终还是选择了离开。人群很快淹没了她们的背影。" },
-    { name: "系统", text: "也许保持距离才是正确的选择。", effect: { senpai: 0 } },
-    { name: "系统", text: "你独自一人吃完了晚饭。", nextScene: "../coser/index.html" }
+  { name: "旁白", text: "你犹豫了一下，最终还是选择了离开。人群很快淹没了她们的背影。" },
+  { name: "旁白", text: "也许保持距离才是正确的选择。", effect: { senpai: 0 } },
+  { name: "旁白", text: "你独自一人吃完了晚饭。", nextScene: "../coser/index.html" }
   ]
 };
 
@@ -160,8 +168,8 @@ function updateCharacterDisplay(name) {
   if (friendImg) friendImg.classList.add('hidden');
   
   // 根据说话者显示对应的角色
-  if (name === '你' || name === '系统') {
-    // 主角说话或系统旁白时显示主角
+  if (name === '你') {
+    // 主角说话时显示主角
     if (mainCharacter) mainCharacter.classList.remove('hidden');
   } else if (name === '学姐') {
     // 学姐说话时显示学姐
@@ -170,6 +178,7 @@ function updateCharacterDisplay(name) {
     // 朋友说话时显示朋友
     if (friendImg) friendImg.classList.remove('hidden');
   }
+  // 系统和旁白时都不显示主角
 }
 
 // -------------------- 下一句按钮 --------------------

@@ -124,9 +124,9 @@ function showDialogue(idx) {
 
 // -------------------- 按钮事件 --------------------
 function handleNext() {
-  // 检查是否处于等待手机响应状态
-  if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
-    return; // 不执行任何操作，直到用户点击手机
+  // 检查是否处于等待手机响应状态或手机界面打开
+  if ((window.phoneModule && window.phoneModule.waitingForPhoneResponse) || window.phoneOpen) {
+    return; // 不执行任何操作，直到用户点击手机或关闭手机界面
   }
   
   if (charIndex < dialogues[index].text.length) {
@@ -142,12 +142,12 @@ function handleNext() {
   stopAutoPlay();
 }
 
-nextBtn.addEventListener("click", handleNext);
+nextBtn.addEventListener("click", function() { if (!window.phoneOpen) handleNext(); });
 
-prevBtn.addEventListener("click", () => { showDialogue(index - 1); stopAutoPlay(); });
-speedBtn.addEventListener("click", () => { isFast = !isFast; typingSpeed = isFast ? 10 : 50; speedBtn.textContent = isFast ? "原速" : "加速"; showDialogue(index); });
-skipBtn.addEventListener("click", () => { clearInterval(typingInterval); dialogText.textContent = dialogues[index].text; stopAutoPlay(); });
-autoBtn.addEventListener("click", () => { autoPlay = !autoPlay; autoPlay ? (autoBtn.textContent = "停止自动", startAutoPlay()) : stopAutoPlay(); });
+prevBtn.addEventListener("click", function() { if (!window.phoneOpen) { showDialogue(index - 1); stopAutoPlay(); } });
+speedBtn.addEventListener("click", function() { if (!window.phoneOpen) { isFast = !isFast; typingSpeed = isFast ? 10 : 50; speedBtn.textContent = isFast ? "原速" : "加速"; showDialogue(index); } });
+skipBtn.addEventListener("click", function() { if (!window.phoneOpen) { clearInterval(typingInterval); dialogText.textContent = dialogues[index].text; stopAutoPlay(); } });
+autoBtn.addEventListener("click", function() { if (!window.phoneOpen) { autoPlay = !autoPlay; autoPlay ? (autoBtn.textContent = "停止自动", startAutoPlay()) : stopAutoPlay(); } });
 
 // -------------------- 自动播放 --------------------
 function startAutoPlay() {
@@ -226,8 +226,8 @@ function initAffection() {
 // -------------------- 空格和点击触发下一句 --------------------
 // 空格键触发下一句
 window.addEventListener('keydown', (e) => {
-  // 只有在空格键被按下且选择框未激活时才触发
-  if (e.code === 'Space' && !isChoiceActive && isGameActive) {
+  // 只有在空格键被按下且选择框未激活且手机未打开时才触发
+  if (e.code === 'Space' && !isChoiceActive && isGameActive && !window.phoneOpen) {
     e.preventDefault(); // 阻止默认行为，避免页面滚动
     // 检查是否处于等待手机响应状态
     if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
@@ -244,13 +244,13 @@ window.addEventListener('keydown', (e) => {
 
 // 鼠标点击触发下一句
 window.addEventListener('click', (e) => {
-  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
+  // 只有在选择框未激活且点击的不是按钮等交互元素且手机未打开时才触发
   if (!isChoiceActive && 
       !e.target.closest('button') && 
       !e.target.closest('input') && 
       !e.target.closest('#sidebar') && 
       !e.target.closest('#chat-input') && 
-      isGameActive) {
+      isGameActive && !window.phoneOpen) {
     // 检查是否处于等待手机响应状态
     if (window.phoneModule && window.phoneModule.waitingForPhoneResponse) {
       return; // 不执行任何操作，直到用户点击手机
