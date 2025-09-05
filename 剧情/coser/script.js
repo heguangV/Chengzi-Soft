@@ -1,4 +1,3 @@
-
 // -------------------- 图片错误处理 --------------------
 function handleImageError(img, type) {
   console.error('图片加载失败:', img.src);
@@ -61,6 +60,25 @@ window.addEventListener("DOMContentLoaded", () => {
   checkImages(); // 添加图片检查
   console.log("漫展约定事件初始化完成");
 
+  // 🔹 页面加载时检查是否通过 URL 读档
+  const urlParams = new URLSearchParams(window.location.search);
+  const loadTimestamp = urlParams.get("load");
+  if (loadTimestamp) {
+  const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  const save = saves.find(s => s.timestamp == loadTimestamp);
+    if (save) {
+    currentBranch = save.branch;
+    index = save.dialogueIndex;
+    Object.assign(affectionData, save.affectionData);
+    updateAffection('senpai', affectionData.senpai);
+    
+    // 隐藏选择界面，显示对话框
+    hideAllChoices();
+    showDialogue(currentBranch, index);
+    alert("读档成功！");
+    }
+  }
+
   // 监听手机界面开关，控制剧情推进
   window.phoneOpen = false;
   const phoneChatInterface = document.getElementById("phone-chat-interface");
@@ -82,7 +100,6 @@ const dialogues = {
     { name: "系统", text: "学姐眼中闪烁着兴奋的光芒，似乎对这次漫展充满期待。" },
     { name: "系统", text: "你决定...", triggerChoice: "main" }
   ],
-  
   join: [
     { name: "你", text: "「学姐，我正好也想去漫展，可以一起去吗？」" },
     { name: "学姐", text: "（惊喜地）「真的吗？太好了！正好我可以多一个帮手～」" },
@@ -97,7 +114,6 @@ const dialogues = {
     { name: "学姐", text: "「谢谢～那我们出发吧！今天要玩个痛快！」", effect: { senpai: +10 } },
   { name: "系统", text: "你们在漫展度过了愉快的一天，关系更加亲近了。", nextScene: "../../剧情/sport/index.html" }
   ],
-  
   support: [
     { name: "你", text: "「学姐加油！期待看到你的COS照片～」" },
     { name: "学姐", text: "「谢谢～我会多发一些照片到空间的！」" },
@@ -108,7 +124,6 @@ const dialogues = {
     { name: "学姐", text: "「谢谢支持！下次漫展一起来玩吧～」" },
   { name: "系统", text: "虽然没能一起去，但你们通过这种方式保持了联系。", nextScene: "../../剧情/sport/index.html" }
   ],
-  
   photograph: [
     { name: "你", text: "「学姐，我拍照技术还不错，需要摄影师吗？」" },
     { name: "学姐", text: "（眼睛一亮）「真的吗？太好了！我正愁找不到合适的摄影师呢！」" },
@@ -139,6 +154,21 @@ const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box");
 const senpaiImg = document.getElementById("senpai-img");
 const friendImg = document.getElementById("friend-img");
+// 获取 body 背景图片的绝对路径
+function getBodyBackgroundAbsoluteUrl() {
+  const bg = window.getComputedStyle(document.body).backgroundImage; 
+  // bg 可能是 'url("images/bg1.png")' 或者 'none'
+  if (!bg || bg === "none") return null;
+
+  // 去掉 url("") 包裹
+  let url = bg.slice(4, -1).replace(/["']/g, "");
+
+  // 转成绝对路径
+  const absoluteUrl = new URL(url, window.location.href).href;
+  return absoluteUrl;
+}
+
+const bodyBg = getBodyBackgroundAbsoluteUrl();
 
 // -------------------- 状态变量 --------------------
 let currentBranch = 'common';
@@ -183,13 +213,11 @@ function typeText(text, callback) {
 
 // -------------------- 切换角色立绘 --------------------
 function toggleCharacterImage(speaker) {
-  // 先隐藏所有角色
   const characterImages = document.querySelectorAll('.character-img');
   characterImages.forEach(img => {
     img.classList.add('hidden');
   });
 
-  // 根据说话人显示对应的角色
   switch(speaker) {
     case '学姐':
       if (senpaiImg) senpaiImg.classList.remove('hidden');
@@ -224,9 +252,7 @@ function showDialogue(branch, idx) {
   nameBox.textContent = dialogue.name;
   toggleCharacterImage(dialogue.name);
 
-  typeText(dialogue.text, () => {
-    // 对话显示完成后，只处理特定条件，不自动继续
-  });
+  typeText(dialogue.text, () => {});
 }
 
 // -------------------- 下一句按钮 --------------------
@@ -267,15 +293,10 @@ function handleNext() {
 
 // -------------------- 显示选择框 --------------------
 function showChoices(choiceType) {
-  if (hasMadeChoice) {
-    console.log("已经做出选择，不再显示选择框");
-    return;
-  }
+  if (hasMadeChoice) return;
   
   dialogBox.style.display = "none";
-  if (choiceType === "main") {
-    choiceContainer.classList.remove("hidden");
-  }
+  if (choiceType === "main") choiceContainer.classList.remove("hidden");
   clearIntervals();
 }
 
@@ -293,10 +314,7 @@ function clearIntervals() {
 
 // -------------------- 处理选择 --------------------
 function handleChoice(event) {
-  if (hasMadeChoice) {
-    console.log("已经做出选择，不能再选择");
-    return;
-  }
+  if (hasMadeChoice) return;
   
   const choice = event.currentTarget.dataset.choice;
   hideAllChoices();
@@ -326,9 +344,7 @@ function initAffection() {
   const savedData = localStorage.getItem('affectionData');
   if (savedData) {
     const loadedData = JSON.parse(savedData);
-    if (loadedData.senpai !== undefined) {
-      affectionData.senpai = loadedData.senpai;
-    }
+    if (loadedData.senpai !== undefined) affectionData.senpai = loadedData.senpai;
   }
   updateAffection('senpai', affectionData.senpai);
 }
@@ -360,16 +376,12 @@ function toggleAutoPlay() {
   if (autoPlay) {
     autoBtn.textContent = "停止自动";
     startAutoPlay();
-  } else {
-    stopAutoPlay();
-  }
+  } else stopAutoPlay();
 }
 
 function startAutoPlay() {
   clearInterval(autoInterval);
-  autoInterval = setInterval(() => {
-    handleNext();
-  }, 3000);
+  autoInterval = setInterval(() => handleNext(), 3000);
 }
 
 function stopAutoPlay() {
@@ -380,9 +392,7 @@ function stopAutoPlay() {
 
 // -------------------- 其他控制按钮 --------------------
 function handlePrev() {
-  if (index > 0) {
-    showDialogue(currentBranch, index - 1);
-  }
+  if (index > 0) showDialogue(currentBranch, index - 1);
   stopAutoPlay();
 }
 
@@ -409,9 +419,7 @@ function bindControlButtons() {
   if (skipBtn) skipBtn.addEventListener("click", handleSkip);
   if (autoBtn) autoBtn.addEventListener("click", toggleAutoPlay);
   
-  choiceBtns.forEach(btn => {
-    btn.addEventListener("click", handleChoice);
-  });
+  choiceBtns.forEach(btn => btn.addEventListener("click", handleChoice));
 }
 
 // -------------------- 音频控制 --------------------
@@ -421,9 +429,7 @@ const volumeRange = document.getElementById("volume-range");
 
 if (volumeRange) {
   volumeRange.addEventListener("input", () => {
-    if (bgMusic) {
-      bgMusic.volume = volumeRange.value / 100;
-    }
+    if (bgMusic) bgMusic.volume = volumeRange.value / 100;
   });
 }
 
@@ -447,44 +453,54 @@ const sidebar = document.getElementById("sidebar");
 const toggleBtn = document.getElementById("sidebar-toggle");
 
 if (toggleBtn && sidebar) {
-  toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("show");
-  });
+  toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
 }
 
-// -------------------- 存档读档 --------------------
-const saveBtn = document.getElementById("save-btn");
-const loadBtn = document.getElementById("load-btn");
+// -------------------- 存档读档（完整新版，多存档） --------------------
 
+const saveBtn = document.getElementById("save-btn");
 if (saveBtn) {
   saveBtn.addEventListener("click", () => {
+    // 读现有存档数组
+    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+
+    // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
+    let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
+
+    // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
+    if (window.location.protocol === "file:") {
+      scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
+      if (!scene.startsWith("/")) scene = "/" + scene;
+    }
+
+    // 构建存档对象
     const saveData = {
-      scene: "comiket_encounter",
-      branch: currentBranch,
-      index: index,
-      affectionData: affectionData,
+      scene: scene,
+      branch: currentBranch || "common",
+      dialogueIndex: index || 0,
+      affectionData: { ...affectionData },
+      background: bodyBg,  // 🔹 保存背景图
       timestamp: Date.now()
     };
-    localStorage.setItem('gameSave', JSON.stringify(saveData));
+    console.log("存档进度：", saveData);
+
+    saves.push(saveData);
+    localStorage.setItem("storySaves", JSON.stringify(saves));
+
+    console.log("存档已写入：", saveData);
     alert("游戏已存档！");
+
+    // 仅在 initSaveUI 存在的情况下调用（避免 ReferenceError）
+    if (typeof initSaveUI === "function") {
+      initSaveUI();
+    }
   });
 }
 
+const loadBtn = document.getElementById("load-btn"); // 🔹 获取读档按钮
 if (loadBtn) {
-  loadBtn.addEventListener("click", () => {
-    const savedData = localStorage.getItem('gameSave');
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      if (data.scene === "comiket_encounter") {
-        currentBranch = data.branch;
-        index = data.index;
-        Object.assign(affectionData, data.affectionData);
-        updateAffection('senpai', affectionData.senpai);
-        showDialogue(currentBranch, index);
-        alert("读档成功！");
-      }
-    } else {
-      alert("没有找到存档文件！");
-    }
-  });
+    loadBtn.addEventListener("click", () => { 
+        // 直接跳转到存档界面
+        window.location.href = "../../savepage/savepage2.0/save.htm";
+    });
 }

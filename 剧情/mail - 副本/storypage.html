@@ -6,6 +6,9 @@
   <title>天街商场的偶遇</title>
   <link rel="stylesheet" href="../../css/storypage.css">
   <script src="storypage.js" defer></script>
+  <style>
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
   <!-- 背景 -->
@@ -17,16 +20,16 @@
   
   <!-- 对话框 -->
   <div class="dialog-box">
-    <div class="character-name" id="speaker-name">系统</div> <!-- 添加id -->
+    <div class="character-name" id="speaker-name">系统</div>
     <div class="dialog-text" id="dialog-text"></div>
     <div class="dialog-controls">
-      <img src="images/kuang.png" alt="对话框" class="dialog-img">
+      <img src="images/kuang.png" alt="对话框" class="dialog-img" onerror="handleImageError(this, 'dialog')">
       <div class="control-images">
-        <img src="images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img">
-        <img src="images/jiasu.png" alt="加速" id="speed-btn" class="control-img">
-        <img src="images/zidong.png" alt="自动播放" id="auto-btn" class="control-img">
-        <img src="images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img">
-        <img src="images/xiayiju.png" alt="下一句" id="next-btn" class="control-img">
+        <img src="images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/jiasu.png" alt="加速" id="speed-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/zidong.png" alt="自动播放" id="auto-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img" onerror="handleImageError(this, 'control')">
+        <img src="images/xiayiju.png" alt="下一句" id="next-btn" class="control-img" onerror="handleImageError(this, 'control')">
       </div>
     </div>
   </div>
@@ -61,24 +64,26 @@
 
   <audio id="bg-music" src="bg-music.mp3" loop></audio>
 
-  <!-- 选择界面 -->
+  <!-- 一级选择界面 -->
   <div id="choice-container" class="hidden">
     <button class="choice-btn" data-choice="approach">主动上前打招呼</button>
     <button class="choice-btn" data-choice="observe">默默关注</button>
     <button class="choice-btn" data-choice="leave">转身离开</button>
   </div>
 
-  <!-- 二级选择界面 -->
+  <!-- 二级选择界面（可选，JS中需区分处理） -->
   <div id="sub-choice-container" class="hidden">
     <button class="choice-btn" data-choice="accept">当然好啊！求之不得。</button>
     <button class="choice-btn" data-choice="hesitate">真的不会打扰到你们吗？</button>
     <button class="choice-btn" data-choice="lie">啊，抱歉，我其实刚吃完……</button>
   </div>
-   <div id="phone-image">
+
+  <!-- 手机界面 -->
+  <div id="phone-image">
     <img src="../../phone.png" alt="手机" style="width: 130px; height: 150px;">
   </div>
 
- <div id="phone-chat-interface">
+  <div id="phone-chat-interface">
     <div class="phone-status-bar">
       <span>12:30</span>
       <span>📶 100% 🔋</span>
@@ -89,7 +94,7 @@
       <div class="chat-more-btn">⋯</div>
     </div>
     <div class="chat-messages" id="chat-messages">
-      <!-- 聊天消息将通过JS动态添加 -->
+      <!-- 聊天消息通过 JS 动态添加 -->
     </div>
     <div class="chat-input-area">
       <input type="text" class="chat-input" placeholder="输入消息...">
@@ -98,6 +103,9 @@
   </div>
 
   <div id="auto-save-notice" class="hidden">已存档</div>
-   <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
+
+  <!-- ⚠️ JS文件统一引用 -->
+  <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
+  <script src="storypage.js" defer></script>
 </body>
 </html>

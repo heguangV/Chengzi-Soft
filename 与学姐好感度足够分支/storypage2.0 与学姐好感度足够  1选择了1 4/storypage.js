@@ -323,39 +323,63 @@ if (toggleBtn && sidebar) {
   });
 }
 
-// -------------------- 存档/读档 --------------------
-function autoSave() {
-  const saveIndex = choiceContainer && !choiceContainer.classList.contains("hidden") ? 3 : index;
-  const saveData = { page: "storyPage1", dialogueIndex: saveIndex, charIndex, timestamp: Date.now() };
-  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-  saves.push(saveData);
-  localStorage.setItem("storySaves", JSON.stringify(saves));
+// 获取 body 背景图片的绝对路径
+function getBodyBackgroundAbsoluteUrl() {
+  const bg = window.getComputedStyle(document.body).backgroundImage; 
+  // bg 可能是 'url("images/bg1.png")' 或者 'none'
+  if (!bg || bg === "none") return null;
 
-  if (autoSaveNotice) {
-    autoSaveNotice.classList.remove("hidden");
-    autoSaveNotice.classList.add("show");
-    setTimeout(() => {
-      autoSaveNotice.classList.remove("show");
-      autoSaveNotice.classList.add("hidden");
-    }, 1500);
-  }
+  // 去掉 url("") 包裹
+  let url = bg.slice(4, -1).replace(/["']/g, "");
+
+  // 转成绝对路径
+  const absoluteUrl = new URL(url, window.location.href).href;
+  return absoluteUrl;
 }
+
+const bodyBg = getBodyBackgroundAbsoluteUrl();
+// -------------------- 存档读档 --------------------
 
 if (saveBtn) {
   saveBtn.addEventListener("click", () => {
-    const saveIndex = choiceContainer && !choiceContainer.classList.contains("hidden") ? 3 : index;
-    const saveData = { page: "storyPage1", dialogueIndex: saveIndex, charIndex, timestamp: Date.now() };
-    let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+    // 读现有存档数组
+    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+
+    // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
+    let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
+
+    // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
+    if (window.location.protocol === "file:") {
+      scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
+      if (!scene.startsWith("/")) scene = "/" + scene;
+    }
+
+    // 构建存档对象
+    const saveData = {
+      scene: scene,
+      branch: "common",
+      dialogueIndex: index || 0,
+      affectionData: { ...affectionData },
+      background: bodyBg,  // 🔹 保存背景图
+      timestamp: Date.now()
+    };
+    console.log("存档进度：", saveData);
+
     saves.push(saveData);
     localStorage.setItem("storySaves", JSON.stringify(saves));
-    alert("已存档！");
+
+    console.log("存档已写入：", saveData);
+    alert("游戏已存档！");
+
+    // 仅在 initSaveUI 存在的情况下调用（避免 ReferenceError）
+    if (typeof initSaveUI === "function") {
+      initSaveUI();
+    }
   });
 }
 
 if (loadBtn) {
-  loadBtn.addEventListener("click", () => {
-    window.location.href = "load.html";
-  });
+  loadBtn.addEventListener("click", () => window.location.href = "../../savepage/savepage2.0/save.htm");
 }
 
 // -------------------- 选择框 --------------------

@@ -209,17 +209,7 @@ function saveGame() {
     setTimeout(() => autoSaveNotice.classList.remove("show"), 1500);
   }
 }
-
-if (saveBtn) {
-  saveBtn.addEventListener("click", () => { 
-    saveGame(); 
-    alert("已存档！"); 
-  });
-}
-
-if (loadBtn) {
-  loadBtn.addEventListener("click", () => window.location.href = "load.html");
-}
+ 
 
 // -------------------- 选择框 --------------------
 function showChoices() {

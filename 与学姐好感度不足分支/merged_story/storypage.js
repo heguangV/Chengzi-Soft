@@ -97,6 +97,22 @@
     // 好感度数据
     let affectionData = { fang: 50, other: 30 };
 
+    // 获取 body 背景图片的绝对路径
+function getBodyBackgroundAbsoluteUrl() {
+  const bg = window.getComputedStyle(document.body).backgroundImage; 
+  // bg 可能是 'url("images/bg1.png")' 或者 'none'
+  if (!bg || bg === "none") return null;
+
+  // 去掉 url("") 包裹
+  let url = bg.slice(4, -1).replace(/["']/g, "");
+
+  // 转成绝对路径
+  const absoluteUrl = new URL(url, window.location.href).href;
+  return absoluteUrl;
+}
+
+const bodyBg = getBodyBackgroundAbsoluteUrl();
+
     // 合并所有剧情对话 - 按照文件夹名称顺序排列
     const dialogues = [
       { name: "旁白", text: "一学期的大学生活，如同被风吹散的云烟，在不知不觉中走到了学姐约定的分别时刻" },
@@ -749,16 +765,50 @@
       }
     }
 
-    // 存档/读档
-    if (saveBtn) {
-      saveBtn.addEventListener("click", autoSave);
+// -------------------- 存档读档（完整新版，多存档） --------------------
+
+
+if (saveBtn) {
+  saveBtn.addEventListener("click", () => {
+    // 读现有存档数组
+    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+
+    // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
+    let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
+
+    // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
+    if (window.location.protocol === "file:") {
+      scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
+      if (!scene.startsWith("/")) scene = "/" + scene;
     }
 
-    if (loadBtn) {
-      loadBtn.addEventListener("click", () => { 
-        alert("读档功能"); 
-      });
-    }
+    // 构建存档对象
+    const saveData = {
+      scene: scene,
+      branch:"common",
+      dialogueIndex: index || 0,
+      affectionData: { ...affectionData },
+      background: bodyBg,  // 🔹 保存背景图
+      timestamp: Date.now()
+    };
+    console.log("存档进度：", saveData);
+
+    saves.push(saveData);
+    localStorage.setItem("storySaves", JSON.stringify(saves));
+
+    console.log("存档已写入：", saveData);
+    alert("游戏已存档！");
+
+  });
+}
+
+
+if (loadBtn) {
+    loadBtn.addEventListener("click", () => { 
+        // 直接跳转到存档界面
+        window.location.href = "../../savepage/savepage2.0/save.htm";
+    });
+}
 
     // 选择框
     function showChoices() {
