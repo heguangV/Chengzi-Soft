@@ -75,7 +75,7 @@ class LoginSystem {
                     
                     // 延迟跳转，等待转场效果完成
                     setTimeout(() => {
-                        window.location.href = ".\\与学姐好感度不足分支\\storypage2.0 与学姐好感度不足1\\storypage.html";
+                        window.location.href = "./剧情/mail - 副本/storypage.html";
                     }, 500);
                 } else {
                     this.showModal();
@@ -156,14 +156,7 @@ class LoginSystem {
 
         const users = this.getUsers();
 
-        // 邮箱格式校验
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(email)) {
-            errorDiv.innerText = "请输入正确的邮箱格式";
-            errorDiv.style.display = "block";
-            return;
-        }
-
+       
         const user = users.find(u => u.email === email && u.password === password);
 
         if (user) {
@@ -185,7 +178,7 @@ class LoginSystem {
             
             // 跳转到故事页面，与已登录用户跳转目标保持一致
             setTimeout(() => {
-                window.location.href = ".\\与学姐好感度不足分支\\storypage2.0 与学姐好感度不足1\\storypage.html";
+                window.location.href = "./剧情/mail - 副本/storypage.html";
             }, 500);
         } else {
             // 设置登录状态为未登录
@@ -207,14 +200,9 @@ class LoginSystem {
         errorDiv.innerText = "";
 
         // 邮箱格式校验
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(email)) {
-            errorDiv.innerText = "请输入正确的邮箱格式";
-            errorDiv.style.display = "block";
-            return;
-        }
+        
 
-        if (!email || !password || !confirmPassword) {
+        if (!password || !confirmPassword) {
             errorDiv.innerText = "请填写完整信息";
             errorDiv.style.display = "block";
             return;
