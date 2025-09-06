@@ -90,7 +90,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// -------------------- 剧情台词 --------------------
 const dialogues = {
   common: [
     { "name": "旁白", "text": "怀着对一切大学生活的好奇，你走进了BIT的大门。当然，还有你的青梅陪着你——你俩都以不错的成绩考进了BIT。" },

@@ -404,11 +404,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2000);
   }
 
-  // -------------------- 侧边栏控制 --------------------
-  function toggleSidebar() {
-    sidebar.classList.toggle('open');
-  }
+  const toggleBtn = document.getElementById("sidebar-toggle");
 
+  
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("show");
+    });
+  }
+  
   // -------------------- 音乐控制 --------------------
   function toggleMusic() {
     if (bgMusic.paused) {
@@ -513,7 +517,10 @@ document.addEventListener('DOMContentLoaded', function() {
     handleMiniGame();
   });
 
-  sidebarToggle.addEventListener('click', toggleSidebar);
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', toggleSidebar);
+  }
+  
   mainMenuBtn.addEventListener('click', () => {
     window.location.href = '../../index.html';
   });
@@ -563,13 +570,25 @@ document.addEventListener('DOMContentLoaded', function() {
       stopAutoPlay();
     }
   });
-if (window.phoneModule && window.phoneModule.initPhoneElements) {
+  
+  // 点击侧边栏外部区域关闭侧边栏
+  document.addEventListener('click', (e) => {
+    if (sidebar && sidebar.classList.contains('open')) {
+      // 如果点击的不是侧边栏内部元素，也不是触发按钮，则关闭侧边栏
+      if (!sidebar.contains(e.target) && e.target !== sidebarToggle) {
+        sidebar.classList.remove('open');
+      }
+    }
+  });
+  
+  if (window.phoneModule && window.phoneModule.initPhoneElements) {
     window.phoneModule.initPhoneElements();
     window.phoneModule.initPhoneChat();
   }
+  
   // 初始化
   initAffection();
-  showDialogue(0)
+  showDialogue(0);
   // 注释掉测试模式，恢复正常剧情流程
   /*
   // 创建一个测试函数，用于快速测试小游戏逻辑
