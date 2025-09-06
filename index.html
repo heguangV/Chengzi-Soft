@@ -151,9 +151,23 @@
         
         /* 响应式调整 */
         @media (max-width: 768px) {
+            /* 修复手机端输入框显示问题，保证可用性 */
+            .login-form input.input {
+                width: 90% !important;
+                min-width: 120px !important;
+                max-width: 240px !important;
+                font-size: 1rem !important;
+                padding: 8px 10px !important;
+                margin: 4px 0 !important;
+                box-sizing: border-box !important;
+                border-radius: 6px !important;
+            }
             .menu {
                 width: 90% !important;
                 padding: 20px !important;
+                height: 90% !important;
+                min-width: 80px;
+                min-height: 28px;
             }
             
             .title .text {
@@ -309,7 +323,6 @@
                 <!-- 登录表单 -->
                 <div id="login-form-content" style="display:flex; flex-direction:column; align-items:center; width:100%; gap:15px;">
                     <div class="login-title">欢迎！</div>
-                    <div class="login-title"><span>注册一个账号</span><br><span>or</span><br><span>已有账号，登录<br></span></div>
                     <input class="input" id="login-username" name="email" placeholder="请输入用户名" type="email">
                     <div id="login-error" style="display:none">
                       账号或密码错误

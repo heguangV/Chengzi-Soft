@@ -87,8 +87,9 @@ class LoginSystem {
     // 初始化用户数据
     initializeUserData() {
         if (!localStorage.getItem('users')) {
-            // 初始化示例用户
+            // 初始化示例用户和测试账号
             const initialUsers = [
+                { email: '1', password: '1' },
                 { email: 'player1@example.com', password: '123456' },
                 { email: 'gamer2023@example.com', password: 'abcdef' }
             ];
