@@ -1,29 +1,11 @@
 // -------------------- DOM 元素 --------------------
-const dialogText = document.getElementById("dialog-text");
-const nameBox = document.querySelector(".character-name");
-const avatarContainer = document.querySelector(".character-avatar");
-const characterAvatar = document.getElementById("character-avatar");
-
-const nextBtn = document.getElementById("next-btn");
-const prevBtn = document.getElementById("prev-btn");
-const speedBtn = document.getElementById("speed-btn");
-const skipBtn = document.getElementById("skip-btn");
-const autoBtn = document.getElementById("auto-btn");
-
-const musicBtn = document.getElementById("music-btn");
-const bgMusic = document.getElementById("bg-music");
-const volumeRange = document.getElementById("volume-range");
-
-const sidebar = document.getElementById("sidebar");
-const toggleBtn = document.getElementById("sidebar-toggle");
-
-const autoSaveNotice = document.getElementById("auto-save-notice");
-const saveBtn = document.getElementById("save-btn");
-const loadBtn = document.getElementById("load-btn");
-
-const choiceContainer = document.getElementById("choice-container");
-const choiceBtns = document.querySelectorAll(".choice-btn");
-const dialogBox = document.querySelector(".dialog-box");
+let dialogText, nameBox, nextBtn, prevBtn, speedBtn, skipBtn, autoBtn;
+let choiceContainer, choiceBtns, dialogBox;
+let musicBtn, bgMusic, volumeRange;
+let sidebar, toggleBtn;
+let autoSaveNotice, saveBtn, loadBtn;
+// 头像相关元素
+let characterAvatarContainer, characterAvatar;
 
 // -------------------- 状态变量 --------------------
 let index = 0;
@@ -34,16 +16,7 @@ let typingInterval = null;
 let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
-let waitingForItem = false;
-let isChoiceActive = false;
-
-// 初始化phoneModule命名空间
-window.phoneModule = window.phoneModule || {};
-// 初始化手机相关状态
-window.phoneModule.waitingForPhoneResponse = false;
-window.phoneModule.phoneNotification = null;
-window.phoneModule.hasReceivedFinalMessage = false;
-window.phoneModule.phoneVibrationTriggered = false;
+let isChoiceActive = false; // 新增：标记选择是否激活
 
 // -------------------- 剧情数据 --------------------
 const dialogues = [
@@ -60,27 +33,61 @@ const dialogues = [
   { name: "C", text: "她身着一件淡蓝色的衬衫 外面是一件短款的夹克 下身穿着一件高腰牛仔裤 头上戴着一只米色的棒球帽 虽然简约 但在她如同明星般的比例与气质的映衬下 还是让人难以移开目光 惹得走过的路人频频注目" },
   { name: "A", text: "怎么样 学姐的专业穿搭” 她的脸上扬起一种自豪感 仿佛在等待你的夸奖" },
 ];
+// -------------------- DOMContentLoaded 初始化 --------------------
+window.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("fade-in");
 
-// -------------------- 判断是否触发手机振动 --------------------
-function shouldTriggerPhoneVibration(idx) {
-  // 在第0句触发手机振动
-  return idx === 0;
-}
+  // 获取所有DOM元素
+  dialogText = document.getElementById("dialog-text");
+  nameBox = document.querySelector(".character-name");
+
+  nextBtn = document.getElementById("next-btn");
+  prevBtn = document.getElementById("prev-btn");
+  speedBtn = document.getElementById("speed-btn");
+  skipBtn = document.getElementById("skip-btn");
+  autoBtn = document.getElementById("auto-btn");
+
+  choiceContainer = document.getElementById("choice-container");
+  choiceBtns = document.querySelectorAll(".choice-btn");
+  dialogBox = document.querySelector(".dialog-box");
+
+  musicBtn = document.getElementById("music-btn");
+  bgMusic = document.getElementById("bg-music");
+  volumeRange = document.getElementById("volume-range");
+
+  sidebar = document.getElementById("sidebar");
+  toggleBtn = document.getElementById("sidebar-toggle");
+
+  autoSaveNotice = document.getElementById("auto-save-notice");
+  saveBtn = document.getElementById("save-btn");
+  loadBtn = document.getElementById("load-btn");
+
+  // 头像相关元素
+  characterAvatarContainer = document.getElementById('character-avatar-container');
+  characterAvatar = document.getElementById('character-avatar');
+
+  // 初始化好感度显示
+  initAffection();
+
+  // 显示第一句对话
+  showDialogue(0);
+
+  // 绑定按钮事件
+  bindControlButtons();
+});
 
 // -------------------- 打字机效果 --------------------
 function typeText(text, callback) {
   clearInterval(typingInterval);
   charIndex = 0;
   if (dialogText) dialogText.textContent = "";
-  
+
   typingInterval = setInterval(() => {
-    if (dialogText && charIndex < text.length) {
-      dialogText.textContent += text[charIndex];
-      charIndex++;
-      if (charIndex >= text.length) {
-        clearInterval(typingInterval);
-        if (callback) callback();
-      }
+    if (dialogText) dialogText.textContent += text[charIndex];
+    charIndex++;
+    if (charIndex >= text.length) {
+      clearInterval(typingInterval);
+      if (callback) callback();
     }
   }, typingSpeed);
 }
@@ -91,164 +98,72 @@ function showDialogue(idx) {
   if (idx >= dialogues.length) idx = dialogues.length - 1;
   index = idx;
 
-  const currentName = dialogues[index].name;
+  // 名称映射逻辑
+  let currentName = dialogues[index].name;
   let displayName = currentName;
   
   // 根据name值修改显示名称和头像
-  if (currentName === 'C') {
-    // 旁白：隐藏头像
-    displayName = '旁白';
-    if (avatarContainer) avatarContainer.style.display = 'none';
-  } else if (currentName === 'B') {
-    // 主角：显示男主头像
-    displayName = '主角';
-    if (characterAvatar) {
-      characterAvatar.src = '../../男主.png';
-      characterAvatar.alt = '主角头像';
-    }
-    if (avatarContainer) avatarContainer.style.display = 'block';
-  } else if (currentName === 'A' || currentName.includes('学姐')) {
-    // 学姐：显示学姐头像
-    displayName = '学姐';
-    if (characterAvatar) {
-      characterAvatar.src = '../../学姐.png';
-      characterAvatar.alt = '学姐头像';
-    }
-    if (avatarContainer) avatarContainer.style.display = 'block';
-  } else {
-    // 其他角色：显示名称，隐藏头像
-    displayName = currentName;
-    if (avatarContainer) avatarContainer.style.display = 'none';
-  }
-  
-  if (nameBox) nameBox.textContent = displayName;
-
-  // 判断是否触发手机振动（使用phone.js中的振动逻辑）
-  if (shouldTriggerPhoneVibration(index) && !window.phoneModule.phoneVibrationTriggered) {
-    // 使用phone.js中的振动函数
-    if (window.makePhoneVibrate) {
-      window.makePhoneVibrate();
-    }
-    waitingForItem = true;
-    window.phoneModule.waitingForPhoneResponse = true;
-    window.phoneModule.phoneVibrationTriggered = true;
-    charIndex = 0;
-    if (dialogText) dialogText.textContent = dialogues[index].text;
-    
-    // 强制停止任何正在进行的打字效果
-    clearInterval(typingInterval);
-    
-    return;
-  }
-
-  waitingForItem = false;
-  charIndex = 0;
-  if (dialogText) dialogText.textContent = "";
-  typeText(dialogues[index].text);
-}
-
-// -------------------- 处理手机响应 --------------------
-function handlePhoneResponse() {
-  // 使用phone.js中的函数打开聊天界面
-  if (window.openChatInterface) {
-    window.openChatInterface();
-  }
-  
-  // 清空聊天记录
-  const chatMessages = document.getElementById("chat-messages");
-  if (chatMessages) {
-    chatMessages.innerHTML = "";
-  }
-  
-  // 临时禁用phone.js的随机回复功能
-  const originalSimulateReply = window.phoneModule.simulateReply;
-  window.phoneModule.simulateReply = function() {
-    // 空函数，禁用随机回复
-  };
-  
-  // 添加学姐的消息
-  addMessageToChat("received", "说好了今天要去水族馆的 该不会还没起床吧（颜文字：生气）");
-  
-  // 预设男主的回复
-  setTimeout(() => {
-    addMessageToChat("sent", "(糟糕)怎么会 我这就来！！！");
-    
-    // 2秒后自动关闭聊天界面并继续剧情
-    setTimeout(() => {
-      // 恢复原来的simulateReply函数
-      window.phoneModule.simulateReply = originalSimulateReply;
-      
-      // 使用phone.js中的函数关闭聊天界面
-      if (window.closeChatInterface) {
-        window.closeChatInterface();
+  if (nameBox) {
+    if (currentName === 'C') {
+      // 旁白：隐藏头像
+      displayName = '旁白';
+      if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+    } else if (currentName === 'B') {
+      // 主角：显示男主头像
+      displayName = '男主';
+      if (characterAvatar) {
+        characterAvatar.src = '../../男主.png';
+        characterAvatar.alt = '主角头像';
       }
-      window.phoneModule.waitingForPhoneResponse = false;
-      showDialogue(index + 1);
-    }, 2000);
-  }, 1500);
-}
+      if (characterAvatarContainer) characterAvatarContainer.style.display = 'block';
+    } else if (currentName === 'A' || currentName === '芳乃') {
+      // 学姐：显示学姐头像
+      displayName = '学姐';
+      if (characterAvatar) {
+        characterAvatar.src = '../../学姐.png';
+        characterAvatar.alt = '学姐头像';
+      }
+      if (characterAvatarContainer) characterAvatarContainer.style.display = 'block';
+    } else {
+      // 其他角色：隐藏头像
+      if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+    }
 
-// -------------------- 添加消息到聊天记录 --------------------
-function addMessageToChat(sender, text) {
-  const chatMessages = document.getElementById("chat-messages");
-  if (!chatMessages) {
-    console.error('Chat messages element not found!');
-    return;
+    nameBox.textContent = displayName;
   }
-  
-  const now = new Date();
-  const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-  
-  const messageEl = document.createElement("div");
-  messageEl.classList.add("message", sender);
-  
-  const contentEl = document.createElement("div");
-  contentEl.classList.add("message-content");
-  contentEl.textContent = text;
-  
-  const timeEl = document.createElement("div");
-  timeEl.classList.add("message-time");
-  timeEl.textContent = time;
-  
-  messageEl.appendChild(contentEl);
-  messageEl.appendChild(timeEl);
-  chatMessages.appendChild(messageEl);
-  
-  // 滚动到底部
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  typeText(dialogues[index].text, () => {
+    if (index === 999) autoSave();
+    if (index === 999) setTimeout(showChoices, 500);
+  });
 }
 
 // -------------------- 下一句 --------------------
 function handleNext() {
-  if (waitingForItem || window.phoneModule.waitingForPhoneResponse || window.phoneOpen) return;
-
-  if (charIndex < dialogues[index].text.length) {
+  if (charIndex < (dialogues[index]?.text.length || 0)) {
     clearInterval(typingInterval);
     if (dialogText) dialogText.textContent = dialogues[index].text;
-    charIndex = dialogues[index].text.length;
+    charIndex = dialogText.textContent.length;
+    if (index === 999) setTimeout(showChoices, 500);
   } else {
-    if (index < dialogues.length - 1) {
-      showDialogue(index + 1);
-    } else {
-      document.body.classList.add("fade-out");
-      setTimeout(() => {
-        window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
-      }, 1000);
+      if (index < dialogues.length - 1) {
+        showDialogue(index + 1);
+      } else {
+        // 游戏结束，显示提示而不跳转
+        alert("游戏结束！");
+      }
     }
-  }
   stopAutoPlay();
 }
 
 // -------------------- 上一句 --------------------
 function handlePrev() {
-  if (waitingForItem || window.phoneModule.waitingForPhoneResponse || window.phoneOpen) return;
   showDialogue(index - 1);
   stopAutoPlay();
 }
 
-// -------------------- 加速按钮 --------------------
+// -------------------- 加速 --------------------
 function toggleSpeed() {
-  if (window.phoneOpen) return;
   isFast = !isFast;
   typingSpeed = isFast ? 10 : 50;
   if (speedBtn) speedBtn.textContent = isFast ? "原速" : "加速";
@@ -257,15 +172,14 @@ function toggleSpeed() {
 
 // -------------------- 跳过 --------------------
 function handleSkip() {
-  if (waitingForItem || window.phoneModule.waitingForPhoneResponse || window.phoneOpen) return;
   clearInterval(typingInterval);
   if (dialogText) dialogText.textContent = dialogues[index].text;
+  charIndex = dialogText.textContent.length;
   stopAutoPlay();
 }
 
 // -------------------- 自动播放 --------------------
 function toggleAutoPlay() {
-  if (window.phoneOpen) return;
   autoPlay = !autoPlay;
   if (autoPlay) {
     if (autoBtn) autoBtn.textContent = "停止自动";
@@ -278,15 +192,17 @@ function toggleAutoPlay() {
 function startAutoPlay() {
   clearInterval(autoInterval);
   autoInterval = setInterval(() => {
-    if (waitingForItem || window.phoneModule.waitingForPhoneResponse || window.phoneOpen) return;
-    if (charIndex < dialogues[index].text.length) {
+    if (charIndex < (dialogues[index]?.text.length || 0)) {
       clearInterval(typingInterval);
       if (dialogText) dialogText.textContent = dialogues[index].text;
-      charIndex = dialogues[index].text.length;
+      charIndex = dialogText.textContent.length;
     } else {
-      if (index < dialogues.length - 1) {
-        showDialogue(index + 1);
-      } else stopAutoPlay();
+      if (index < dialogues.length - 1) showDialogue(index + 1);
+      else {
+        // 游戏结束，显示提示而不跳转
+        alert("游戏结束！");
+        stopAutoPlay();
+      }
     }
   }, 2000);
 }
@@ -295,91 +211,6 @@ function stopAutoPlay() {
   clearInterval(autoInterval);
   autoPlay = false;
   if (autoBtn) autoBtn.textContent = "自动播放";
-}
-
-// -------------------- 音乐控制 --------------------
-if (volumeRange && bgMusic) {
-  volumeRange.addEventListener("input", () => {
-    bgMusic.volume = volumeRange.value / 100;
-  });
-}
-
-if (musicBtn && bgMusic) {
-  musicBtn.addEventListener("click", () => {
-    if (bgMusic.paused) {
-      bgMusic.play();
-      musicBtn.textContent = "音乐暂停";
-    } else {
-      bgMusic.pause();
-      musicBtn.textContent = "音乐播放";
-    }
-  });
-}
-
-// -------------------- 侧边栏 --------------------
-if (toggleBtn && sidebar) {
-  toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("show");
-  });
-}
-
-// 获取 body 背景图片的绝对路径
-function getBodyBackgroundAbsoluteUrl() {
-  const bg = window.getComputedStyle(document.body).backgroundImage; 
-  // bg 可能是 'url("images/bg1.png")' 或者 'none'
-  if (!bg || bg === "none") return null;
-
-  // 去掉 url("") 包裹
-  let url = bg.slice(4, -1).replace(/["']/g, "");
-
-  // 转成绝对路径
-  const absoluteUrl = new URL(url, window.location.href).href;
-  return absoluteUrl;
-}
-
-const bodyBg = getBodyBackgroundAbsoluteUrl();
-// -------------------- 存档读档 --------------------
-
-if (saveBtn) {
-  saveBtn.addEventListener("click", () => {
-    // 读现有存档数组
-    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-
-    // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
-    let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
-
-    // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
-    if (window.location.protocol === "file:") {
-      scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
-      if (!scene.startsWith("/")) scene = "/" + scene;
-    }
-
-    // 构建存档对象
-    const saveData = {
-      scene: scene,
-      branch: "common",
-      dialogueIndex: index || 0,
-      affectionData: { ...affectionData },
-      background: bodyBg,  // 🔹 保存背景图
-      timestamp: Date.now()
-    };
-    console.log("存档进度：", saveData);
-
-    saves.push(saveData);
-    localStorage.setItem("storySaves", JSON.stringify(saves));
-
-    console.log("存档已写入：", saveData);
-    alert("游戏已存档！");
-
-    // 仅在 initSaveUI 存在的情况下调用（避免 ReferenceError）
-    if (typeof initSaveUI === "function") {
-      initSaveUI();
-    }
-  });
-}
-
-if (loadBtn) {
-  loadBtn.addEventListener("click", () => window.location.href = "../../savepage/savepage2.0/save.htm");
 }
 
 // -------------------- 选择框 --------------------
@@ -397,16 +228,21 @@ function hideChoices() {
   isChoiceActive = false;
 }
 
-if (choiceBtns && choiceBtns.forEach) {
-  choiceBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const choice = btn.dataset.choice;
-      hideChoices();
-      if (choice === "A") showDialogue(index + 1);
-      else if (choice === "B") showDialogue(index + 2);
-      else showDialogue(index + 3);
-    });
-  });
+function handleChoice(event) {
+  const choice = event.currentTarget.dataset.choice;
+  console.log("玩家选择了:", choice);
+  hideChoices();
+
+  if (choice === "A") {
+    updateAffection('fang', affectionData.fang + 10);
+    showDialogue(index + 1);
+  } else if (choice === "B") {
+    updateAffection('fang', affectionData.fang - 5);
+    showDialogue(index + 2);
+  } else {
+    updateAffection('other', affectionData.other + 5);
+    showDialogue(index + 3);
+  }
 }
 
 // -------------------- 好感度系统 --------------------
@@ -416,46 +252,196 @@ function updateAffection(character, value) {
   affectionData[character] = Math.max(0, Math.min(100, value));
   const bar = document.querySelector(`.affection-fill[data-character="${character}"]`);
   if (bar) {
+    const text = bar.parentElement.querySelector('.affection-text');
     bar.style.width = `${affectionData[character]}%`;
-    const text = bar.parentElement.querySelector(".affection-text");
-    if (text) text.textContent = `${character === "fang" ? "芳乃" : "其他"}: ${affectionData[character]}%`;
+    if (text) text.textContent = `${character === 'fang' ? '芳乃' : '其他'}: ${affectionData[character]}%`;
   }
-  localStorage.setItem("affectionData", JSON.stringify(affectionData));
+  localStorage.setItem('affectionData', JSON.stringify(affectionData));
 }
 
 function initAffection() {
-  const savedData = localStorage.getItem("affectionData");
+  const savedData = localStorage.getItem('affectionData');
   if (savedData) Object.assign(affectionData, JSON.parse(savedData));
-  for (const [character, value] of Object.entries(affectionData)) {
-    updateAffection(character, value);
+  for (const [character, value] of Object.entries(affectionData)) updateAffection(character, value);
+}
+
+// -------------------- 绑定控制按钮 --------------------
+function bindControlButtons() {
+  // -------------------- 下一句按钮 --------------------
+  if (nextBtn) {
+    const newNextBtn = nextBtn.cloneNode(true);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+    newNextBtn.addEventListener("click", handleNext);
+  }
+
+  // -------------------- 上一句按钮 --------------------
+  if (prevBtn) {
+    const newPrevBtn = prevBtn.cloneNode(true);
+    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+    newPrevBtn.addEventListener("click", handlePrev);
+  }
+
+  // -------------------- 加速按钮 --------------------
+  if (speedBtn) {
+    const newSpeedBtn = speedBtn.cloneNode(true);
+    speedBtn.parentNode.replaceChild(newSpeedBtn, speedBtn);
+    newSpeedBtn.addEventListener("click", toggleSpeed);
+  }
+
+  // -------------------- 跳过按钮 --------------------
+  if (skipBtn) {
+    const newSkipBtn = skipBtn.cloneNode(true);
+    skipBtn.parentNode.replaceChild(newSkipBtn, skipBtn);
+    newSkipBtn.addEventListener("click", handleSkip);
+  }
+
+  // -------------------- 自动播放按钮 --------------------
+  if (autoBtn) {
+    const newAutoBtn = autoBtn.cloneNode(true);
+    autoBtn.parentNode.replaceChild(newAutoBtn, autoBtn);
+    newAutoBtn.addEventListener("click", toggleAutoPlay);
+  }
+
+  // -------------------- 选择按钮 --------------------
+  if (choiceBtns) {
+    choiceBtns.forEach(btn => {
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener("click", handleChoice);
+    });
+  }
+
+  // -------------------- 音乐控制 --------------------
+  if (volumeRange) {
+    const newVolumeRange = volumeRange.cloneNode(true);
+    volumeRange.parentNode.replaceChild(newVolumeRange, volumeRange);
+    newVolumeRange.addEventListener("input", () => {
+      if (bgMusic) bgMusic.volume = newVolumeRange.value / 100;
+    });
+  }
+  
+  if (musicBtn) {
+    const newMusicBtn = musicBtn.cloneNode(true);
+    musicBtn.parentNode.replaceChild(newMusicBtn, musicBtn);
+    newMusicBtn.addEventListener("click", () => {
+      if (bgMusic) {
+        if (bgMusic.paused) {
+          bgMusic.play();
+          newMusicBtn.textContent = "音乐暂停";
+        } else {
+          bgMusic.pause();
+          newMusicBtn.textContent = "音乐播放";
+        }
+      }
+    });
+  }
+
+  // -------------------- 侧边栏 --------------------
+  if (toggleBtn) {
+    const newToggleBtn = toggleBtn.cloneNode(true);
+    toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+    newToggleBtn.addEventListener("click", () => {
+      if (sidebar) sidebar.classList.toggle("show");
+    });
+  }
+
+  // -------------------- 存档按钮 --------------------
+  if (saveBtn) {
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    newSaveBtn.addEventListener("click", () => {
+      // 读现有存档数组
+      const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+
+      // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
+      let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
+
+      // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
+      if (window.location.protocol === "file:") {
+        scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
+        if (!scene.startsWith("/")) scene = "/" + scene;
+      }
+
+      // 构建存档对象
+      const saveData = {
+        scene: scene,
+        branch: "common",
+        dialogueIndex: index || 0,
+        affectionData: { ...affectionData },
+        background: bodyBg,  // 保存背景图
+        timestamp: Date.now()
+      };
+      console.log("存档进度：", saveData);
+
+      saves.push(saveData);
+      localStorage.setItem("storySaves", JSON.stringify(saves));
+
+      console.log("存档已写入：", saveData);
+      alert("游戏已存档！");
+
+      // 仅在 initSaveUI 存在的情况下调用（避免 ReferenceError）
+      if (typeof initSaveUI === "function") {
+        initSaveUI();
+      }
+    });
+  }
+
+  // -------------------- 读档按钮 --------------------
+  if (loadBtn) {
+    const newLoadBtn = loadBtn.cloneNode(true);
+    loadBtn.parentNode.replaceChild(newLoadBtn, loadBtn);
+    newLoadBtn.addEventListener("click", () => window.location.href = "../../savepage/savepage2.0/save.htm");
   }
 }
 
-if (choiceBtns && choiceBtns.forEach) {
-  choiceBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const choice = btn.dataset.choice;
-      hideChoices();
-      if (choice === "A") {
-        updateAffection("fang", affectionData.fang + 10);
-        showDialogue(index + 1);
-      } else if (choice === "B") {
-        updateAffection("fang", affectionData.fang - 5);
-        showDialogue(index + 2);
-      } else {
-        updateAffection("other", affectionData.other + 5);
-        showDialogue(index + 3);
-      }
-    });
-  });
+// 获取 body 背景图片的绝对路径
+function getBodyBackgroundAbsoluteUrl() {
+  const bg = window.getComputedStyle(document.body).backgroundImage; 
+  // bg 可能是 'url("images/bg1.png")' 或者 'none'
+  if (!bg || bg === "none") return null;
+
+  // 去掉 url("") 包裹
+  let url = bg.slice(4, -1).replace(/["']/g, "");
+
+  // 转成绝对路径
+  const absoluteUrl = new URL(url, window.location.href).href;
+  return absoluteUrl;
+}
+
+const bodyBg = getBodyBackgroundAbsoluteUrl();
+
+// -------------------- 自动存档 --------------------
+function autoSave() {
+  const saveIndex = (choiceContainer && !choiceContainer.classList.contains("hidden")) ? 3 : index;
+  const saveData = {
+    page: "storyPage1",
+    dialogueIndex: saveIndex,
+    charIndex: charIndex,
+    background: bodyBg,
+    timestamp: Date.now()
+  };
+  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  saves.push(saveData);
+  localStorage.setItem("storySaves", JSON.stringify(saves));
+
+  if (autoSaveNotice) {
+    autoSaveNotice.classList.remove("hidden");
+    autoSaveNotice.classList.add("show");
+
+    setTimeout(() => {
+      autoSaveNotice.classList.remove("show");
+      autoSaveNotice.classList.add("hidden");
+    }, 1500);
+  }
 }
 
 // -------------------- 空格和点击触发下一句 --------------------
 // 空格键触发下一句
 window.addEventListener('keydown', (e) => {
   // 只有在空格键被按下且选择框未激活时才触发
-  if (e.code === 'Space' && !isChoiceActive && !window.phoneModule.waitingForPhoneResponse && !window.phoneOpen) {
-    e.preventDefault();
+  if (e.code === 'Space' && !isChoiceActive) {
+    e.preventDefault(); // 阻止默认行为，避免页面滚动
+    // 调用处理函数
     handleNext();
   }
 });
@@ -464,86 +450,11 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('click', (e) => {
   // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
   if (!isChoiceActive && 
-      !window.phoneModule.waitingForPhoneResponse &&
-      !window.phoneOpen &&
       !e.target.closest('button') && 
       !e.target.closest('input') && 
       !e.target.closest('#sidebar') && 
       !e.target.closest('#chat-input')) {
+    // 调用处理函数
     handleNext();
-  }
-});
-
-// -------------------- 手机点击事件处理 --------------------
-document.addEventListener('DOMContentLoaded', function() {
-  // 等待phone.js初始化完成
-  setTimeout(function() {
-    const phoneImage = document.getElementById("phone-image");
-    if (phoneImage) {
-      // 移除phone.js可能绑定的事件，重新绑定我们的事件
-      phoneImage.onclick = null;
-      phoneImage.addEventListener('click', function(e) {
-        e.stopPropagation();
-        
-        // 如果是等待手机响应的状态，处理手机响应
-        if (window.phoneModule.waitingForPhoneResponse) {
-          handlePhoneResponse();
-          return;
-        }
-        
-        // 否则使用phone.js的普通打开功能
-        if (window.openChatInterface) {
-          window.openChatInterface();
-        }
-      });
-    }
-  }, 1000);
-});
-
-// -------------------- 页面载入和初始化流程优化 --------------------
-document.addEventListener("DOMContentLoaded", function() {
-  document.body.classList.add("fade-in");
-
-  // 初始化按钮事件
-  if (nextBtn) nextBtn.addEventListener("click", handleNext);
-  if (prevBtn) prevBtn.addEventListener("click", handlePrev);
-  if (speedBtn) speedBtn.addEventListener("click", toggleSpeed);
-  if (skipBtn) skipBtn.addEventListener("click", handleSkip);
-  if (autoBtn) autoBtn.addEventListener("click", toggleAutoPlay);
-
-  // 初始化其他功能
-  initAffection();
-
-  // 页面加载后立即显示剧情
-  setTimeout(() => {
-    showDialogue(0);
-  }, 100);
-});
-
-// 再次确保 phone.js 加载后彻底覆盖 simulateReply和addFinalMessageToChat，防止被 phone.js 恢复
-window.addEventListener('load', function() {
-  if (window.phoneModule) {
-    window.phoneModule.simulateReply = function() {};
-    // 覆盖addFinalMessageToChat，改为自定义剧情内容
-    window.phoneModule.addFinalMessageToChat = function() {
-      if (window.phoneModule.hasReceivedFinalMessage) return;
-      window.phoneModule.hasReceivedFinalMessage = true;
-      // 这里写你想要的自定义剧情内容
-      const finalMessages = [
-        { sender: "received", text: "你怎么还没来？不会还没起床吧！", time: "7:50" },
-        { sender: "sent", text: "马上到！别生气别生气！", time: "7:51" },
-      ];
-      window.phoneModule.chatData.push(...finalMessages);
-      window.phoneModule.loadChatMessages();
-      // 聊天消息加载后，推进剧情并自动关闭手机
-      setTimeout(() => {
-        // 关闭手机聊天界面
-        if (window.phoneModule.closeChatInterface) {
-          window.phoneModule.closeChatInterface();
-        }
-        // 推进剧情
-        if (typeof showDialogue === 'function') showDialogue(index + 1);
-      }, 2000);
-    };
   }
 });
