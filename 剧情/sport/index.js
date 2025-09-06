@@ -414,16 +414,34 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // -------------------- 音乐控制 --------------------
-  function toggleMusic() {
-    if (bgMusic.paused) {
-      bgMusic.play();
-      musicBtn.textContent = "音乐暂停";
-    } else {
-      bgMusic.pause();
-      musicBtn.textContent = "音乐播放";
+ 
+    // 创建音频元素并自动播放Spring.mp3
+    const bgAudio = document.createElement("audio");
+    bgAudio.src = "../../audio/Spring.mp3";
+    bgAudio.loop = true;
+    bgAudio.autoplay = true;
+    bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
+    bgAudio.style.display = "none";
+    document.body.appendChild(bgAudio);
+    if (volumeRange) {
+      // 初始化滑块为音量值
+      volumeRange.value = Math.round(bgAudio.volume * 100);
+      volumeRange.addEventListener("input", () => {
+        bgAudio.volume = volumeRange.value / 100;
+      });
     }
-  }
 
+    if (musicBtn) {
+      musicBtn.addEventListener("click", () => {
+        if (bgAudio.paused) {
+          bgAudio.play();
+          musicBtn.textContent = "音乐暂停";
+        } else {
+          bgAudio.pause();
+          musicBtn.textContent = "音乐播放";
+        }
+      });
+    }
   // -------------------- 存档系统 --------------------
   function saveGame() {
     const saveData = {

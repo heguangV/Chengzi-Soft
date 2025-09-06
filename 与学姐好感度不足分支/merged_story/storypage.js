@@ -51,8 +51,8 @@
     });
 
     // DOM元素
-    const musicBtn = document.getElementById("music-btn");
-    const volumeRange = document.getElementById("volume-range");
+  const musicBtn = document.getElementById("music-btn");
+  const volumeRange = document.getElementById("volume-range");
     const sidebar = document.getElementById("sidebar");
     const toggleBtn = document.getElementById("sidebar-toggle");
     const mainMenuBtn = document.getElementById("main-menu-btn");
@@ -714,17 +714,31 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
     }
 
     // 音乐控制 - 背景音乐文件暂未提供
+    // 创建音频元素并自动播放Spring.mp3
+    const bgAudio = document.createElement("audio");
+    bgAudio.src = "../../audio/Spring.mp3";
+    bgAudio.loop = true;
+    bgAudio.autoplay = true;
+    bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
+    bgAudio.style.display = "none";
+    document.body.appendChild(bgAudio);
     if (volumeRange) {
-      volumeRange.addEventListener("input", () => { 
-        // 音量控制暂时禁用
+      // 初始化滑块为音量值
+      volumeRange.value = Math.round(bgAudio.volume * 100);
+      volumeRange.addEventListener("input", () => {
+        bgAudio.volume = volumeRange.value / 100;
       });
     }
 
     if (musicBtn) {
       musicBtn.addEventListener("click", () => {
-        // 切换按钮文本以表示功能
-        const isPlaying = musicBtn.textContent === "音乐暂停";
-        musicBtn.textContent = isPlaying ? "音乐播放" : "音乐暂停";
+        if (bgAudio.paused) {
+          bgAudio.play();
+          musicBtn.textContent = "音乐暂停";
+        } else {
+          bgAudio.pause();
+          musicBtn.textContent = "音乐播放";
+        }
       });
     }
 
