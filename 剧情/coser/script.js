@@ -420,6 +420,12 @@ function bindControlButtons() {
   if (autoBtn) autoBtn.addEventListener("click", toggleAutoPlay);
   
   choiceBtns.forEach(btn => btn.addEventListener("click", handleChoice));
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("sidebar-toggle");
+
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
+  }
 }
 
 // -------------------- 音频控制 --------------------
@@ -450,13 +456,8 @@ function bindControlButtons() {
         }
       });
     }
-// -------------------- 侧边栏控制 --------------------
-const sidebar = document.getElementById("sidebar");
-const toggleBtn = document.getElementById("sidebar-toggle");
 
-if (toggleBtn && sidebar) {
-  toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
-}
+
 
 // -------------------- 存档读档（完整新版，多存档） --------------------
 

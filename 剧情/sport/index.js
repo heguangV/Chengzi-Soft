@@ -15,7 +15,6 @@ const dialogBox = document.querySelector(".dialog-box");
 
 const autoSaveNotice = document.getElementById("auto-save-notice");
 const sidebarToggle = document.getElementById("sidebar-toggle");
-const sidebar = document.getElementById("sidebar");
 const mainMenuBtn = document.getElementById("main-menu-btn");
 const loadBtn = document.getElementById("load-btn");
 const saveBtn = document.getElementById("save-btn");
@@ -113,7 +112,21 @@ function typeText(text, callback) {
 // -------------------- 显示某条对话 --------------------
 function showDialogue(idx) {
   if (idx < 0) idx = 0;
-  if (idx >= dialogues.length) idx = dialogues.length - 1;
+    // 剧情结束时跳转分支（全部剧情显示完毕后自动跳转）
+    if (idx >= dialogues.length) {
+      jumpToBranch();
+      return;
+    }
+// 跳转分支函数，最后一句剧情显示完毕后自动调用
+function jumpToBranch() {
+  setTimeout(() => {
+    if (affectionData.fang < 80) {
+      window.location.href = '../../与学姐好感度不足分支/merged_story/storypage.html';
+    } else {
+      window.location.href = '../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html';
+    }
+  }, 1200); // 延迟1.2秒，给玩家一点缓冲体验
+}
   index = idx;
 
   let currentName = dialogues[index].name;
@@ -292,8 +305,11 @@ function startAutoPlay() {
 }
 
 // -------------------- 侧边栏控制 --------------------
-function toggleSidebar() {
-  if (sidebar) sidebar.classList.toggle('open');
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("sidebar-toggle");
+
+if (toggleBtn && sidebar) {
+  toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
 }
 
 // -------------------- 音乐控制 --------------------

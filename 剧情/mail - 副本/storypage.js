@@ -459,6 +459,7 @@ if (toggleBtn && sidebar) {
   toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
 }
 
+
 // -------------------- 存档读档（完整新版，多存档） --------------------
 
 const saveBtn = document.getElementById("save-btn");
