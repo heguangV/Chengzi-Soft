@@ -137,7 +137,7 @@ body {
   color: #fff;
   padding: 1em;
   transition: transform 0.3s ease;
-  z-index: 100;
+  z-index: 101; /* 确保高于其他内容 */
   border-right: 1px solid rgba(255,255,255,0.1); /* 若想保留一点层次感 */
 }
 
@@ -155,6 +155,8 @@ body {
   color: #000;
   font-size: 1em;
   cursor: pointer;
+  z-index: 102; /* 提高 z-index 值 */
+  position: relative; /* z-index 只对定位元素有效 */
 }
 
 /* 让三个按钮纵向排列，间距均匀 */

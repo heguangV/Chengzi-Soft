@@ -50,97 +50,6 @@ function checkImages() {
   });
 }
 
-// -------------------- DOMContentLoaded 初始化 --------------------
-window.addEventListener("DOMContentLoaded", () => {
-  document.body.classList.add("fade-in");
-  initAffection();
-  showDialogue('common', 0);
-  bindControlButtons();
-  bindScreenClick();
-  checkImages(); // 添加图片检查
-  console.log("漫展约定事件初始化完成");
-
-  // 🔹 页面加载时检查是否通过 URL 读档
-  const urlParams = new URLSearchParams(window.location.search);
-  const loadTimestamp = urlParams.get("load");
-  if (loadTimestamp) {
-  const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-  const save = saves.find(s => s.timestamp == loadTimestamp);
-    if (save) {
-    currentBranch = save.branch;
-    index = save.dialogueIndex;
-    Object.assign(affectionData, save.affectionData);
-    updateAffection('senpai', affectionData.senpai);
-    
-    // 隐藏选择界面，显示对话框
-    hideAllChoices();
-    showDialogue(currentBranch, index);
-    alert("读档成功！");
-    }
-  }
-
-  // 监听手机界面开关，控制剧情推进
-  window.phoneOpen = false;
-  const phoneChatInterface = document.getElementById("phone-chat-interface");
-  if (phoneChatInterface) {
-    const observer = new MutationObserver(() => {
-      window.phoneOpen = phoneChatInterface.classList.contains("show");
-    });
-    observer.observe(phoneChatInterface, { attributes: true, attributeFilter: ["class"] });
-  }
-});
-
-// -------------------- 剧情台词 --------------------
-const dialogues = {
-  common: [
-    { name: "系统", text: "某天课后，你在图书馆偶遇了正在看动漫杂志的学姐。" },
-    { name: "学姐", text: "（兴奋地指着杂志）「哇！下周末有大型漫展，这次我一定要出这个角色！」" },
-    { name: "你", text: "「学姐也参加漫展吗？好厉害！」" },
-    { name: "学姐", text: "「是啊！我准备了很久的COS服终于要派上用场了～」" },
-    { name: "系统", text: "学姐眼中闪烁着兴奋的光芒，似乎对这次漫展充满期待。" },
-    { name: "系统", text: "你决定...", triggerChoice: "main" }
-  ],
-  join: [
-    { name: "你", text: "「学姐，我正好也想去漫展，可以一起去吗？」" },
-    { name: "学姐", text: "（惊喜地）「真的吗？太好了！正好我可以多一个帮手～」" },
-    { name: "学姐", text: "「不过我要提前去化妆和换衣服，可能会比较早哦？」" },
-    { name: "你", text: "「没关系的！我很期待看到学姐的COS呢。」" },
-    { name: "学姐", text: "「那就这么说定啦！周六早上9点，学校门口见！」", effect: { senpai: +15 } },
-    { name: "系统", text: "你们约定好了一起去漫展，学姐看起来非常开心。" },
-    { name: "系统", text: "接下来的几天，你们经常讨论漫展的行程和准备事宜。" },
-    { name: "系统", text: "漫展当天..." },
-    { name: "学姐", text: "（穿着精致的COS服）「怎么样？这套衣服还不错吧？」" },
-    { name: "你", text: "「超级棒！学姐真的很适合这个角色！」" },
-    { name: "学姐", text: "「谢谢～那我们出发吧！今天要玩个痛快！」", effect: { senpai: +10 } },
-  { name: "系统", text: "你们在漫展度过了愉快的一天，关系更加亲近了。", nextScene: "../../剧情/sport/index.html" }
-  ],
-  support: [
-    { name: "你", text: "「学姐加油！期待看到你的COS照片～」" },
-    { name: "学姐", text: "「谢谢～我会多发一些照片到空间的！」" },
-    { name: "学姐", text: "「如果你改变主意想来的话，随时联系我哦。」" },
-    { name: "你", text: "「好的，祝学姐玩得开心！」", effect: { senpai: +5 } },
-    { name: "系统", text: "漫展结束后，学姐在空间发了很多精美的COS照片。" },
-    { name: "系统", text: "你在下面点赞评论，学姐很快回复了你。" },
-    { name: "学姐", text: "「谢谢支持！下次漫展一起来玩吧～」" },
-  { name: "系统", text: "虽然没能一起去，但你们通过这种方式保持了联系。", nextScene: "../../剧情/sport/index.html" }
-  ],
-  photograph: [
-    { name: "你", text: "「学姐，我拍照技术还不错，需要摄影师吗？」" },
-    { name: "学姐", text: "（眼睛一亮）「真的吗？太好了！我正愁找不到合适的摄影师呢！」" },
-    { name: "学姐", text: "「朋友都是手机党，拍出来的效果总是不理想...」" },
-    { name: "你", text: "「那我来做学姐的专属摄影师吧！」" },
-    { name: "学姐", text: "「太好了！那我们得提前商量一下拍摄方案～」", effect: { senpai: +20 } },
-    { name: "系统", text: "你们约好提前见面，讨论拍摄角度和场景。" },
-    { name: "系统", text: "漫展当天..." },
-    { name: "学姐", text: "（摆好姿势）「这个角度可以吗？灯光怎么样？」" },
-    { name: "你", text: "「完美！学姐保持这个姿势...好！拍到了！」" },
-    { name: "学姐", text: "（跑过来看相机）「哇！拍得真好！你太专业了！」" },
-    { name: "朋友", text: "「哇哦～专属摄影师就是不一样呢！」" },
-    { name: "学姐", text: "（脸红）「今天真的多亏你了...谢谢！」", effect: { senpai: +15 } },
-  { name: "系统", text: "你为学姐拍出了精美的照片，她在朋友圈特别感谢了你。", nextScene: "../../剧情/sport/index.html" }
-  ]
-};
-
 // -------------------- DOM 元素 --------------------
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.getElementById("speaker-name");
@@ -181,6 +90,57 @@ let autoInterval = null;
 let isFast = false;
 let hasMadeChoice = false;
 const affectionData = { senpai: 30 };
+
+// -------------------- 剧情台词 --------------------
+const dialogues = {
+  common: [
+    { name: "系统", text: "某天课后，你在图书馆偶遇了正在看动漫杂志的学姐。" },
+    { name: "学姐", text: "（兴奋地指着杂志）「哇！下周末有大型漫展，这次我一定要出这个角色！」" },
+    { name: "你", text: "「学姐也参加漫展吗？好厉害！」" },
+    { name: "学姐", text: "「是啊！我准备了很久的COS服终于要派上用场了～」" },
+    { name: "系统", text: "学姐眼中闪烁着兴奋的光芒，似乎对这次漫展充满期待。" },
+    { name: "系统", text: "你决定...", triggerChoice: "main" }
+  ],
+  join: [
+    { name: "你", text: "「学姐，我正好也想去漫展，可以一起去吗？」" },
+    { name: "学姐", text: "（惊喜地）「真的吗？太好了！正好我可以多一个帮手～」" },
+    { name: "学姐", text: "「不过我要提前去化妆和换衣服，可能会比较早哦？」" },
+    { name: "你", text: "「没关系的！我很期待看到学姐的COS呢。」" },
+    { name: "学姐", text: "「那就这么说定啦！周六早上9点，学校门口见！」", effect: { senpai: +15 } },
+    { name: "系统", text: "你们约定好了一起去漫展，学姐看起来非常开心。" },
+    { name: "系统", text: "接下来的几天，你们经常讨论漫展的行程和准备事宜。" },
+    { name: "系统", text: "漫展当天..." },
+    { name: "学姐", text: "（穿着精致的COS服）「怎么样？这套衣服还不错吧？」" },
+    { name: "你", text: "「超级棒！学姐真的很适合这个角色！」" },
+    { name: "学姐", text: "「谢谢～那我们出发吧！今天要玩个痛快！」", effect: { senpai: +10 } },
+    { name: "系统", text: "你们在漫展度过了愉快的一天，关系更加亲近了。", nextScene: "../../剧情/sport/index.html" }
+  ],
+  support: [
+    { name: "你", text: "「学姐加油！期待看到你的COS照片～」" },
+    { name: "学姐", text: "「谢谢～我会多发一些照片到空间的！」" },
+    { name: "学姐", text: "「如果你改变主意想来的话，随时联系我哦。」" },
+    { name: "你", text: "「好的，祝学姐玩得开心！」", effect: { senpai: +5 } },
+    { name: "系统", text: "漫展结束后，学姐在空间发了很多精美的COS照片。" },
+    { name: "系统", text: "你在下面点赞评论，学姐很快回复了你。" },
+    { name: "学姐", text: "「谢谢支持！下次漫展一起来玩吧～」" },
+    { name: "系统", text: "虽然没能一起去，但你们通过这种方式保持了联系。", nextScene: "../../剧情/sport/index.html" }
+  ],
+  photograph: [
+    { name: "你", text: "「学姐，我拍照技术还不错，需要摄影师吗？」" },
+    { name: "学姐", text: "（眼睛一亮）「真的吗？太好了！我正愁找不到合适的摄影师呢！」" },
+    { name: "学姐", text: "「朋友都是手机党，拍出来的效果总是不理想...」" },
+    { name: "你", text: "「那我来做学姐的专属摄影师吧！」" },
+    { name: "学姐", text: "「太好了！那我们得提前商量一下拍摄方案～」", effect: { senpai: +20 } },
+    { name: "系统", text: "你们约好提前见面，讨论拍摄角度和场景。" },
+    { name: "系统", text: "漫展当天..." },
+    { name: "学姐", text: "（摆好姿势）「这个角度可以吗？灯光怎么样？」" },
+    { name: "你", text: "「完美！学姐保持这个姿势...好！拍到了！」" },
+    { name: "学姐", text: "（跑过来看相机）「哇！拍得真好！你太专业了！」" },
+    { name: "朋友", text: "「哇哦～专属摄影师就是不一样呢！」" },
+    { name: "学姐", text: "（脸红）「今天真的多亏你了...谢谢！」", effect: { senpai: +15 } },
+    { name: "系统", text: "你为学姐拍出了精美的照片，她在朋友圈特别感谢了你。", nextScene: "../../剧情/sport/index.html" }
+  ]
+};
 
 // -------------------- 场景跳转 --------------------
 function goToNextScene(sceneUrl) {
@@ -426,84 +386,135 @@ function bindControlButtons() {
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
   }
+  
+  // 确保在 DOM 加载完成后绑定存档和读档按钮
+  bindSaveLoadButtons();
+}
+
+// -------------------- 存档读档按钮绑定 --------------------
+function bindSaveLoadButtons() {
+  const saveBtn = document.getElementById("save-btn");
+  const loadBtn = document.getElementById("load-btn");
+  
+  if (saveBtn) {
+    saveBtn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      
+      // 读现有存档数组
+      const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+
+      // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
+      let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
+
+      // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
+      if (window.location.protocol === "file:") {
+        scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
+        if (!scene.startsWith("/")) scene = "/" + scene;
+      }
+
+      // 构建存档对象
+      const saveData = {
+        scene: scene,
+        branch: currentBranch || "common",
+        dialogueIndex: index || 0,
+        affectionData: { ...affectionData },
+        background: bodyBg,  // 🔹 保存背景图
+        timestamp: Date.now()
+      };
+      console.log("存档进度：", saveData);
+
+      saves.push(saveData);
+      localStorage.setItem("storySaves", JSON.stringify(saves));
+
+      console.log("存档已写入：", saveData);
+      alert("游戏已存档！");
+
+      // 仅在 initSaveUI 存在的情况下调用（避免 ReferenceError）
+      if (typeof initSaveUI === "function") {
+        initSaveUI();
+      }
+    });
+  }
+
+  if (loadBtn) {
+    loadBtn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      // 直接跳转到存档界面
+      window.location.href = "../../savepage/savepage2.0/save.htm";
+    });
+  }
 }
 
 // -------------------- 音频控制 --------------------
-    // 创建音频元素并自动播放Spring.mp3
-    const bgAudio = document.createElement("audio");
-    bgAudio.src = "../../audio/Spring.mp3";
-    bgAudio.loop = true;
-    bgAudio.autoplay = true;
-    bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
-    bgAudio.style.display = "none";
-    document.body.appendChild(bgAudio);
-    if (volumeRange) {
-      // 初始化滑块为音量值
-      volumeRange.value = Math.round(bgAudio.volume * 100);
-      volumeRange.addEventListener("input", () => {
-        bgAudio.volume = volumeRange.value / 100;
-      });
-    }
+// 创建音频元素并自动播放Spring.mp3
+const bgAudio = document.createElement("audio");
+bgAudio.src = "../../audio/Spring.mp3";
+bgAudio.loop = true;
+bgAudio.autoplay = true;
+bgAudio.volume = 0.5; // 默认音量
+bgAudio.style.display = "none";
+document.body.appendChild(bgAudio);
 
-    if (musicBtn) {
-      musicBtn.addEventListener("click", () => {
-        if (bgAudio.paused) {
-          bgAudio.play();
-          musicBtn.textContent = "音乐暂停";
-        } else {
-          bgAudio.pause();
-          musicBtn.textContent = "音乐播放";
-        }
-      });
-    }
+// 获取音量控制元素
+const volumeRange = document.getElementById("volume-range");
+const musicBtn = document.getElementById("music-btn");
 
+if (volumeRange) {
+  // 初始化滑块为音量值
+  volumeRange.value = Math.round(bgAudio.volume * 100);
+  volumeRange.addEventListener("input", () => {
+    bgAudio.volume = volumeRange.value / 100;
+  });
+}
 
-
-// -------------------- 存档读档（完整新版，多存档） --------------------
-
-const saveBtn = document.getElementById("save-btn");
-if (saveBtn) {
-  saveBtn.addEventListener("click", () => {
-    // 读现有存档数组
-    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
-
-    // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
-    let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
-
-    // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
-    if (window.location.protocol === "file:") {
-      scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
-      if (!scene.startsWith("/")) scene = "/" + scene;
-    }
-
-    // 构建存档对象
-    const saveData = {
-      scene: scene,
-      branch: currentBranch || "common",
-      dialogueIndex: index || 0,
-      affectionData: { ...affectionData },
-      background: bodyBg,  // 🔹 保存背景图
-      timestamp: Date.now()
-    };
-    console.log("存档进度：", saveData);
-
-    saves.push(saveData);
-    localStorage.setItem("storySaves", JSON.stringify(saves));
-
-    console.log("存档已写入：", saveData);
-    alert("游戏已存档！");
-
-    // 仅在 initSaveUI 存在的情况下调用（避免 ReferenceError）
-    if (typeof initSaveUI === "function") {
-      initSaveUI();
+if (musicBtn) {
+  musicBtn.addEventListener("click", () => {
+    if (bgAudio.paused) {
+      bgAudio.play();
+      musicBtn.textContent = "音乐暂停";
+    } else {
+      bgAudio.pause();
+      musicBtn.textContent = "音乐播放";
     }
   });
 }
 
-const loadBtn = document.getElementById("load-btn"); // 🔹 获取读档按钮
-if (loadBtn) {
-    loadBtn.addEventListener("click", () => { 
-        // 直接跳转到存档界面
-        window.location.href = "../../savepage/savepage2.0/save.htm";
+// -------------------- DOMContentLoaded 初始化 --------------------
+window.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("fade-in");
+  initAffection();
+  showDialogue('common', 0);
+  bindControlButtons();
+  bindScreenClick();
+  checkImages(); // 添加图片检查
+  console.log("漫展约定事件初始化完成");
+
+  // 🔹 页面加载时检查是否通过 URL 读档
+  const urlParams = new URLSearchParams(window.location.search);
+  const loadTimestamp = urlParams.get("load");
+  if (loadTimestamp) {
+    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+    const save = saves.find(s => s.timestamp == loadTimestamp);
+    if (save) {
+      currentBranch = save.branch;
+      index = save.dialogueIndex;
+      Object.assign(affectionData, save.affectionData);
+      updateAffection('senpai', affectionData.senpai);
+      
+      // 隐藏选择界面，显示对话框
+      hideAllChoices();
+      showDialogue(currentBranch, index);
+      alert("读档成功！");
+    }
+  }
+
+  // 监听手机界面开关，控制剧情推进
+  window.phoneOpen = false;
+  const phoneChatInterface = document.getElementById("phone-chat-interface");
+  if (phoneChatInterface) {
+    const observer = new MutationObserver(() => {
+      window.phoneOpen = phoneChatInterface.classList.contains("show");
     });
-}
+    observer.observe(phoneChatInterface, { attributes: true, attributeFilter: ["class"] });
+  }
+});
