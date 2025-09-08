@@ -311,6 +311,21 @@ function toggleMusic() {
   }
 }
 
+// 获取 body 背景图片的绝对路径
+function getBodyBackgroundAbsoluteUrl() {
+  const bg = window.getComputedStyle(document.body).backgroundImage; 
+  // bg 可能是 'url("images/bg1.png")' 或者 'none'
+  if (!bg || bg === "none") return null;
+
+  // 去掉 url("") 包裹
+  let url = bg.slice(4, -1).replace(/["']/g, "");
+
+  // 转成绝对路径
+  const absoluteUrl = new URL(url, window.location.href).href;
+  return absoluteUrl;
+}
+
+const bodyBg = getBodyBackgroundAbsoluteUrl();
 // -------------------- 存档系统 --------------------
 
 if (saveBtn) {
@@ -330,7 +345,7 @@ if (saveBtn) {
     // 构建存档对象
     const saveData = {
       scene: scene,
-      branch: currentBranch || "common",
+      branch: "common",
       dialogueIndex: index || 0,
       affectionData: { ...affectionData },
       background: bodyBg,  // 🔹 保存背景图
@@ -350,6 +365,7 @@ if (saveBtn) {
     }
   });
 }
+
 
 
 if (loadBtn) {
