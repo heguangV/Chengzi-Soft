@@ -147,11 +147,7 @@ function handleNext() {
       if (index < dialogues.length - 1) {
         showDialogue(index + 1);
       } else {
-        // 游戏结束，显示提示而不跳转
-        document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
-        }, 1000);
+        alert("游戏结束");
       }
     }
   stopAutoPlay();

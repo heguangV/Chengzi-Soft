@@ -140,7 +140,7 @@ function showDialogue(idx) {
 
     setTimeout(() => {
       console.log("当前好感度:", affectionData.fang);
-      if (affectionData.fang < 40) {
+      if (affectionData.fang < 70) {
         window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
       } else {
         window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html";

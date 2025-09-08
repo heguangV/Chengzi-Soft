@@ -380,7 +380,7 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
         "谢谢你的关心",
         "我会想你的",
         "保持联系哦",
-        "再见啦，学弟君~ 我已经在去机场的车上咯~ 以后有时间可以来看我的演出哦，我会为你留特等席的 (＾▽＾)"
+
       ];
       
       const randomReply = replies[Math.floor(Math.random() * replies.length)];
