@@ -864,7 +864,7 @@ if (loadBtn) {
         if (text) {
           text.textContent = `${character === 'fang' ? '芳乃' : '其他'}: ${affectionData[character]}%`;
         }
-        localStorage.setItem('affectionData', JSON.stringify(affectionData));
+        
       }
     }
 

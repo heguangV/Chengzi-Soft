@@ -253,10 +253,7 @@ function updateAffection(character, value) {
   const bar = document.querySelector(`.affection-fill[data-character="${character}"]`);
   const text = bar.parentElement.querySelector('.affection-text');
   bar.style.width = `${affectionData[character]}%`;
-  text.textContent = `${character === 'fang' ? '芳乃' : '其他'}: ${affectionData[character]}%`;
-
-  // 保存到本地存储
-  localStorage.setItem('affectionData', JSON.stringify(affectionData));
+  text.textContent = `${character === 'fang' ? '芳乃' : '其他'}: ${affectionData[character]}%`; 
 }
 
 // 初始化好感度显示

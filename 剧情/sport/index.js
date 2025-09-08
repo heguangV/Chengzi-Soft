@@ -61,7 +61,7 @@ function updateAffection(value) {
   const text = document.querySelector('.affection-text');
   if (bar) bar.style.width = `${affectionData.fang}%`;
   if (text) text.textContent = `芳乃: ${affectionData.fang}%`;
-  localStorage.setItem('affectionData', JSON.stringify(affectionData));
+
   
   // 显示好感度变化
   if (value > 0) {
@@ -110,7 +110,6 @@ function typeText(text, callback) {
   }, typingSpeed);
 }
 
-// -------------------- 显示某条对话 --------------------
 function showDialogue(idx) {
   if (idx < 0) idx = 0;
   if (idx >= dialogues.length) idx = dialogues.length - 1;
@@ -132,6 +131,24 @@ function showDialogue(idx) {
     if (avatarContainer) avatarContainer.style.display = 'none';
   }
 
+  const currentDialogue = dialogues[index];
+
+  // 如果是结局台词，直接显示文字并跳转
+  if (currentDialogue.ending) {
+    if (dialogText) dialogText.textContent = currentDialogue.text;
+    charIndex = currentDialogue.text.length;
+
+    setTimeout(() => {
+      console.log("当前好感度:", affectionData.fang);
+      if (affectionData.fang < 40) {
+        window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
+      } else {
+        window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html";
+      }
+    }, 2000);
+
+    return; // 不再进入打字机
+  }
   // 检查是否需要触发手机震动
   if (dialogues[index].triggerPhone) {
     isPaused = true;
@@ -139,7 +156,7 @@ function showDialogue(idx) {
     clearInterval(typingInterval);
     if (dialogText) dialogText.textContent = dialogues[index].text;
     charIndex = dialogues[index].text.length;
-    
+
     if (window.makePhoneVibrate) {
       window.makePhoneVibrate();
       window.onPhoneVibrationComplete = function() {
@@ -149,7 +166,7 @@ function showDialogue(idx) {
         }
       };
     }
-    
+
     if (!window._phoneOpenListenerAdded) {
       window._phoneOpenListenerAdded = true;
       let lastPhoneOpen = window.phoneOpen;
@@ -170,6 +187,8 @@ function showDialogue(idx) {
     if (dialogues[index].hasChoice) {
       forceShowChoices();
     }
+
+    
   });
 }
 
@@ -258,9 +277,9 @@ function handleChoice(choice) {
     { name: "学姐", text: "...我后天就要走了 有空的话记得来送送我哦" },
     { name: "你", text: "...我会来的...相信你在那边能取得成功啊" },
     { name: "你", text: "看着学姐面带微笑的样子 想挽留的话仍然是没有说出口 到最后只能转变下一句祝愿" },
-    { name: "你", text: "我真的有资格 留下她吗？" }
+    { name: "你", text: "我真的有资格 留下她吗？" ,ending: true }
   );
-  
+
   // 显示下一句对话
   showDialogue(index + 1);
 }
@@ -442,8 +461,7 @@ function bindEventListeners() {
   if (mainMenuBtn) mainMenuBtn.addEventListener('click', () => {
     window.location.href = '../../index.html';
   });
-  if (saveBtn) saveBtn.addEventListener('click', saveGame);
-  if (loadBtn) loadBtn.addEventListener('click', loadGame);
+
   if (musicBtn) musicBtn.addEventListener('click', toggleMusic);
   if (volumeRange && bgMusic) {
     volumeRange.addEventListener('input', () => {

@@ -297,7 +297,7 @@ function updateAffection(character, value) {
   const text = bar.parentElement.querySelector('.affection-text');
   if (bar) bar.style.width = `${affectionData[character]}%`;
   if (text) text.textContent = `学姐: ${affectionData[character]}%`;
-  localStorage.setItem('affectionData', JSON.stringify(affectionData));
+  
 }
 
 function initAffection() {
