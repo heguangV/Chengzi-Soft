@@ -326,28 +326,50 @@ function toggleMusic() {
 }
 
 // -------------------- 存档系统 --------------------
-function saveGame() {
-  const saveData = {
-    index: index,
-    affectionData: affectionData,
-    charIndex: charIndex
-  };
-  localStorage.setItem('saveData', JSON.stringify(saveData));
-  showNotice('存档成功！');
+
+if (saveBtn) {
+  saveBtn.addEventListener("click", () => {
+    // 读现有存档数组
+    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+
+    // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
+    let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
+
+    // 如果是在本地打开（file:），去掉像 "/D:" 的前缀，保留后面的路径
+    if (window.location.protocol === "file:") {
+      scene = scene.replace(/^\/[A-Za-z]:/, ""); // "/D:/.../coser/index.html" -> "/.../coser/index.html"
+      if (!scene.startsWith("/")) scene = "/" + scene;
+    }
+
+    // 构建存档对象
+    const saveData = {
+      scene: scene,
+      branch: currentBranch || "common",
+      dialogueIndex: index || 0,
+      affectionData: { ...affectionData },
+      background: bodyBg,  // 🔹 保存背景图
+      timestamp: Date.now()
+    };
+    console.log("存档进度：", saveData);
+
+    saves.push(saveData);
+    localStorage.setItem("storySaves", JSON.stringify(saves));
+
+    console.log("存档已写入：", saveData);
+    alert("游戏已存档！");
+
+    // 仅在 initSaveUI 存在的情况下调用（避免 ReferenceError）
+    if (typeof initSaveUI === "function") {
+      initSaveUI();
+    }
+  });
 }
 
-function loadGame() {
-  const savedData = localStorage.getItem('saveData');
-  if (savedData) {
-    const data = JSON.parse(savedData);
-    index = data.index;
-    affectionData = data.affectionData;
-    updateAffection(0);
-    showDialogue(index);
-    showNotice('读档成功！');
-  } else {
-    showNotice('没有找到存档！');
-  }
+if (loadBtn) {
+    loadBtn.addEventListener("click", () => { 
+        // 直接跳转到存档界面
+        window.location.href = "../../savepage/savepage2.0/save.htm";
+    });
 }
 
 // -------------------- 事件监听器 --------------------

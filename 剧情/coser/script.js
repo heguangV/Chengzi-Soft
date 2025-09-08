@@ -90,7 +90,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// -------------------- 剧情台词 --------------------
 const dialogues = {
   common: [
     { name: "系统", text: "某天课后，你在图书馆偶遇了正在看动漫杂志的学姐。" },
@@ -420,43 +419,41 @@ function bindControlButtons() {
   if (autoBtn) autoBtn.addEventListener("click", toggleAutoPlay);
   
   choiceBtns.forEach(btn => btn.addEventListener("click", handleChoice));
-  const sidebar = document.getElementById("sidebar");
-  const toggleBtn = document.getElementById("sidebar-toggle");
-
-  if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
-  }
 }
 
 // -------------------- 音频控制 --------------------
-    // 创建音频元素并自动播放Spring.mp3
-    const bgAudio = document.createElement("audio");
-    bgAudio.src = "../../audio/Spring.mp3";
-    bgAudio.loop = true;
-    bgAudio.autoplay = true;
-    bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
-    bgAudio.style.display = "none";
-    document.body.appendChild(bgAudio);
-    if (volumeRange) {
-      // 初始化滑块为音量值
-      volumeRange.value = Math.round(bgAudio.volume * 100);
-      volumeRange.addEventListener("input", () => {
-        bgAudio.volume = volumeRange.value / 100;
-      });
-    }
+const musicBtn = document.getElementById("music-btn");
+const bgMusic = document.getElementById("bg-music");
+const volumeRange = document.getElementById("volume-range");
 
-    if (musicBtn) {
-      musicBtn.addEventListener("click", () => {
-        if (bgAudio.paused) {
-          bgAudio.play();
-          musicBtn.textContent = "音乐暂停";
-        } else {
-          bgAudio.pause();
-          musicBtn.textContent = "音乐播放";
-        }
-      });
-    }
+if (volumeRange) {
+  volumeRange.addEventListener("input", () => {
+    if (bgMusic) bgMusic.volume = volumeRange.value / 100;
+  });
+}
 
+if (musicBtn && bgMusic) {
+  musicBtn.addEventListener("click", () => {
+    if (bgMusic.paused) {
+      bgMusic.play().catch(e => {
+        console.warn("音频播放失败:", e);
+        handleAudioError();
+      });
+      musicBtn.textContent = "音乐暂停";
+    } else {
+      bgMusic.pause();
+      musicBtn.textContent = "音乐播放";
+    }
+  });
+}
+
+// -------------------- 侧边栏控制 --------------------
+const sidebar = document.getElementById("sidebar");
+const toggleBtn = document.getElementById("sidebar-toggle");
+
+if (toggleBtn && sidebar) {
+  toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
+}
 
 
 // -------------------- 存档读档（完整新版，多存档） --------------------
