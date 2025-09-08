@@ -172,11 +172,13 @@ class SaveSystem {
         const save = this.currentSaves[index];
         if (!save) return;
 
-        // 这里可以根据需要跳转到相应的故事页面
-        // 例如：window.location.href = `storypage.html?load=${save.timestamp}`;
-        
-        alert(`正在加载存档 ${index + 1}...\n进度: ${save.dialogueIndex}\n角色: ${save.characterName}`);
-        
+        // 跳转到存档对应的剧情页
+        if (save.scene) {
+            window.location.href = `${save.scene}?load=${save.timestamp}`;
+        } else {
+            alert("该存档无法读取！");
+        }
+
         // 关闭模态框
         this.hideModal();
     }
