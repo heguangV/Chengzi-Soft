@@ -81,6 +81,23 @@ function deleteSave(idx) {
 
 // -------------------- 页面加载时检查 URL 是否有读档参数 --------------------
 window.addEventListener("DOMContentLoaded", () => {
+    // 为返回按钮添加返回上一页功能
+    const closeBtn = document.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.title = '返回';
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // 优先跳转from参数，否则history.back
+            const urlParams = new URLSearchParams(window.location.search);
+            const from = urlParams.get('from');
+            if (from) {
+                window.location.href = from;
+            } else {
+                window.history.back();
+            }
+        });
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const loadTimestamp = urlParams.get("load");
     if (loadTimestamp) {
