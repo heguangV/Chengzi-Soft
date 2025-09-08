@@ -128,7 +128,7 @@ function showDialogue(idx) {
 
   typeText(dialogues[index].text, () => {
     if (index === 999) autoSave();
-    if (index === 999) setTimeout(showChoices, 500);
+    if (index === 4) setTimeout(showChoices, 500);
   });
 }
 
@@ -138,7 +138,7 @@ function handleNext() {
     clearInterval(typingInterval);
     if (dialogText) dialogText.textContent = dialogues[index].text;
     charIndex = dialogText.textContent.length;
-    if (index === 999) setTimeout(showChoices, 500);
+    if (index === 4) setTimeout(showChoices, 500);
   } else {
       if (index < dialogues.length - 1) {
         showDialogue(index + 1);
@@ -198,9 +198,6 @@ function startAutoPlay() {
       else {
         // 游戏结束，显示提示而不跳转
         document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
-        }, 1000);
         stopAutoPlay();
       }
     }
@@ -235,10 +232,10 @@ function handleChoice(event) {
 
   if (choice === "A") {
     updateAffection('fang', affectionData.fang + 10);
-    showDialogue(index + 1);
+    window.location.href = "../storypage2.0 与学姐好感度足够  4选择了1 1/storypage.html";
   } else if (choice === "B") {
     updateAffection('fang', affectionData.fang - 5);
-    showDialogue(index + 2);
+    window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
   } else {
     updateAffection('other', affectionData.other + 5);
     showDialogue(index + 3);

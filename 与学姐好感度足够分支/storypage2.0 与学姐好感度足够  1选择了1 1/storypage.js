@@ -151,8 +151,8 @@ function handleNext() {
       if (index < dialogues.length - 1) {
         showDialogue(index + 1);
       } else {
-        // 游戏结束，显示提示而不跳转
-        alert("游戏结束！");
+        // 直接跳转到存档界面
+        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
       }
     }
   stopAutoPlay();
