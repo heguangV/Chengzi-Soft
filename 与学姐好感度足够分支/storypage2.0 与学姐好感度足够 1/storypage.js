@@ -106,6 +106,7 @@ function showDialogue(idx) {
       // 旁白：隐藏头像
       displayName = '旁白';
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+       characterAvatar.src = '';
     } else if (currentName === 'B') {
       // 主角：显示男主头像
       displayName = '男主';
@@ -125,6 +126,7 @@ function showDialogue(idx) {
     } else {
       // 其他角色：隐藏头像
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+     
     }
 
     nameBox.textContent = displayName;
@@ -148,10 +150,7 @@ function handleNext() {
         showDialogue(index + 1);
       } else {
         // 游戏结束，显示提示而不跳转
-        document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
-        }, 1000);
+      alert("请选择");
       }
     }
   stopAutoPlay();
@@ -201,11 +200,7 @@ function startAutoPlay() {
       if (index < dialogues.length - 1) showDialogue(index + 1);
       else {
         // 游戏结束，显示提示而不跳转
-        document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
-        }, 1000);
-        stopAutoPlay();
+        alert("请选择");
       }
     }
   }, 2000);
@@ -233,19 +228,24 @@ function hideChoices() {
 }
 
 function handleChoice(event) {
-  const choice = event.currentTarget.dataset.choice;
+  const choice = (event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.choice) || "";
   console.log("玩家选择了:", choice);
   hideChoices();
 
-  if (choice === "A") {
+  // 支持两种 data-choice 约定：短码（A/B）或完整中文文本（向后兼容）
+  const normalized = choice.trim();
+  if (normalized === "A" || normalized === "抓住学姐的手") {
     updateAffection('fang', affectionData.fang + 10);
+    // 跳转到抓手分支页面
     window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 1/storypage.html";
-  } else if (choice === "B") {
+  } else if (normalized === "B" || normalized === "默默看着学姐") {
     updateAffection('fang', affectionData.fang - 5);
+    // 跳转到默默看着学姐分支页面
     window.location.href = "../storypage2.0 与学姐好感度足够  1选择了2 1/storypage.html";
   } else {
+    // 其他选项继续剧情（保留原有逻辑）
     updateAffection('other', affectionData.other + 5);
-    window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
+    showDialogue(index + 3);
   }
 }
 

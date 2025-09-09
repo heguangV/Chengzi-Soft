@@ -32,6 +32,38 @@ const dialogues = [
   { name: "B", text: "这可是我花了一晚上才挑选出来的 要不然怎么会起晚） 想着 你也观察起她的穿着" },
   { name: "C", text: "她身着一件淡蓝色的衬衫 外面是一件短款的夹克 下身穿着一件高腰牛仔裤 头上戴着一只米色的棒球帽 虽然简约 但在她如同明星般的比例与气质的映衬下 还是让人难以移开目光 惹得走过的路人频频注目" },
   { name: "A", text: "怎么样 学姐的专业穿搭” 她的脸上扬起一种自豪感 仿佛在等待你的夸奖" },
+  { name: "B", text: "非常漂亮，真是让人移不开眼睛呢" },
+  { name: "B", text: "你将内心的想法和盘托出" },
+  { name: "C", text: "学姐愣了一下，转身牵起你的手走进了水族馆" },
+  { name: "B", text: "你发现，学姐的耳根微微发红" },
+  { name: "C", text: "水族馆中的灯光暗淡 只剩下水箱中淡淡的蓝色弥漫在空气之中" },
+  { name: "C", text: "她在你面前走着 由于是第一次来 好奇的看着周围种类繁多的鱼 显得有些可爱" },
+  { name: "C", text: "忽然 她在一面水箱前停下 露出一副“坚毅的眼神”" },
+  { name: "B", text: "“你该不会…” 在你心中升起一种不妙的预感" },
+  { name: "A", text: "“sakana~”她向前伸出双手 单脚站在地上 像是在模仿水箱中游荡的鱼儿" },
+  { name: "B", text: "在你不知所措时 却看到她注视着你 似乎想让你也加入其中" },
+  { name: "C", text: "你高举着双手 加入了其中 引得旁边的同学驻足" },
+  { name: "C", text: "你们毫不在意 相视一笑后 向前方继续走着 不同的是 你们的十指紧紧扣在了一起" },  
+  { name: "A", text: "牵着你的手 向着一个方向快速前进着 像是有什么确定的目标 你虽然疑惑 但也毫无抗拒着跟着不断向前" }, 
+  { name: "C", text: "在走过一段长廊后 迎面而来的是一个「360 度全透明」的水下世界 水下的各种植物与动物毫无掩饰的展现在眼前 光源也只剩下了水中泛出的微光 世界仿佛都黯淡了下来" },
+  { name: "A", text: "「这里是我朋友推荐的哦 怎么样 很有震撼感吧~」" },  
+  { name: "C", text: "你确实被这场景震撼到 不由得点了点头" }, 
+  { name: "A", text: "「她还说 这里最适合…」 声音在最关键的地方消失" }, 
+  { name: "B", text: "「???」 你看着她莫名羞红的脸 忽然仿佛有了答案" },
+  { name: "C", text: "在淡蓝色的世界中 你伸出了双手 将学姐拥入怀中" },
+  { name: "A", text: "你感受到学姐并没有任何反抗 反而迎合着你 伸手抱住了你" },  
+  { name: "C", text: "你看着怀中的学姐 脸颊上的红晕甚至比刚才更加明显 她的嘴唇微微颤动 仿佛有话要说 你便试着将耳朵贴的更近了一点" }, 
+  { name: "A", text: "我喜欢你…" }, 
+  { name: "B", text: "整个世界好像只剩下了这一句话的声音 你被这突如其来的告白怔在了原地 一时说不出话" },
+  { name: "A", text: "“怎么一点反应都没有 你听到了对吧！”" },
+  { name: "B", text: "“抱歉 我还是有点蒙 你刚才 对我告白了吗”" },  
+  { name: "A", text: "“你果然是听到了 那为什么还不说话！”" }, 
+  { name: "B", text: "看着怀里气鼓鼓的学姐 “原来这一切都不是梦境吗”" }, 
+  { name: "B", text: "“我当然也喜欢你了 就算你不说 我也会向你表白”" }, 
+  { name: "A", text: "“哼 那罚你也要说！”" }, 
+  { name: "B", text: "“我喜欢你 请以后一定都要和我在一起”" }, 
+  { name: "A", text: "“说好了 可就不能反悔了哦 我们要永远在一起”" }, 
+  { name: "C", text: "在这温软的对话之间 周围好像变得越来越亮 我相信 我们的未来也会想这样无比耀眼吧…" }, 
 ];
 // -------------------- DOMContentLoaded 初始化 --------------------
 window.addEventListener("DOMContentLoaded", () => {
@@ -108,6 +140,7 @@ function showDialogue(idx) {
       // 旁白：隐藏头像
       displayName = '旁白';
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+             characterAvatar.src = '';
     } else if (currentName === 'B') {
       // 主角：显示男主头像
       displayName = '男主';
@@ -127,6 +160,7 @@ function showDialogue(idx) {
     } else {
       // 其他角色：隐藏头像
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+      characterAvatar.src = '';
     }
 
     nameBox.textContent = displayName;
@@ -149,8 +183,14 @@ function handleNext() {
       if (index < dialogues.length - 1) {
         showDialogue(index + 1);
       } else {
-        // 游戏结束，显示提示而不跳转
-        alert("请做出选择");
+        try { hideChoices(); } catch (e) { /* ignore if not available */ }
+        stopAutoPlay();
+        alert("游戏结束！");
+        console.log("准备跳转到主页...");
+        // 使用短延时并替换历史记录，更可靠地跳转并避免产生新的历史记录记录
+        setTimeout(() => {
+          window.location.replace("../../index.html");
+        }, 120);
       }
     }
   stopAutoPlay();
@@ -199,9 +239,12 @@ function startAutoPlay() {
     } else {
       if (index < dialogues.length - 1) showDialogue(index + 1);
       else {
-        // 游戏结束，显示提示而不跳转
-        alert("游戏结束！");
+        // 游戏结束，隐藏选择并提示，然后返回主页
         stopAutoPlay();
+        try { hideChoices(); } catch (e) { /* ignore if not available */ }
+        alert("游戏结束！");
+        // 返回主页（相对路径向上两级到仓库根目录的 index.html）
+        window.location.href = "../../index.html";
       }
     }
   }, 2000);
@@ -228,22 +271,7 @@ function hideChoices() {
   isChoiceActive = false;
 }
 
-function handleChoice(event) {
-  const choice = event.currentTarget.dataset.choice;
-  console.log("玩家选择了:", choice);
-  hideChoices();
 
-  if (choice === "A") {
-    updateAffection('fang', affectionData.fang + 10);
-    window.location.href = "../storypage2.0 与学姐好感度足够  2选择了1 1/storypage.html";
-  } else if (choice === "B") {
-    updateAffection('fang', affectionData.fang - 5);
-    window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
-  } else {
-    updateAffection('other', affectionData.other + 5);
-    showDialogue(index + 3);
-  }
-}
 
 // -------------------- 好感度系统 --------------------
 const affectionData = { fang: 50, other: 30 };

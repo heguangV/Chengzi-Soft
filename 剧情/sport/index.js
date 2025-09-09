@@ -119,17 +119,34 @@ function showDialogue(idx) {
   if (nameBox) nameBox.textContent = currentName;
 
   // 根据角色显示不同头像
-  if (currentName === "旁白") {
-    if (avatarContainer) avatarContainer.style.display = 'none';
-  } else if (currentName === "学姐") {
-    if (characterAvatar) characterAvatar.src = "../../学姐.png";
-    if (avatarContainer) avatarContainer.style.display = 'flex';
-  } else if (currentName === "你") {
-    if (characterAvatar) characterAvatar.src = "../../男主.png";
-    if (avatarContainer) avatarContainer.style.display = 'flex';
-  } else {
-    if (avatarContainer) avatarContainer.style.display = 'none';
-  }
+    if (currentName === "旁白") {
+      // 旁白不显示任何立绘
+      if (avatarContainer) avatarContainer.style.display = 'none';
+      if (characterAvatar) {
+        characterAvatar.style.display = 'none';
+        // 清除 src 避免残留图片
+        characterAvatar.src = '';
+      }
+    } else if (currentName === "学姐") {
+      if (characterAvatar) {
+        characterAvatar.src = "../../学姐.png";
+        characterAvatar.style.display = 'block';
+      }
+      if (avatarContainer) avatarContainer.style.display = 'flex';
+    } else if (currentName === "你") {
+      if (characterAvatar) {
+        characterAvatar.src = "../../男主.png";
+        characterAvatar.style.display = 'block';
+      }
+      if (avatarContainer) avatarContainer.style.display = 'flex';
+    } else {
+      // 未知角色默认不显示立绘，但不报错
+      if (avatarContainer) avatarContainer.style.display = 'none';
+      if (characterAvatar) {
+        characterAvatar.style.display = 'none';
+        characterAvatar.src = '';
+      }
+    }
 
   const currentDialogue = dialogues[index];
 

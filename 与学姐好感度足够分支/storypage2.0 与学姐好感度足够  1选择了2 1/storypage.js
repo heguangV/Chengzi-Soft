@@ -106,6 +106,7 @@ function showDialogue(idx) {
       // 旁白：隐藏头像
       displayName = '旁白';
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+             characterAvatar.src = '';
     } else if (currentName === 'B') {
       // 主角：显示男主头像
       displayName = '男主';
@@ -125,6 +126,7 @@ function showDialogue(idx) {
     } else {
       // 其他角色：隐藏头像
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
+             characterAvatar.src = '';
     }
 
     nameBox.textContent = displayName;
@@ -147,7 +149,15 @@ function handleNext() {
       if (index < dialogues.length - 1) {
         showDialogue(index + 1);
       } else {
-        alert("游戏结束");
+        // 游戏结束：隐藏选择、停止自动播放、提示并返回主页
+        try { hideChoices(); } catch (e) { /* ignore if not available */ }
+        stopAutoPlay();
+        alert("游戏结束！");
+        console.log("准备跳转到主页...");
+        // 使用短延时并替换历史记录，更可靠地跳转并避免产生新的历史记录记录
+        setTimeout(() => {
+          window.location.replace("../../index.html");
+        }, 120);
       }
     }
   stopAutoPlay();
@@ -197,11 +207,13 @@ function startAutoPlay() {
       if (index < dialogues.length - 1) showDialogue(index + 1);
       else {
         // 游戏结束，显示提示而不跳转
-        document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = "../storypage2.0 与学姐好感度足够  2选择了2 1/storypage.html";
-        }, 1000);
+        try { hideChoices(); } catch (e) { /* ignore if not available */ }
         stopAutoPlay();
+        alert("游戏结束！");
+        console.log("准备跳转到主页（自动播放结束）...");
+        setTimeout(() => {
+          window.location.replace("../../index.html");
+        }, 120);
       }
     }
   }, 2000);

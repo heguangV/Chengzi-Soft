@@ -12,6 +12,7 @@
       background: url('../asset/images/fuxi.png') no-repeat center center fixed;
       background-size: cover;
       font-family: "微软雅黑", sans-serif;
+      font-size: 20px; /* 全局字体放大 */
       /* 禁用文本选择 */
       -webkit-user-select: none;
          -moz-user-select: none;
@@ -48,8 +49,37 @@
     );
   }
 
-  .background-img,
-.character-img {
+  
+  .character-avatar {
+      /* 保留样式但去除 display: flex，避免影响图片显示 */
+      position: absolute;
+    bottom: 20%;
+    right: 60px;
+    z-index: 10;
+    max-height: 80%;
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
+      rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
+    );
+    }
+
+    /* 角色头像图片 */
+    #character-avatar {
+      /* 当页面中直接使用 #character-avatar 而非包裹在 .character-avatar 时，补上定位和尺寸保证显示一致 */
+      position: absolute;
+      right: 60px;
+      bottom: 20%;
+      z-index: 10;
+    max-height: 80%;
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
+      rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
+    );
+    }
+
+  .background-img {
   width: 300px;
   height: 300px;
   object-fit: contain;
@@ -77,7 +107,7 @@
     .character-name {
       font-weight: bold;
       margin-bottom: 0.5em;
-      font-size: 0.9em;
+      font-size: 1.2em;
       margin-left: 5%;
       margin-top: 0.5%;
     }
@@ -90,7 +120,7 @@
       transform: translateY(-50%);
       width: 80%;
       min-height: 3em;
-      font-size: 1em;
+      font-size: 1.3em;
       color: black;
       z-index: 1;
       pointer-events: none;
@@ -166,7 +196,7 @@
       border-radius: 5px;
       background: pink;
       color: #000;
-      font-size: 1em;
+      font-size: 1.15em;
       cursor: pointer;
     }
 
@@ -271,7 +301,7 @@
       width: 90%;
       background: pink;
       color: #000;
-      font-size: 1em;
+      font-size: 1.15em;
       cursor: pointer;
       transition: all 0.2s;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -307,28 +337,7 @@
     }
 
     /* 角色头像容器 */
-    .character-avatar {
-      /* 保留样式但去除 display: flex，避免影响图片显示 */
-      right: 60px;
-      z-index: 10;
-      width: 300px;
-      height: 300px;
-      position: absolute;
-      bottom: 20%;
-      max-height: 140%;
-      mask-image: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
-        rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
-      );
-    }
-
-    /* 角色头像图片 */
-    #character-avatar {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
+    
 
     /* 隐藏类 */
     .hidden {
@@ -397,7 +406,7 @@
       line-height: 30px;
       color: #fff;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-      font-size: 0.9em;
+      font-size: 1.1em;
     }
 
     /* 手机图像样式 */
