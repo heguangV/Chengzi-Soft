@@ -37,7 +37,7 @@ let isPaused = false;
 
 // -------------------- 剧情对话 --------------------
 const dialogues = [
-  { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。" },
+  { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。", playGame: "jianshu" },
   { name: "旁白", text: "上课的日子有些枯燥，时间过的却很快，运动会悄然接近了。" },
   { name: "旁白", text: "偶然间你得知了学姐也会参加这次运动会的800米项目，让本对运动不敢兴趣的你也决定前去观看。" },
   { name: "旁白", text: "到了学姐比赛那天，你买好能量饮料，备好一些糖果，前往操场。" },
@@ -277,6 +277,7 @@ function handleChoice(choice) {
     { name: "旁白", text: "学姐答应了。二人商定好时间，找了间空教室。" },
     { name: "旁白", text: "学姐带来了她之前的学习资料，并且帮你答疑了部分难题。" },
     { name: "旁白", text: "在学姐的帮助下，你感觉自己的学习能力进一步提升了。" },
+  { name: "你", text: "要不然，试试冰红茶是什么？", playGame: "binghongcha" },
     { name: "旁白", text: "在学姐的帮助下和自己的努力下，你顺利通过了期末考试。" },
     { name: "旁白", text: "寒假到了……" },
     { name: "旁白", text: "手机振动", triggerPhone: true },
@@ -548,3 +549,131 @@ document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.add("fade-in");
   init();
 });
+
+// -------------------- 小游戏覆盖层（iframe）支持 --------------------
+// 在剧情中任何对话对象里使用 playGame: "key" 即可打开对应根目录下的小游戏页面
+const gameOverlayId = 'game-overlay-iframe';
+
+function createGameOverlay() {
+  // 避免重复创建
+  if (document.getElementById(gameOverlayId)) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = gameOverlayId;
+  overlay.style.position = 'fixed';
+  overlay.style.left = '0';
+  overlay.style.top = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.background = 'rgba(0,0,0,0.85)';
+  overlay.style.zIndex = '9999';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+
+  const container = document.createElement('div');
+  container.style.width = '90%';
+  container.style.height = '90%';
+  container.style.position = 'relative';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '关闭游戏';
+  closeBtn.style.position = 'absolute';
+  closeBtn.style.right = '8px';
+  closeBtn.style.top = '8px';
+  closeBtn.style.zIndex = '10001';
+  closeBtn.addEventListener('click', () => {
+    closeGame();
+  });
+
+  const iframe = document.createElement('iframe');
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  iframe.style.border = 'none';
+  iframe.id = gameOverlayId + '-frame';
+
+  container.appendChild(closeBtn);
+  container.appendChild(iframe);
+  overlay.appendChild(container);
+  document.body.appendChild(overlay);
+}
+
+function openGame(key) {
+  // key -> 映射到根目录下的两个小游戏文件
+  const map = {
+    jianshu: '../../jianshu(移动端测试/jianshu.html',
+    binghongcha: '../../binghongcha/binghongcha3.html'
+  };
+
+  // 兼容没有配置的情况
+  if (!key || !map[key]) {
+    console.warn('未知的小游戏 key:', key);
+    return;
+  }
+
+  createGameOverlay();
+  const iframe = document.getElementById(gameOverlayId + '-frame');
+  const overlay = document.getElementById(gameOverlayId);
+  if (!iframe || !overlay) return;
+
+  // 解析目标 URL —— 使用 new URL 可以正确解析相对路径（无论是 file:// 还是 http(s)）
+  let resolvedUrl;
+  try {
+    resolvedUrl = new URL(map[key], window.location.href).href;
+  } catch (e) {
+    // 如果 map[key] 是完整 URL，会直接使用
+    resolvedUrl = map[key];
+  }
+  console.log('打开小游戏 URL:', resolvedUrl);
+  iframe.src = resolvedUrl;
+  overlay.style.display = 'flex';
+  // 暂停剧情的操作
+  isPaused = true;
+  stopAutoPlay();
+}
+
+function closeGame() {
+  const overlay = document.getElementById(gameOverlayId);
+  if (!overlay) return;
+  overlay.style.display = 'none';
+  const iframe = document.getElementById(gameOverlayId + '-frame');
+  if (iframe) iframe.src = 'about:blank';
+  // 恢复剧情
+  isPaused = false;
+  // 继续当前对话
+  showDialogue(index);
+}
+
+// 监听来自 iframe 的 postMessage，小游戏在结束时应发送 { type: 'gameEnd' }
+window.addEventListener('message', (ev) => {
+  let data = ev.data;
+  try {
+    // 某些游戏可能会发送 JSON 字符串
+    if (typeof data === 'string') data = JSON.parse(data);
+  } catch (e) {
+    // ignore
+  }
+
+  if (!data || typeof data !== 'object') return;
+
+  if (data.type === 'gameEnd') {
+    // 关闭 overlay 并继续剧情
+    closeGame();
+    // 可选：根据小游戏结果调整好感度
+    if (typeof data.affectionDelta === 'number') updateAffection(data.affectionDelta);
+  }
+});
+
+// 扫描对话数组，在显示对话时检查 playGame 字段并触发 openGame
+const originalShowDialogue = showDialogue;
+function showDialogueWrapper(i) {
+  originalShowDialogue(i);
+  const d = dialogues[i];
+  if (d && d.playGame) {
+    // 延迟一小会儿以便当前文字显示完毕再打开游戏
+    setTimeout(() => openGame(d.playGame), 600);
+  }
+}
+
+// 覆盖原函数
+showDialogue = showDialogueWrapper;
