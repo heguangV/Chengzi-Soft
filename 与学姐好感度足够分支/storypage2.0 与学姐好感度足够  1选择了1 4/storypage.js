@@ -168,32 +168,33 @@ function showDialogue(idx) {
 
   typeText(dialogues[index].text, () => {
     if (index === 999) autoSave();
-    if (index === 11) setTimeout(showChoices, 500);
   });
 }
 
 // -------------------- 下一句 --------------------
 function handleNext() {
-  if (charIndex < (dialogues[index]?.text.length || 0)) {
+  const curLen = dialogues[index]?.text?.length || 0;
+  // 如果仍在打字中，点击只显示完整文本
+  if (charIndex < curLen) {
     clearInterval(typingInterval);
     if (dialogText) dialogText.textContent = dialogues[index].text;
     charIndex = dialogText.textContent.length;
-    if (index === 11) setTimeout(showChoices, 500);
+    stopAutoPlay();
+    return;
+  }
+
+  // 已经显示完整文本，推进下一句或结束
+  if (index < dialogues.length - 1) {
+    showDialogue(index + 1);
   } else {
-      if (index < dialogues.length - 1) {
-        showDialogue(index + 1);
-      } else {
-        try { hideChoices(); } catch (e) { /* ignore if not available */ }
-        stopAutoPlay();
-        alert("游戏结束！");
-        console.log("准备跳转到主页...");
-        // 使用短延时并替换历史记录，更可靠地跳转并避免产生新的历史记录记录
-        setTimeout(() => {
-          window.location.replace("../../index.html");
-        }, 120);
-      }
-    }
-  stopAutoPlay();
+    try { hideChoices(); } catch (e) { /* ignore if not available */ }
+    stopAutoPlay();
+    alert("游戏结束！");
+    console.log("准备跳转到主页...");
+    setTimeout(() => {
+      window.location.replace("../../index.html");
+    }, 120);
+  }
 }
 
 // -------------------- 上一句 --------------------
@@ -480,13 +481,32 @@ window.addEventListener('keydown', (e) => {
 
 // 鼠标点击触发下一句
 window.addEventListener('click', (e) => {
-  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
-  if (!isChoiceActive && 
-      !e.target.closest('button') && 
-      !e.target.closest('input') && 
-      !e.target.closest('#sidebar') && 
-      !e.target.closest('#chat-input')) {
-    // 调用处理函数
-    handleNext();
+  // 仅响应左键点击
+  if (e instanceof MouseEvent && e.button !== 0) return;
+
+  // 如果存在手机等待状态并且正在等待，则不响应点击推进
+  if (typeof waitingForPhoneResponse !== 'undefined' && waitingForPhoneResponse) return;
+
+  const target = e.target;
+  // 避免在按钮、输入、链接、侧边栏、聊天输入或选择按钮上触发
+  const interactive = target.closest && (
+    target.closest('button') ||
+    target.closest('input') ||
+    target.closest('a') ||
+    target.closest('#sidebar') ||
+    target.closest('.chat-input') ||
+    target.closest('.choice-btn')
+  );
+  if (isChoiceActive || interactive) return;
+
+  // 如果当前对话仍在打字中，则点击只显示完整文本；否则推进下一句
+  const curTextLen = dialogues[index]?.text?.length || 0;
+  if (charIndex < curTextLen) {
+    clearInterval(typingInterval);
+    if (dialogText) dialogText.textContent = dialogues[index].text;
+    charIndex = curTextLen;
+    return;
   }
+
+  handleNext();
 });

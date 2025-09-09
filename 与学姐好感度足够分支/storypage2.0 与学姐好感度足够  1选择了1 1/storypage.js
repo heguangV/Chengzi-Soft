@@ -602,13 +602,33 @@ window.addEventListener('keydown', (e) => {
 
 // 鼠标点击触发下一句
 window.addEventListener('click', (e) => {
-  // 只有在选择框未激活且点击的不是按钮等交互元素时才触发
-  if (!isChoiceActive && 
-      !e.target.closest('button') && 
-      !e.target.closest('input') && 
-      !e.target.closest('#sidebar') && 
-      !e.target.closest('#chat-input')) {
-    // 调用处理函数
-    if (!waitingForPhoneResponse) handleNext();
+  // 仅响应左键 (通常是主按钮)，并且在选择框未激活时才处理
+  if (e instanceof MouseEvent && e.button !== 0) return;
+
+  // 避免在输入框、按钮、侧边栏或聊天输入处触发
+  const target = e.target;
+  const interactive = target.closest && (
+    target.closest('button') ||
+    target.closest('input') ||
+    target.closest('a') ||
+    target.closest('#sidebar') ||
+    target.closest('.chat-input') ||
+    target.closest('.choice-btn')
+  );
+
+  if (isChoiceActive || interactive) return;
+  if (waitingForPhoneResponse) return; // 手机振动/等待时暂停点击推进
+
+  // 如果当前对话还在打字中，则点击只显示完整文本；否则推进下一句
+  const curTextLen = dialogues[index]?.text?.length || 0;
+  if (charIndex < curTextLen) {
+    clearInterval(typingInterval);
+    if (dialogText) dialogText.textContent = dialogues[index].text;
+    charIndex = curTextLen;
+    // 不推进下一句，也不触发自动播放停止（保留原行为）
+    return;
   }
+
+  // 对话已显示完整，推进下一句
+  handleNext();
 });
