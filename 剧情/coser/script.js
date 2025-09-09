@@ -90,6 +90,10 @@ let autoInterval = null;
 let isFast = false;
 let hasMadeChoice = false;
 
+const affectionData = {
+  senpai: 0
+};
+
 // -------------------- 剧情台词 --------------------
 const dialogues = {
   common: [
