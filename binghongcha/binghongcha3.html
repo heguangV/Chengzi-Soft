@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抢热带风味冰红茶小游戏</title>
+    <style>
+        /* 保持原有样式不变 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        #gameContainer {
+            position: relative;
+            max-width: 90vh;
+            max-height: 90vw;
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 针对横屏移动设备的额外调整 */
+        @media (max-width: 768px) and (min-aspect-ratio: 1/1) {
+            #gameInfo {
+                padding: 10px 15px;
+                font-size: 18px; /* 缩小信息栏字体 */
+            }
+        
+            #gameModal {
+                padding: 20px 30px; /* 缩小弹窗尺寸 */
+            }
+        
+            #modalTitle {
+                font-size: 24px;
+            }
+    
+            #modalScore {
+                font-size: 20px;
+            }
+    
+            .rule-item {
+                font-size: 16px; /* 缩小规则字体 */
+            }
+    
+            #startBtn, #exitBtn {
+                padding: 10px 24px;
+                font-size: 18px; /* 缩小按钮尺寸 */
+                width: 160px;
+           }
+        }
+
+
+        #gameInfo {
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2C3E50;
+            z-index: 10;
+        }
+
+        #gameCanvas {
+            flex: 1;
+            width: 100%;
+            height: calc(100% - 80px);
+            cursor: pointer;
+        }
+
+        #gameModal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px 60px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 20;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #modalTitle {
+            font-size: 32px;
+            color: #2C3E50;
+            margin-bottom: 20px;
+        }
+
+        #modalScore {
+            font-size: 24px;
+            color: #3498DB;
+            margin-bottom: 30px;
+        }
+
+        /* 新增：规则说明样式 */
+        .rules-container {
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .rule-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        
+        .rule-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+
+        /* 按钮容器样式 */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* 按钮间距 */
+            align-items: center;
+        }
+
+        #startBtn {
+            padding: 12px 36px;
+            font-size: 20px;
+            background: #3498DB;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 200px; /* 固定宽度使按钮对齐 */
+        }
+
+        #startBtn:hover {
+            background: #2980B9;
+        }
+
+        #exitBtn {
+            padding: 12px 36px;
+            font-size: 20px;
+            background: #3498DB;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: none; /* 初始隐藏退出按钮 */
+            width: 200px; /* 固定宽度使按钮对齐 */
+        }
+
+        #exitBtn:hover {
+            background: #2980B9;
+        }
+
+        #rotateTip {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            padding-top: 40vh;
+            z-index: 100;
+        }
+
+        @media (max-aspect-ratio: 1/1) {
+            #rotateTip {
+                display: block;
+            }
+            #gameContainer {
+                display: none;
+            }
+        }
+
+        @media (min-aspect-ratio: 1/1) {
+            #rotateTip {
+                display: none;
+            }
+            #gameContainer {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="rotateTip">
+        请将手机横屏以开始游戏
+    </div>
+
+    <div id="gameContainer">
+        <div id="gameInfo">
+            <div>得分: <span id="score">0</span></div>
+            <div>时间: <span id="time">60</span>s</div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="gameModal">
+            <h2 id="modalTitle">抢热带风味冰红茶小游戏</h2>
+            <p id="modalScore">点击开始来抢热带风味冰红茶吧！</p>
+            
+            <!-- 新增：规则说明区域 -->
+            <div class="rules-container">
+                <div class="rule-item">
+                    <img src="jelly1.png" class="rule-icon" alt="冰红茶1">
+                    <span>：+10分，时间不变</span>
+                </div>
+                <div class="rule-item">
+                    <img src="jelly2.png" class="rule-icon" alt="冰红茶2">
+                    <span>：+66分，时间不变</span>
+                </div>
+                <div class="rule-item">
+                    <img src="jelly3.png" class="rule-icon" alt="冰红茶3">
+                    <span>：-10分，时间减少5秒</span>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <button id="startBtn">开始游戏</button>
+                <button id="exitBtn">退出游戏</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 保持原有脚本不变
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const timeEl = document.getElementById('time');
+        const modal = document.getElementById('gameModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalScore = document.getElementById('modalScore');
+        const startBtn = document.getElementById('startBtn');
+        const exitBtn = document.getElementById('exitBtn');
+
+        let score = 0;
+        let time = 60;
+        let gameInterval;
+        let 冰红茶List = [];
+        let gameRunning = false;
+        let spawnTimer; 
+        
+        const jellyfishRules = [
+            { score: 10, time: 0 },  
+            { score: 66, time: 0 },  
+            { score: -10, time: -5 }  
+        ];
+        
+        const jellyfishImages = [];
+        const imagePaths = ['jelly1.png', 'jelly2.png', 'jelly3.png'];
+        let imagesLoaded = 0;
+
+        imagePaths.forEach((path, index) => {
+            const img = new Image();
+            img.src = path;
+            img.onload = () => {
+                imagesLoaded++;
+            };
+            jellyfishImages[index] = img;
+        });
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Jellyfish {
+            constructor() {
+                this.imageIndex = Math.floor(Math.random() * 3);
+                this.image = jellyfishImages[this.imageIndex];
+                this.rules = jellyfishRules[this.imageIndex];
+                this.size = Math.random() * 70 + 80;
+                this.x = Math.random() * (canvas.width - this.size);
+                this.y = Math.random() * (canvas.height - this.size);
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.speedY = (Math.random() - 0.5) * 2;
+                this.createTime = Date.now();
+                this.timeout = 3000;
+            }
+
+            draw() {
+                if (this.image.complete) {
+                    ctx.drawImage(
+                        this.image, 
+                        this.x, 
+                        this.y, 
+                        this.size, 
+                        this.size
+                    );
+                }
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x <= 0 || this.x + this.size >= canvas.width) this.speedX *= -1;
+                if (this.y <= 0 || this.y + this.size >= canvas.height) this.speedY *= -1;
+
+                this.draw();
+            }
+
+            isClicked(mouseX, mouseY) {
+                return (
+                    mouseX >= this.x &&
+                    mouseX <= this.x + this.size &&
+                    mouseY >= this.y &&
+                    mouseY <= this.y + this.size
+                );
+            }
+            
+            isTimeout() {
+                return Date.now() - this.createTime > this.timeout;
+            }
+        }
+
+        function spawnJellyfish() {
+            const count = Math.min(15, Math.floor((60 - time) / 3) + 5);
+            while (冰红茶List.length < count) {
+                冰红茶List.push(new Jellyfish());
+            }
+        }
+
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            冰红茶List = 冰红茶List.filter(jelly => !jelly.isTimeout());
+            spawnJellyfish();
+            冰红茶List.forEach(jelly => jelly.update());
+            timeEl.textContent = time;
+
+            if (time <= 0) {
+                endGame();
+            }
+        }
+
+        function startGame() {
+            if (imagesLoaded < 3) {
+                alert('图片加载中，请稍后再试');
+                return;
+            }
+
+            // 通知父页面：游戏重新开始
+            const restartMsg = { type: 'gameRestart' };
+            try {
+                if (window.opener && !window.opener.closed) window.opener.postMessage(restartMsg, '*');
+                else if (window.parent && window.parent !== window) window.parent.postMessage(restartMsg, '*');
+            } catch (e) { console.warn('postMessage restart 发送失败', e); }
+
+            score = 0;
+            time = 20;
+            冰红茶List = [];
+            scoreEl.textContent = score;
+            timeEl.textContent = time;
+
+            modal.style.display = 'none';
+            exitBtn.style.display = 'none';
+
+            gameRunning = true;
+            gameInterval = setInterval(updateGame, 10);
+
+            const timeInterval = setInterval(() => {
+                if (!gameRunning) {
+                clearInterval(timeInterval);
+                return;
+            }
+            time--;
+            timeEl.textContent =time;
+            }, 1000);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            if (spawnTimer) clearInterval(spawnTimer);
+
+            modalTitle.textContent = '游戏结束！';
+            modalScore.textContent = `最终得分：${score}`;
+            startBtn.textContent = '再来一局';
+            exitBtn.style.display = 'block';
+            // 隐藏规则说明
+            document.querySelector('.rules-container').style.display = 'none';
+            modal.style.display = 'block';
+
+            // 通知父窗口（或 opener）游戏结束并返回得分
+            const msg = { type: 'gameEnd', courses: score, item: '瓶冰红茶', affectionDelta: 0 };
+            try {
+                if (window.opener && !window.opener.closed) window.opener.postMessage(msg, '*');
+                else if (window.parent && window.parent !== window) window.parent.postMessage(msg, '*');
+            } catch (e) { console.warn('postMessage 发送失败', e); }
+        }
+
+        canvas.addEventListener('click', (e) => {
+            if (!gameRunning) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            冰红茶List.forEach((jelly, index) => {
+                if (jelly.isClicked(x, y)) {
+                    冰红茶List.splice(index, 1);
+                    score += jelly.rules.score;
+                    if (score < 0) score = 0;
+                    time += jelly.rules.time;
+                    if (time < 0) time = 0;
+                    scoreEl.textContent = score;
+                    timeEl.textContent = time;
+                }
+            });
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameRunning) return;
+            e.preventDefault();
+
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            冰红茶List.forEach((jelly, index) => {
+                if (jelly.isClicked(x, y)) {
+                    冰红茶List.splice(index, 1);
+                    score += jelly.rules.score;
+                    if (score < 0) score = 0;
+                    time += jelly.rules.time;
+                    if (time < 0) time = 0;
+                    scoreEl.textContent = score;
+                    timeEl.textContent = time;
+                }
+            });
+        });
+
+        startBtn.addEventListener('click', startGame);
+        exitBtn.addEventListener('click', () => {
+            // 在退出时也通知父页面当前得分
+            const msg = { type: 'gameEnd', courses: score, item: '瓶冰红茶', affectionDelta: 0 };
+            try {
+                if (window.opener && !window.opener.closed) window.opener.postMessage(msg, '*');
+                else if (window.parent && window.parent !== window) window.parent.postMessage(msg, '*');
+            } catch (e) { console.warn('postMessage 发送失败', e); }
+
+            modal.style.display = 'none';
+            gameRunning = false;
+            clearInterval(gameInterval);
+            if (spawnTimer) clearInterval(spawnTimer);
+            try { window.close(); } catch (e) {}
+        });
+    </script>
+</body>
+</html>

@@ -34,10 +34,12 @@ let autoInterval = null;
 let isFast = false;
 let isChoiceActive = false;
 let isPaused = false;
+let spaceDown = false; // 防止空格长按重复触发
 
 // -------------------- 剧情对话 --------------------
 const dialogues = [
-  { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。", playGame: "jianshu" },
+  { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。" },
+  { name: "旁白", text: "开始游戏", playGame: "jianshu" },
   { name: "旁白", text: "上课的日子有些枯燥，时间过的却很快，运动会悄然接近了。" },
   { name: "旁白", text: "偶然间你得知了学姐也会参加这次运动会的800米项目，让本对运动不敢兴趣的你也决定前去观看。" },
   { name: "旁白", text: "到了学姐比赛那天，你买好能量饮料，备好一些糖果，前往操场。" },
@@ -335,6 +337,11 @@ if (toggleBtn && sidebar) {
   toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
 }
 
+// 提供 toggleSidebar 函数以防止引用错误
+function toggleSidebar() {
+  if (sidebar) sidebar.classList.toggle('show');
+}
+
 // -------------------- 音乐控制 --------------------
 function toggleMusic() {
   if (bgMusic) {
@@ -487,21 +494,34 @@ function bindEventListeners() {
     });
   }
 }
-  // 空格键推进剧情
+  // 空格键推进剧情（按下只触发一次，长按不会重复触发）
   document.addEventListener('keydown', function(e) {
+    // 只处理空格键
+    const isSpace = e.code === 'Space' || e.key === ' ' || e.keyCode === 32;
+    if (!isSpace) return;
+    // 防止长按连续触发
+    if (spaceDown) return;
+    spaceDown = true;
+
     if (window.phoneOpen) return;
     if (isPaused) return;
     if (isChoiceActive) return;
     if (charIndex < dialogues[index].text.length) {
-        clearInterval(typingInterval);
-        if (dialogText) dialogText.textContent = dialogues[index].text;
-        charIndex = dialogues[index].text.length;
-      } else {
-        if (index < dialogues.length - 1) {
-          showDialogue(index + 1);
-        }
+      clearInterval(typingInterval);
+      if (dialogText) dialogText.textContent = dialogues[index].text;
+      charIndex = dialogues[index].text.length;
+    } else {
+      if (index < dialogues.length - 1) {
+        showDialogue(index + 1);
       }
-      stopAutoPlay();
+    }
+    stopAutoPlay();
+  });
+
+  // 在空格松开时允许再次触发
+  document.addEventListener('keyup', function(e) {
+    const isSpace = e.code === 'Space' || e.key === ' ' || e.keyCode === 32;
+    if (isSpace) spaceDown = false;
   });
 
 
@@ -577,7 +597,7 @@ function createGameOverlay() {
   container.style.position = 'relative';
 
   const closeBtn = document.createElement('button');
-  closeBtn.textContent = '关闭游戏';
+  closeBtn.textContent = '返回游戏';
   closeBtn.style.position = 'absolute';
   closeBtn.style.right = '8px';
   closeBtn.style.top = '8px';
@@ -625,6 +645,50 @@ function openGame(key) {
     resolvedUrl = map[key];
   }
   console.log('打开小游戏 URL:', resolvedUrl);
+  // 标记当前对话对应的小游戏已被播放，防止关闭后再次触发
+  try { if (dialogues[index]) dialogues[index]._gamePlayed = true; } catch (e) {}
+
+  // 如果当前页面是通过 file:// 打开，许多浏览器会阻止在 iframe 中加载本地文件。
+  // 尝试用新窗口打开并监测窗口关闭以恢复剧情；推荐使用本地 HTTP 服务以获得最佳体验。
+  if (window.location.protocol === 'file:') {
+    const child = window.open(resolvedUrl, '_blank');
+    if (!child) {
+      alert('浏览器阻止了弹窗。请关闭弹窗阻止以在 iframe 中嵌入小游戏。');
+      return;
+    }
+
+    // 暂停剧情
+    isPaused = true;
+    stopAutoPlay();
+
+    // 轮询子窗口是否已关闭，关闭后恢复剧情（如果游戏没有通过 postMessage 返回结果，会在此处推进）
+    const poll = setInterval(() => {
+      try {
+        if (child.closed) {
+          clearInterval(poll);
+          // 如果已经通过 postMessage 处理过结束（_gameEndHandled），则不重复推进
+          if (dialogues[index] && dialogues[index]._gameEndHandled) {
+            isPaused = false;
+            return;
+          }
+          isPaused = false;
+          if (index < dialogues.length - 1) showDialogue(index + 1);
+        }
+      } catch (e) {
+        // 访问被拒绝时也尝试恢复
+        clearInterval(poll);
+        if (dialogues[index] && dialogues[index]._gameEndHandled) {
+          isPaused = false;
+          return;
+        }
+        isPaused = false;
+        if (index < dialogues.length - 1) showDialogue(index + 1);
+      }
+    }, 500);
+
+    return;
+  }
+
   iframe.src = resolvedUrl;
   overlay.style.display = 'flex';
   // 暂停剧情的操作
@@ -640,8 +704,8 @@ function closeGame() {
   if (iframe) iframe.src = 'about:blank';
   // 恢复剧情
   isPaused = false;
-  // 继续当前对话
-  showDialogue(index);
+  // 继续下一句对话（防止回到带有 playGame 的同一句而重复触发）
+  if (index < dialogues.length - 1) showDialogue(index + 1);
 }
 
 // 监听来自 iframe 的 postMessage，小游戏在结束时应发送 { type: 'gameEnd' }
@@ -657,22 +721,141 @@ window.addEventListener('message', (ev) => {
   if (!data || typeof data !== 'object') return;
 
   if (data.type === 'gameEnd') {
-    // 关闭 overlay 并继续剧情
-    closeGame();
-    // 可选：根据小游戏结果调整好感度
-    if (typeof data.affectionDelta === 'number') updateAffection(data.affectionDelta);
+    // 标记当前对话已通过消息处理结束，避免轮询重复推进
+    if (dialogues[index]) dialogues[index]._gameEndHandled = true;
+
+    // 如果小游戏返回了 courses 字段，按不同 item 分支处理（例如冰红茶需要阈值判断）
+    if (typeof data.courses === 'number') {
+      const itemLabel = typeof data.item === 'string' ? data.item : '节课';
+      if (itemLabel === '瓶冰红茶') {
+        // 冰红茶按分数阈值判断成功或失败（>1000 成功）
+        const success = data.courses > 1000;
+        const msg = success ? `成功抢到冰红茶` : `未抢到冰红茶`;
+        showResultPopup(msg, () => {
+          closeGame();
+          if (typeof data.affectionDelta === 'number') updateAffection(data.affectionDelta);
+        });
+      } else {
+        // 其他物品使用通用弹窗
+        showCoursePopup(data.courses, itemLabel, () => {
+          closeGame();
+          if (typeof data.affectionDelta === 'number') updateAffection(data.affectionDelta);
+        });
+      }
+    } else {
+      // 直接关闭并继续
+      closeGame();
+      if (typeof data.affectionDelta === 'number') updateAffection(data.affectionDelta);
+    }
+  }
+  else if (data.type === 'gameRestart') {
+    // 清除当前对话的 game end 标志，以便接收新的返回值
+    if (dialogues[index]) dialogues[index]._gameEndHandled = false;
+    console.log('收到 gameRestart，已清除 _gameEndHandled');
   }
 });
+
+// 显示一个简洁的弹窗，告知玩家抢到了 n 节课，点击确认后回调
+function showCoursePopup(n, itemLabel, cb) {
+  const id = 'course-popup-notice';
+  let box = document.getElementById(id);
+  if (!box) {
+    box = document.createElement('div');
+    box.id = id;
+    box.style.position = 'fixed';
+    box.style.left = '50%';
+    box.style.top = '40%';
+    box.style.transform = 'translate(-50%, -50%)';
+    box.style.background = 'rgba(0,0,0,0.9)';
+    box.style.color = '#fff';
+    box.style.padding = '20px';
+    box.style.borderRadius = '8px';
+    box.style.zIndex = '10002';
+    box.style.textAlign = 'center';
+    const bodyDiv = document.createElement('div');
+    bodyDiv.style.fontSize = '18px';
+    bodyDiv.style.marginBottom = '12px';
+    bodyDiv.className = 'course-popup-body';
+    box.appendChild(bodyDiv);
+    const btn = document.createElement('button');
+    btn.className = 'course-popup-btn';
+    btn.textContent = '确定';
+    btn.style.padding = '6px 12px';
+    box.appendChild(btn);
+    document.body.appendChild(box);
+  }
+
+  // 更新内容并重新绑定按钮回调（覆盖旧的回调）
+  const bodyDiv = box.querySelector('.course-popup-body');
+  const btn = box.querySelector('.course-popup-btn');
+  if (bodyDiv) bodyDiv.textContent = `你抢到了 ${n} ${itemLabel}！`;
+
+  // 清除旧的事件监听（简单替换方式）
+  const newBtn = btn.cloneNode(true);
+  newBtn.addEventListener('click', () => {
+    if (box && box.parentNode) box.parentNode.removeChild(box);
+    if (cb) cb();
+  });
+  btn.parentNode.replaceChild(newBtn, btn);
+}
+
+// 显示成功/失败的简单结果弹窗（用于冰红茶按阈值判断）
+function showResultPopup(message, cb) {
+  const id = 'course-popup-notice';
+  let box = document.getElementById(id);
+  if (!box) {
+    box = document.createElement('div');
+    box.id = id;
+    box.style.position = 'fixed';
+    box.style.left = '50%';
+    box.style.top = '40%';
+    box.style.transform = 'translate(-50%, -50%)';
+    box.style.background = 'rgba(0,0,0,0.9)';
+    box.style.color = '#fff';
+    box.style.padding = '20px';
+    box.style.borderRadius = '8px';
+    box.style.zIndex = '10002';
+    box.style.textAlign = 'center';
+    const bodyDiv = document.createElement('div');
+    bodyDiv.style.fontSize = '18px';
+    bodyDiv.style.marginBottom = '12px';
+    bodyDiv.className = 'course-popup-body';
+    box.appendChild(bodyDiv);
+    const btn = document.createElement('button');
+    btn.className = 'course-popup-btn';
+    btn.textContent = '确定';
+    btn.style.padding = '6px 12px';
+    box.appendChild(btn);
+    document.body.appendChild(box);
+  }
+
+  const bodyDiv = box.querySelector('.course-popup-body');
+  const btn = box.querySelector('.course-popup-btn');
+  if (bodyDiv) bodyDiv.textContent = message;
+
+  const newBtn = btn.cloneNode(true);
+  newBtn.addEventListener('click', () => {
+    if (box && box.parentNode) box.parentNode.removeChild(box);
+    if (cb) cb();
+  });
+  btn.parentNode.replaceChild(newBtn, btn);
+}
 
 // 扫描对话数组，在显示对话时检查 playGame 字段并触发 openGame
 const originalShowDialogue = showDialogue;
 function showDialogueWrapper(i) {
-  originalShowDialogue(i);
   const d = dialogues[i];
-  if (d && d.playGame) {
-    // 延迟一小会儿以便当前文字显示完毕再打开游戏
+  // 如果本句需要触发小游戏且尚未播放，立即暂停剧情，阻止任何推进行为
+  if (d && d.playGame && !d._gamePlayed) {
+    isPaused = true;
+    stopAutoPlay();
+    // 先显示当前对话，再在短延迟后打开小游戏
+    originalShowDialogue(i);
     setTimeout(() => openGame(d.playGame), 600);
+    return;
   }
+
+  originalShowDialogue(i);
 }
 
 // 覆盖原函数

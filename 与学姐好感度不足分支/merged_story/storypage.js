@@ -7,11 +7,21 @@
       // 显示初始对话
       showDialogue(0);
       
-      // 添加空格键和鼠标点击实现下一句的功能
+      // 添加空格键和鼠标点击实现下一句的功能（防止长按重复触发）
       document.addEventListener("keydown", (e) => {
         if (e.code === "Space") {
           e.preventDefault();
+          // 如果已经按下，不重复触发
+          if (spaceDown) return;
+          spaceDown = true;
           triggerNextDialogue();
+        }
+      });
+
+      // 在松开空格时重置标志，允许下一次触发
+      document.addEventListener("keyup", (e) => {
+        if (e.code === "Space") {
+          spaceDown = false;
         }
       });
       
@@ -87,6 +97,7 @@
     let autoPlay = false;
     let autoInterval = null;
     let isFast = false;
+  let spaceDown = false; // 防止空格长按连续触发
     let waitingForItem = false;
     let isSpecialItemClicked = false;
     let hasReceivedFinalMessage = false;

@@ -19,6 +19,7 @@ let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
 let isChoiceActive = false; // 新增：标记选择是否激活
+let spaceDown = false; // 防止空格长按连续触发
 // 手机交互状态
 let waitingForPhoneResponse = false;
 let phoneNotification = null;
@@ -591,13 +592,19 @@ function autoSave() {
 
 // -------------------- 空格和点击触发下一句 --------------------
 // 空格键触发下一句
+// 防止空格长按连续触发：keydown 只在第一次按下时触发，keyup 重置标志
 window.addEventListener('keydown', (e) => {
-  // 只有在空格键被按下且选择框未激活时才触发
   if (e.code === 'Space' && !isChoiceActive) {
-    e.preventDefault(); // 阻止默认行为，避免页面滚动
-    // 调用处理函数
-  if (!waitingForPhoneResponse) handleNext();
+    e.preventDefault();
+    if (spaceDown) return; // 已按下，忽略重复 keydown
+    spaceDown = true;
+    if (!waitingForPhoneResponse) handleNext();
   }
+});
+
+// 松开空格时重置标志，允许下一次触发
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') spaceDown = false;
 });
 
 // 鼠标点击触发下一句

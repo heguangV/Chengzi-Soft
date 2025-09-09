@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抢课</title>
+  <link rel="stylesheet" href="jianshu.css">
+</head>
+<body>
+  <div id="overlay">
+    <h1 id="ov-title">抢课</h1>
+    <div id="ov-body"> 
+      <div>在限定时间内，尽可能多地抢到更多的课程。</div>
+      <div>小心路上的中延迟黄色网络，它会撞你并让你抢到的一些课丢失！</div>
+      <div>小心路上的高延迟红色网络，它会让你在一段时间内无法抢课！</div>
+    </div>
+    <div class="button-container">
+      <button id="startBtn">开始游戏</button>
+      <button id="exitBtn">退出游戏</button>
+    </div>
+  </div>
+
+  <div id="rotation提示">
+    请横屏游玩以获得最佳体验
+  </div>
+  
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <div id="hud">
+    <span id="time">时间: 0</span> |
+    <span id="score">得分: 0</span> / <span id="total">0</span>
+  </div>
+
+  <!-- 在canvas标签后添加 -->
+  <div id="joystick" class="joystick">
+    <div id="joystick-knob" class="joystick-knob"></div>
+  </div>
+
+  <script src="jianshu.js"></script>
+</body>
+</html>
