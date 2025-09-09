@@ -79,10 +79,10 @@ loadBtn.addEventListener("click", () => {
 
 // -------------------- 剧情控制 --------------------
 const dialogues = [
-  { name: "芳乃", text: "欢迎来到穗织镇，春天的阳光真好。" },
-  { name: "芳乃", text: "我是芳乃，这里是我成长的地方。" },
-  { name: "芳乃", text: "今天，你将开始一段难忘的冒险。" },
-  { name: "芳乃", text: "你准备好了吗？" }
+  { name: "学姐", text: "欢迎来到穗织镇，春天的阳光真好。" },
+  { name: "学姐", text: "我是学姐，这里是我成长的地方。" },
+  { name: "学姐", text: "今天，你将开始一段难忘的冒险。" },
+  { name: "学姐", text: "你准备好了吗？" }
 ];
 
 const dialogText = document.getElementById("dialog-text");

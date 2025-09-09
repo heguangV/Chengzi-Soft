@@ -153,7 +153,7 @@ class SaveSystem {
         const newSave = {
             timestamp: Date.now(),
             dialogueIndex: 0,
-            characterName: '芳乃',
+            characterName: '学姐',
             storyProgress: '开始',
             affectionData: {
                 fang: 50,
@@ -274,7 +274,7 @@ class SaveSystem {
         const save = {
             timestamp: Date.now(),
             dialogueIndex: dialogueIndex || 0,
-            characterName: characterName || '芳乃',
+            characterName: characterName || '学姐',
             storyProgress: storyProgress || '进行中',
             affectionData: affectionData || {
                 fang: 50,

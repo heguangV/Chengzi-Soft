@@ -106,7 +106,7 @@
     let gamePaused = false; // 新增：游戏暂停状态
 
     // 好感度数据
-    let affectionData = { fang: 50, other: 30 };
+    
 
     // 获取 body 背景图片的绝对路径
 function getBodyBackgroundAbsoluteUrl() {
@@ -873,7 +873,7 @@ if (loadBtn) {
         const text = bar.parentElement.querySelector('.affection-text');
         bar.style.width = `${affectionData[character]}%`;
         if (text) {
-          text.textContent = `${character === 'fang' ? '芳乃' : '其他'}: ${affectionData[character]}%`;
+          text.textContent = `${character === 'fang' ? '学姐' : '其他'}: ${affectionData[character]}%`;
         }
         
       }

@@ -89,17 +89,16 @@ let autoPlay = false;
 let autoInterval = null;
 let isFast = false;
 let hasMadeChoice = false;
-const affectionData = { senpai: 30 };
 
 // -------------------- 剧情台词 --------------------
 const dialogues = {
   common: [
-    { name: "系统", text: "某天课后，你在图书馆偶遇了正在看动漫杂志的学姐。" },
+    { name: "旁白", text: "某天课后，你在图书馆偶遇了正在看动漫杂志的学姐。" },
     { name: "学姐", text: "（兴奋地指着杂志）「哇！下周末有大型漫展，这次我一定要出这个角色！」" },
     { name: "你", text: "「学姐也参加漫展吗？好厉害！」" },
     { name: "学姐", text: "「是啊！我准备了很久的COS服终于要派上用场了～」" },
-    { name: "系统", text: "学姐眼中闪烁着兴奋的光芒，似乎对这次漫展充满期待。" },
-    { name: "系统", text: "你决定...", triggerChoice: "main" }
+    { name: "旁白", text: "学姐眼中闪烁着兴奋的光芒，似乎对这次漫展充满期待。" },
+    { name: "旁白", text: "你决定...", triggerChoice: "main" }
   ],
   join: [
     { name: "你", text: "「学姐，我正好也想去漫展，可以一起去吗？」" },
@@ -107,23 +106,23 @@ const dialogues = {
     { name: "学姐", text: "「不过我要提前去化妆和换衣服，可能会比较早哦？」" },
     { name: "你", text: "「没关系的！我很期待看到学姐的COS呢。」" },
     { name: "学姐", text: "「那就这么说定啦！周六早上9点，学校门口见！」", effect: { senpai: +15 } },
-    { name: "系统", text: "你们约定好了一起去漫展，学姐看起来非常开心。" },
-    { name: "系统", text: "接下来的几天，你们经常讨论漫展的行程和准备事宜。" },
-    { name: "系统", text: "漫展当天..." },
+    { name: "旁白", text: "你们约定好了一起去漫展，学姐看起来非常开心。" },
+    { name: "旁白", text: "接下来的几天，你们经常讨论漫展的行程和准备事宜。" },
+    { name: "旁白", text: "漫展当天..." },
     { name: "学姐", text: "（穿着精致的COS服）「怎么样？这套衣服还不错吧？」" },
     { name: "你", text: "「超级棒！学姐真的很适合这个角色！」" },
     { name: "学姐", text: "「谢谢～那我们出发吧！今天要玩个痛快！」", effect: { senpai: +10 } },
-    { name: "系统", text: "你们在漫展度过了愉快的一天，关系更加亲近了。", nextScene: "../../剧情/sport/index.html" }
+    { name: "旁白", text: "你们在漫展度过了愉快的一天，关系更加亲近了。", nextScene: "../../剧情/sport/index.html" }
   ],
   support: [
     { name: "你", text: "「学姐加油！期待看到你的COS照片～」" },
     { name: "学姐", text: "「谢谢～我会多发一些照片到空间的！」" },
     { name: "学姐", text: "「如果你改变主意想来的话，随时联系我哦。」" },
     { name: "你", text: "「好的，祝学姐玩得开心！」", effect: { senpai: +5 } },
-    { name: "系统", text: "漫展结束后，学姐在空间发了很多精美的COS照片。" },
-    { name: "系统", text: "你在下面点赞评论，学姐很快回复了你。" },
+    { name: "旁白", text: "漫展结束后，学姐在空间发了很多精美的COS照片。" },
+    { name: "旁白", text: "你在下面点赞评论，学姐很快回复了你。" },
     { name: "学姐", text: "「谢谢支持！下次漫展一起来玩吧～」" },
-    { name: "系统", text: "虽然没能一起去，但你们通过这种方式保持了联系。", nextScene: "../../剧情/sport/index.html" }
+    { name: "旁白", text: "虽然没能一起去，但你们通过这种方式保持了联系。", nextScene: "../../剧情/sport/index.html" }
   ],
   photograph: [
     { name: "你", text: "「学姐，我拍照技术还不错，需要摄影师吗？」" },
@@ -131,14 +130,14 @@ const dialogues = {
     { name: "学姐", text: "「朋友都是手机党，拍出来的效果总是不理想...」" },
     { name: "你", text: "「那我来做学姐的专属摄影师吧！」" },
     { name: "学姐", text: "「太好了！那我们得提前商量一下拍摄方案～」", effect: { senpai: +20 } },
-    { name: "系统", text: "你们约好提前见面，讨论拍摄角度和场景。" },
-    { name: "系统", text: "漫展当天..." },
+    { name: "旁白", text: "你们约好提前见面，讨论拍摄角度和场景。" },
+    { name: "旁白", text: "漫展当天..." },
     { name: "学姐", text: "（摆好姿势）「这个角度可以吗？灯光怎么样？」" },
     { name: "你", text: "「完美！学姐保持这个姿势...好！拍到了！」" },
     { name: "学姐", text: "（跑过来看相机）「哇！拍得真好！你太专业了！」" },
     { name: "朋友", text: "「哇哦～专属摄影师就是不一样呢！」" },
     { name: "学姐", text: "（脸红）「今天真的多亏你了...谢谢！」", effect: { senpai: +15 } },
-    { name: "系统", text: "你为学姐拍出了精美的照片，她在朋友圈特别感谢了你。", nextScene: "../../剧情/sport/index.html" }
+    { name: "旁白", text: "你为学姐拍出了精美的照片，她在朋友圈特别感谢了你。", nextScene: "../../剧情/sport/index.html" }
   ]
 };
 
@@ -190,7 +189,7 @@ function toggleCharacterImage(speaker) {
       break;
     case '主角':
     default:
-      // 系统或其他对话时显示主角
+      // 旁白或其他对话时显示主角
       const mainCharacterImg = document.getElementById('main-character');
       if (mainCharacterImg) mainCharacterImg.classList.remove('hidden');
       break;
@@ -290,7 +289,7 @@ function applyEffect(effectObj) {
   }
 }
 
-// -------------------- 好感度系统 --------------------
+// -------------------- 好感度旁白 --------------------
 function updateAffection(character, value) {
   affectionData[character] = Math.max(0, Math.min(100, value));
   const bar = document.querySelector(`.affection-fill[data-character="${character}"]`);

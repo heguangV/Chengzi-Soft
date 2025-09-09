@@ -48,26 +48,25 @@ const dialogues = [
   { name: "你", text: "学姐加油！" },
   { name: "旁白", text: "学姐也似乎感受到你的鼓励，迈着矫健的步伐，一直保持在队伍前列。" },
   { name: "旁白", text: "形势一片大好，眼见最后一圈即将跑完，学姐突然停下了脚步，一瘸一拐的走向终点。" },
-  { name: "旁白", text: "本该前三的他也因此无缘奖牌。学姐走过终点，你连忙跑向了他，扶着学姐，关心道：" },
+  { name: "旁白", text: "本该前三的她也因此无缘奖牌。学姐走过终点，你连忙跑向了她，扶着学姐，关心道：" },
   { name: "你", text: "学姐你怎么了？扭到脚了吗？" },
   { name: "学姐", text: "最后冲刺的时候没控制好步伐，扭到脚了。" },
   { name: "旁白", text: "你说：", hasChoice: true }
 ];
 
 // -------------------- 好感度系统 --------------------
-let affectionData = { fang: 50 };
 
 function updateAffection(value) {
   affectionData.fang = Math.max(0, Math.min(100, affectionData.fang + value));
   const bar = document.querySelector('.affection-fill[data-character="fang"]');
   const text = document.querySelector('.affection-text');
-  if (bar) bar.style.width = `${affectionData.fang}%`;
-  if (text) text.textContent = `芳乃: ${affectionData.fang}%`;
+  if (bar) bar.style.width = `${affectionData.senpai}%`;
+  if (text) text.textContent = `学姐: ${affectionData.senpai}%`;
 
   
   // 显示好感度变化
   if (value > 0) {
-    showNotice(`芳乃好感度 +${value}`);
+    showNotice(`学姐好感度 +${value}`);
   }
 }
 

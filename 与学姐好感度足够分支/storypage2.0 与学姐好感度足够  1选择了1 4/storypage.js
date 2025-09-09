@@ -150,7 +150,7 @@ function showDialogue(idx) {
         characterAvatar.alt = '主角头像';
       }
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'block';
-    } else if (currentName === 'A' || currentName === '芳乃') {
+    } else if (currentName === 'A' || currentName === '学姐') {
       // 学姐：显示学姐头像
       displayName = '学姐';
       if (characterAvatar) {
@@ -276,7 +276,6 @@ function hideChoices() {
 
 
 // -------------------- 好感度系统 --------------------
-const affectionData = { fang: 50, other: 30 };
 
 function updateAffection(character, value) {
   affectionData[character] = Math.max(0, Math.min(100, value));
@@ -284,7 +283,7 @@ function updateAffection(character, value) {
   if (bar) {
     const text = bar.parentElement.querySelector('.affection-text');
     bar.style.width = `${affectionData[character]}%`;
-    if (text) text.textContent = `${character === 'fang' ? '芳乃' : '其他'}: ${affectionData[character]}%`;
+    if (text) text.textContent = `${character === 'fang' ? '学姐' : '其他'}: ${affectionData[character]}%`;
   }
   
 }

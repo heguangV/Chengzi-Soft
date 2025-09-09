@@ -185,6 +185,8 @@ let autoInterval = null;
 let isFast = false;
 let hasMadeChoice = false;
 const affectionData = { senpai: 30 };
+localStorage.setItem('affectionData', JSON.stringify(affectionData));
+
 
 // -------------------- 场景跳转 --------------------
 function goToNextScene(sceneUrl) {
