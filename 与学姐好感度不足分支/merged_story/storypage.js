@@ -720,11 +720,15 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       });
     }
 
-    if (mainMenuBtn) {
-      mainMenuBtn.addEventListener("click", () => { 
-        alert("返回主菜单"); 
-      });
-    }
+// 可选：主菜单按钮也加淡出动画
+
+mainMenuBtn.addEventListener("click", () => {
+  document.body.classList.remove("fade-in");
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    window.location.href = "../../index.html";
+  }, 500);
+});
 
     // 自动存档
     function autoSave() {

@@ -456,8 +456,12 @@ function bindEventListeners() {
   }
 
   if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-  if (mainMenuBtn) mainMenuBtn.addEventListener('click', () => {
-    window.location.href = '../../index.html';
+  mainMenuBtn.addEventListener("click", () => {
+    document.body.classList.remove("fade-in");
+    document.body.classList.add("fade-out");
+    setTimeout(() => {
+      window.location.href = "../../index.html";
+    }, 500);
   });
 
   if (musicBtn) musicBtn.addEventListener('click', toggleMusic);
@@ -830,6 +834,7 @@ function showDialogueWrapper(i) {
 
   originalShowDialogue(i);
 }
+
 
 // 覆盖原函数
 showDialogue = showDialogueWrapper;

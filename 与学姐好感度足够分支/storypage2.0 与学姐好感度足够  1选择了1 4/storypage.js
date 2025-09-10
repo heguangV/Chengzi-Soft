@@ -4,6 +4,8 @@ let choiceContainer, choiceBtns, dialogBox;
 let musicBtn, bgMusic, volumeRange;
 let sidebar, toggleBtn;
 let autoSaveNotice, saveBtn, loadBtn;
+// 手机/聊天界面元素
+let phoneImage, phoneChatInterface, chatCloseBtn, chatMessages, chatInput, chatSendBtn;
 // 头像相关元素
 let characterAvatarContainer, characterAvatar;
 
@@ -18,7 +20,20 @@ let autoInterval = null;
 let isFast = false;
 let isChoiceActive = false; // 新增：标记选择是否激活
 let spaceDown = false; // 防止空格长按连续触发
+// 手机交互状态
+let waitingForPhoneResponse = false;
+let phoneNotification = null;
+let hasAddedPhoneMessages = false;
+let phoneCloseTimeoutId = null;
+let phoneContinueDone = false;
 
+// -------------------- 好感度数据 --------------------
+let affectionData = {
+  fang: 50,
+  other: 0
+};
+
+// -------------------- 剧情台词 --------------------
 // -------------------- 剧情数据 --------------------
 const dialogues = [
   { name: "B", text: "最终 学姐还是答应了我的告白" },
@@ -58,6 +73,7 @@ const dialogues = [
   { name: "A", text: "“说好了 可就不能反悔了哦 我们要永远在一起”" }, 
   { name: "C", text: "在这温软的对话之间 周围好像变得越来越亮 我相信 我们的未来也会想这样无比耀眼吧…" }, 
 ];
+
 // -------------------- DOMContentLoaded 初始化 --------------------
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
@@ -91,6 +107,14 @@ window.addEventListener("DOMContentLoaded", () => {
   characterAvatarContainer = document.getElementById('character-avatar-container');
   characterAvatar = document.getElementById('character-avatar');
 
+  // 手机相关DOM
+  phoneImage = document.getElementById('phone-image');
+  phoneChatInterface = document.getElementById('phone-chat-interface');
+  chatCloseBtn = document.getElementById('chat-close-btn');
+  chatMessages = document.getElementById('chat-messages');
+  chatInput = document.getElementById('chat-input');
+  chatSendBtn = document.getElementById('chat-send-btn');
+
   // 初始化好感度显示
   initAffection();
 
@@ -99,6 +123,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // 绑定按钮事件
   bindControlButtons();
+  // 初始化手机聊天
+  initPhoneChat();
+  
+  // 修复：直接为侧边栏按钮添加事件监听器
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      if (sidebar) sidebar.classList.toggle("show");
+    });
+  }
 });
 
 // -------------------- 打字机效果 --------------------
@@ -115,6 +148,126 @@ function typeText(text, callback) {
       if (callback) callback();
     }
   }, typingSpeed);
+}
+
+// -------------------- 手机/聊天界面功能 --------------------
+function initPhoneChat() {
+  if (phoneImage) {
+    phoneImage.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (waitingForPhoneResponse) {
+        handlePhoneResponse();
+        return;
+      }
+      openChatInterface();
+    });
+  }
+
+  if (chatCloseBtn) chatCloseBtn.addEventListener('click', closeChatInterface);
+  if (chatSendBtn) chatSendBtn.addEventListener('click', sendChatMessage);
+  if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+
+  loadChatMessages();
+}
+
+function openChatInterface() {
+  if (!phoneChatInterface) return;
+  phoneChatInterface.classList.add('show');
+  // 确保滚动到底部
+  setTimeout(() => { if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight; }, 100);
+}
+
+function closeChatInterface() {
+  if (!phoneChatInterface) return;
+  phoneChatInterface.classList.remove('show');
+}
+
+function makePhoneVibrate() {
+  if (!phoneImage) return;
+  phoneImage.classList.add('phone-vibrating');
+  phoneNotification = document.createElement('div');
+  phoneNotification.classList.add('phone-notification');
+  phoneImage.appendChild(phoneNotification);
+  waitingForPhoneResponse = true;
+  phoneContinueDone = false;
+  stopAutoPlay();
+
+  // 安全超时：如果玩家在较长时间未点击手机，自动触发一次响应（例如 30s）以避免永久阻塞
+  if (phoneCloseTimeoutId) clearTimeout(phoneCloseTimeoutId);
+  phoneCloseTimeoutId = setTimeout(() => {
+    if (waitingForPhoneResponse) handlePhoneResponse();
+  }, 30000);
+}
+
+function handlePhoneResponse() {
+  if (phoneImage) {
+    phoneImage.classList.remove('phone-vibrating');
+    if (phoneNotification && phoneImage.contains(phoneNotification)) phoneImage.removeChild(phoneNotification);
+  }
+
+  // 确保只执行一次继续剧情的操作
+  if (phoneCloseTimeoutId) { clearTimeout(phoneCloseTimeoutId); phoneCloseTimeoutId = null; }
+  if (phoneContinueDone) return;
+  phoneContinueDone = true;
+
+  // 添加学姐发来的两句台词并打开聊天界面
+  if (!hasAddedPhoneMessages) addPhoneFinalMessages();
+  openChatInterface();
+  waitingForPhoneResponse = false;
+
+  // 一定时间后关闭手机并继续剧情（确保只触发一次）
+  setTimeout(() => {
+    closeChatInterface();
+    if (typeof showDialogue === 'function') showDialogue(index + 1);
+  }, 2500);
+}
+
+// 简单的聊天记录显示与添加
+let phoneChatData = [
+  { sender: 'received', text: '学弟君，最近怎么样？', time: '10:30' },
+  { sender: 'sent', text: '还不错，就是有点忙。学姐呢？', time: '10:32' }
+];
+
+function loadChatMessages() {
+  if (!chatMessages) return;
+  chatMessages.innerHTML = '';
+  phoneChatData.forEach(msg => {
+    const el = document.createElement('div');
+    el.className = 'message ' + msg.sender;
+    const c = document.createElement('div'); c.className = 'message-content'; c.textContent = msg.text;
+    const t = document.createElement('div'); t.className = 'message-time'; t.textContent = msg.time;
+    el.appendChild(c); el.appendChild(t); chatMessages.appendChild(el);
+  });
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addPhoneFinalMessages() {
+  hasAddedPhoneMessages = true;
+  phoneChatData.push({ sender: 'received', text: '毕竟是工作上的大事 不能随便做决定', time: '12:28' });
+  phoneChatData.push({ sender: 'received', text: '但一定要等我的好消息哦~', time: '12:29' });
+  loadChatMessages();
+}
+
+function sendChatMessage() {
+  if (!chatInput || !chatMessages) return;
+  const val = chatInput.value.trim();
+  if (!val) return;
+  const now = new Date();
+  const time = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+  phoneChatData.push({ sender: 'sent', text: val, time });
+  chatInput.value = '';
+  loadChatMessages();
+  // 模拟回复
+  setTimeout(simulateReply, 800);
+}
+
+function simulateReply() {
+  const replies = ['好的，我知道了', '保持联系哦'];
+  const rep = replies[Math.floor(Math.random() * replies.length)];
+  const now = new Date();
+  const time = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+  phoneChatData.push({ sender: 'received', text: rep, time });
+  loadChatMessages();
 }
 
 // -------------------- 显示某条对话 --------------------
@@ -153,7 +306,7 @@ function showDialogue(idx) {
     } else {
       // 其他角色：隐藏头像
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
-      characterAvatar.src = '';
+             characterAvatar.src = '';
     }
 
     nameBox.textContent = displayName;
@@ -161,33 +314,30 @@ function showDialogue(idx) {
 
   typeText(dialogues[index].text, () => {
     if (index === 999) autoSave();
+    if (index === 999) setTimeout(showChoices, 500);
+    // TODO位置：学姐车离去后手机振动
+    if (index === 13) {
+      makePhoneVibrate();
+    }
   });
 }
 
 // -------------------- 下一句 --------------------
 function handleNext() {
-  const curLen = dialogues[index]?.text?.length || 0;
-  // 如果仍在打字中，点击只显示完整文本
-  if (charIndex < curLen) {
+  if (charIndex < (dialogues[index]?.text.length || 0)) {
     clearInterval(typingInterval);
     if (dialogText) dialogText.textContent = dialogues[index].text;
     charIndex = dialogText.textContent.length;
-    stopAutoPlay();
-    return;
-  }
-
-  // 已经显示完整文本，推进下一句或结束
-  if (index < dialogues.length - 1) {
-    showDialogue(index + 1);
+    if (index === 999) setTimeout(showChoices, 500);
   } else {
-    try { hideChoices(); } catch (e) { /* ignore if not available */ }
-    stopAutoPlay();
-    alert("游戏结束！");
-    console.log("准备跳转到主页...");
-    setTimeout(() => {
-      window.location.replace("../../index.html");
-    }, 120);
-  }
+      if (index < dialogues.length - 1) {
+        showDialogue(index + 1);
+      } else {
+        // 直接跳转到存档界面
+        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
+      }
+    }
+  stopAutoPlay();
 }
 
 // -------------------- 上一句 --------------------
@@ -226,6 +376,7 @@ function toggleAutoPlay() {
 function startAutoPlay() {
   clearInterval(autoInterval);
   autoInterval = setInterval(() => {
+  if (waitingForPhoneResponse) return; // 如果手机在振动/等待，暂停自动推进
     if (charIndex < (dialogues[index]?.text.length || 0)) {
       clearInterval(typingInterval);
       if (dialogText) dialogText.textContent = dialogues[index].text;
@@ -233,12 +384,9 @@ function startAutoPlay() {
     } else {
       if (index < dialogues.length - 1) showDialogue(index + 1);
       else {
-        // 游戏结束，隐藏选择并提示，然后返回主页
-        stopAutoPlay();
-        try { hideChoices(); } catch (e) { /* ignore if not available */ }
+        // 游戏结束，显示提示而不跳转
         alert("游戏结束！");
-        // 返回主页（相对路径向上两级到仓库根目录的 index.html）
-        window.location.href = "../../index.html";
+        stopAutoPlay();
       }
     }
   }, 2000);
@@ -265,7 +413,22 @@ function hideChoices() {
   isChoiceActive = false;
 }
 
+function handleChoice(event) {
+  const choice = event.currentTarget.dataset.choice;
+  console.log("玩家选择了:", choice);
+  hideChoices();
 
+  if (choice === "A") {
+    updateAffection('fang', affectionData.fang + 10);
+    showDialogue(index + 1);
+  } else if (choice === "B") {
+    updateAffection('fang', affectionData.fang - 5);
+    showDialogue(index + 2);
+  } else {
+    updateAffection('other', affectionData.other + 5);
+    showDialogue(index + 3);
+  }
+}
 
 // -------------------- 好感度系统 --------------------
 
@@ -360,16 +523,7 @@ function bindControlButtons() {
         }
       });
     }
-
-  // -------------------- 侧边栏 --------------------
-  if (toggleBtn) {
-    const newToggleBtn = toggleBtn.cloneNode(true);
-    toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-    newToggleBtn.addEventListener("click", () => {
-      if (sidebar) sidebar.classList.toggle("show");
-    });
-  }
-
+    
   // -------------------- 存档按钮 --------------------
   if (saveBtn) {
     const newSaveBtn = saveBtn.cloneNode(true);
@@ -462,31 +616,28 @@ function autoSave() {
 
 // -------------------- 空格和点击触发下一句 --------------------
 // 空格键触发下一句
-// 防止空格键长按连续触发：keydown 只在第一次按下时触发，keyup 重置标志
+// 防止空格长按连续触发：keydown 只在第一次按下时触发，keyup 重置标志
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && !isChoiceActive) {
     e.preventDefault();
-    if (spaceDown) return;
+    if (spaceDown) return; // 已按下，忽略重复 keydown
     spaceDown = true;
-    handleNext();
+    if (!waitingForPhoneResponse) handleNext();
   }
 });
 
-// 松开空格时重置标志
+// 松开空格时重置标志，允许下一次触发
 window.addEventListener('keyup', (e) => {
   if (e.code === 'Space') spaceDown = false;
 });
 
 // 鼠标点击触发下一句
 window.addEventListener('click', (e) => {
-  // 仅响应左键点击
+  // 仅响应左键 (通常是主按钮)，并且在选择框未激活时才处理
   if (e instanceof MouseEvent && e.button !== 0) return;
 
-  // 如果存在手机等待状态并且正在等待，则不响应点击推进
-  if (typeof waitingForPhoneResponse !== 'undefined' && waitingForPhoneResponse) return;
-
+  // 避免在输入框、按钮、侧边栏或聊天输入处触发
   const target = e.target;
-  // 避免在按钮、输入、链接、侧边栏、聊天输入或选择按钮上触发
   const interactive = target.closest && (
     target.closest('button') ||
     target.closest('input') ||
@@ -495,16 +646,20 @@ window.addEventListener('click', (e) => {
     target.closest('.chat-input') ||
     target.closest('.choice-btn')
   );
-  if (isChoiceActive || interactive) return;
 
-  // 如果当前对话仍在打字中，则点击只显示完整文本；否则推进下一句
+  if (isChoiceActive || interactive) return;
+  if (waitingForPhoneResponse) return; // 手机振动/等待时暂停点击推进
+
+  // 如果当前对话还在打字中，则点击只显示完整文本；否则推进下一句
   const curTextLen = dialogues[index]?.text?.length || 0;
   if (charIndex < curTextLen) {
     clearInterval(typingInterval);
     if (dialogText) dialogText.textContent = dialogues[index].text;
     charIndex = curTextLen;
+    // 不推进下一句，也不触发自动播放停止（保留原行为）
     return;
   }
 
+  // 对话已显示完整，推进下一句
   handleNext();
 });
