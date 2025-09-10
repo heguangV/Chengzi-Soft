@@ -92,58 +92,59 @@ window.addEventListener("DOMContentLoaded", () => {
 
 const dialogues = {
   common: [
-    { "name": "旁白", "text": "怀着对一切大学生活的好奇，你走进了BIT的大门。当然，还有你的青梅陪着你——你俩都以不错的成绩考进了BIT。" },
-    { "name": "旁白", "text": "新生各项事宜的办理略显繁琐，你和青梅又并非同个专业，二人只得暂时分离，约定等一切忙完后共进晚餐。" },
-    { "name": "旁白", "text": "书院迎新场地，专业咨询四字吸引了你的目光，你连忙走上前想要咨询更多信息，" },
-    { "name": "旁白", "text": "专业咨询场地人满为患，你看见有位同学刚咨询完一名学姐，便连忙走上前。" },
-    { "name": "旁白", "text": "毕竟初来乍到的你对自己的专业也并不太了解，也想借此机会认识更多的同学——看动漫上就是这样，大学生活就是各种各样的社团和结交新的朋友。" },
-    { "name": "你", "text": "学姐你好，我想咨询一下XX专业的相关信息。" },
-    { "name": "学姐", "text": "你好呀！这个专业……（介绍专业信息）。对了，今晚在文体中心还有一场专门的专业宣讲会，内容会更详细，感兴趣的话可以去听听。" },
-    { "name": "你", "text": "文体中心，在哪呀？" },
-    { "name": "学姐", "text": "就是东校区体育馆那边……" },
-    { "name": "旁白", "text": "见你仍旧一脸疑惑，学姐再次开口。" },
-    { "name": "学姐", "text": "你有加我们新生群吗？里面有我们学校的地图。" },
-    { "name": "你", "text": "还没有。" },
-    { "name": "旁白", "text": "学姐低头在桌上开始翻找。" },
-    { "name": "学姐", "text": "奇怪，新生群二维码呢？" },
-    { "name": "旁白", "text": "边上一名同学说：“被XXX他们拿去招人了。” 学姐悄悄翻了个白眼，说到：" },
-    { "name": "学姐", "text": "这样吧同学，你先加我QQ，我把你拉到新生群里去。" },
-    { "name": "旁白", "text": "……" },
-    { "name": "旁白", "text": "你成功加到了学姐的QQ，也加入到了新生群，看到了校园地图。" },
-    { "name": "旁白", "text": "你继续逛着迎新会，闲来无事翻看了学姐QQ空间，发现你们兴趣爱好非常相同，并且学姐还是一名coser。" },
-  { name: "旁白", text: "周末的天街商场人头攒动，美食区的空气里混杂着各种令人食指大动的香气。" },
-  { name: "旁白", text: "你正纠结于是吃火锅还是拉面时，一个熟悉的身影闯入了你的视线。" },
-  { name: "旁白", text: "是学姐。她正和一位朋友有说有笑，似乎也面临着同样的选择困难。" },
-  { name: "旁白", text: "你犹豫着要不要上前打招呼。", triggerChoice: "main" }
+    { "name": "学姐", "text": "诶？你也看这部番吗，真是少见啊" },
+    { "name": "你", "text": "嗯嗯！我也算这部作品的死忠粉呢" },
+    { "name": "学姐", "text": "真是缘分啊，加个好友吧！以后继续聊！" },
+    { "name": "你", "text": "是过去的梦吗，能加上学姐的好友算是我命好吧..." },
+    { "name": "你", "text": "虽然那次加上好友后 ，也没有再聊几句..." },
+    { "name": "旁白", "text": "嗡嗡——" },
+    { "name": "旁白", "text": "你麻木的关掉手机闹铃，从梦中苏醒，熬夜的大脑还有些晕眩" },
+    { "name": "旁白", "text": "视野里好像出现了个从未见过的东西" },
+    { "name": "你", "text": "学姐：30%？这个格式，难道是好感度？" },
+    { "name": "旁白", "text": "作为一名资深宅，你第一反应的就是各种gal中的经典配置：好感度" },
+    { "name": "你", "text": "学姐...大概是赤松风吧" },
+    { "name": "你", "text": "虽然对她很有好感，但是她学期末就将要留学，即使接近了感觉也不会长久" },
+  { "name": "你", "text": "这...怎么办呢", triggerChoice: "todo" },// 在此触发：去外面转转/继续睡觉
+    //继续睡觉 你：大概是还没睡醒吧...再睡一会吧
+    { name: "旁白", text: "周末的天街商场人头攒动，美食区的空气里混杂着各种令人食指大动的香气。" },
+    { name: "旁白", text: "你正纠结于是吃火锅还是拉面时，一个熟悉的身影闯入了你的视线。" },
+    { name: "旁白", text: "是学姐。她正和一位朋友有说有笑，似乎也面临着同样的选择困难。" },
+    { "name": "你", "text": "这...是命运的选择吗？" },
+    { name: "你", text: "要不然，测试一下...?", triggerChoice: "main" }
   ],
   
   approach: [
-    { name: "你", text: "（深吸一口气，走上前去）「学姐？好巧啊。」" },
-    { name: "学姐", text: "（闻声回头，脸上露出惊喜的表情）「咦？是你啊！真的好巧，你也来这边逛街？」" },
-    { name: "朋友", text: "（立刻表现出极大的兴趣，眼神在你们之间来回扫动）「哦——？梦瑶，这位是？不介绍一下吗？」" },
-    { name: "学姐", text: "（略显不好意思，轻轻推了下朋友）「别闹。这是我同专业的学弟，很认真的一个人。」 （转向你）「这是我朋友，我们一个社团的。」" },
-    { name: "朋友", text: "「学弟你好呀~就你一个人吗？我们俩正愁吃饭选择困难症犯了呢，要不要一起？人多吃饭也热闹！」" },
-    { name: "学姐", text: "「喂！你别替别人做决定啊...」 （语气有些嗔怪，但并没有真正反对）" },
-    { name: "你", text: "「当然好啊！求之不得。」" },
-    { name: "朋友", text: "「哈哈，爽快！那就这么定了！我知道那边有家店味道不错，走吧！」 （说着便热情地在前面带路）" },
-    { name: "学姐", text: "（看着你，无奈又觉得好笑地笑了笑）「好吧...那就一起吧。她总是这样风风火火的，你别介意。」", effect: { senpai: +15 } },
-  { name: "旁白", text: "你们三人一起享用了一顿愉快的晚餐。你和学姐的距离似乎拉近了不少。", nextScene: "../coser/index.html" }
+    { name: "你", text: "（深吸一口气，走上前去）学姐？好巧啊。" },
+    { name: "学姐", text: "咦？是你啊！真的好巧，你也来这边逛街？" },
+    { name: "你", text: "我正好刷到视频，那边有家店味道好像不错，要不要一起？" },
+    { name: "学姐", text: "好啊，我正愁做不出选择呢！", effect: { senpai: +5 } },
+    { name: "你", text: "（啊，真的增加了）" },
+    { name: "旁白", text: "在一段时间排队后，我们成功的在店内入座" },
+    { name: "旁白", text: "你试着问了几道菜，发现学姐的好感度也会发生细微的变化" },
+    { name: "旁白", text: "依照这种变化，你很快找到了学姐的最爱" },
+    { name: "你", text: "怎么样学姐，吃的还合口味吗？" },
+    { name: "学姐", text: "嗯！看来我们的口味还挺合的嘛。", effect: { senpai: +10 } },
+    { name: "学姐", text: "以后有机会的话，再一起出来玩吧", effect: { senpai: +5 } },
+    { name: "你", text: "（心中暗喜）那就这么说定了！", nextScene: "../coser/index.html" }
   ],
   
-  observe: [
-  { name: "旁白", text: "你决定不上前打扰，只是在不远处的一个角落坐下，偶尔望向她们的方向。" },
-  { name: "旁白", text: "学姐和朋友似乎终于决定了吃什么，笑着向一家餐厅走去。" },
-  { name: "旁白", text: "学姐无意中回头，似乎瞥见了你，略微停顿了一下，但最终还是被朋友拉走了。" },
-  { name: "旁白", text: "一次平静的周末，什么也没有发生。", effect: { senpai: 0 } },
-  { name: "旁白", text: "你独自一人吃完了晚饭。", nextScene: "../coser/index.html" }
-  ],
   
   leave: [
-  { name: "旁白", text: "你犹豫了一下，最终还是选择了离开。人群很快淹没了她们的背影。" },
-  { name: "旁白", text: "也许保持距离才是正确的选择。", effect: { senpai: 0 } },
-  { name: "旁白", text: "你独自一人吃完了晚饭。", nextScene: "../coser/index.html" }
+  { name: "旁白", text: "你犹豫了一下，最终还是选择了离开。人群很快淹没了她的背影。" },
+  { name: "旁白", text: "也许保持距离才是正确的选择。" },
+  { name: "你", text: "好感度这种东西，大概只是我的臆想吧..." },
+  { name: "旁白", text: "你独自一人吃完了晚饭。错过了本可改变命运的一天。" },
+  { name: "旁白", text: "游戏结束。", nextScene: "../../index.html" }
   ]
 };
+
+// 新增：继续睡觉分支 -> 触发注释剧情并结束游戏
+dialogues.sleep = [
+  { name: "你", text: "什么好感度，大概只是我的臆想吧..." },
+  { name: "你", text: "大概是还没睡醒……再睡一会吧。" },
+  { name: "旁白", text: "你把闹钟关掉，翻身继续睡去。错过了本可改变命运的一天。" },
+  { name: "旁白", text: "游戏结束。", nextScene: "../../index.html" }
+];
 
 // -------------------- DOM 元素 --------------------
 const dialogText = document.getElementById("dialog-text");
@@ -254,6 +255,8 @@ function showDialogue(branch, idx) {
   
   currentBranch = branch;
   index = idx;
+  // 每次进入新台词，重置本句的选择使用权，支持多个选择点
+  hasMadeChoice = false;
   const dialogue = currentDialogues[index];
   nameBox.textContent = dialogue.name;
   toggleCharacterImage(dialogue.name);
@@ -302,7 +305,26 @@ function showChoices(choiceType) {
   if (hasMadeChoice) return;
   
   dialogBox.style.display = "none";
-  if (choiceType === "main") choiceContainer.classList.remove("hidden");
+  // 仅使用一级选择容器，根据类型动态改写两个按钮
+  if (choiceType === "main" || choiceType === "todo") {
+    const btns = choiceContainer.querySelectorAll('.choice-btn');
+    if (btns.length >= 2) {
+      const [btn1, btn2] = btns;
+      if (choiceType === "todo") {
+        btn1.textContent = "去外面转转";
+        btn1.dataset.choice = "goOut";
+        btn2.textContent = "继续睡觉";
+        btn2.dataset.choice = "sleep";
+      } else {
+        // 恢复为主选择（打招呼/离开）
+        btn1.textContent = "主动上前打招呼";
+        btn1.dataset.choice = "approach";
+        btn2.textContent = "转身离开";
+        btn2.dataset.choice = "leave";
+      }
+    }
+    choiceContainer.classList.remove("hidden");
+  }
   clearIntervals();
 }
 
@@ -325,7 +347,18 @@ function handleChoice(event) {
   const choice = event.currentTarget.dataset.choice;
   hideAllChoices();
   hasMadeChoice = true;
-
+  // 处理新增的 todo 阶段选择
+  if (choice === 'goOut') {
+    // 选择外出：继续当前分支剧情（进入商场剧情）
+    showDialogue(currentBranch, index + 1);
+    return;
+  }
+  if (choice === 'sleep') {
+    // 选择睡觉：进入睡觉分支并在结尾结束游戏
+    showDialogue('sleep', 0);
+    return;
+  }
+  // 其他分支按原逻辑进入对应分支
   showDialogue(choice, 0);
 }
 
