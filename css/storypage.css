@@ -243,6 +243,7 @@
 
     .volume-control input[type="range"] {
       -webkit-appearance: none;
+      appearance: none; /* 标准属性，增强兼容性 */
       width: 100%;
       height: 6px;
       background: #555;
@@ -678,4 +679,22 @@
     }
     .hidden {
   display: none !important;
+}
+
+/* —— 梦醒转场：白光闪烁后淡出 —— */
+#wake-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: rgba(255,255,255,0.9);
+  opacity: 0;
+  animation: wakeFlash 900ms ease-out forwards;
+}
+
+@keyframes wakeFlash {
+  0% { opacity: 0; background: rgba(0,0,0,0.0); }
+  20% { opacity: 1; background: rgba(255,255,255,1); }
+  50% { opacity: 0.35; background: rgba(0,0,0,0.6); }
+  100% { opacity: 0; background: rgba(0,0,0,0); }
 }

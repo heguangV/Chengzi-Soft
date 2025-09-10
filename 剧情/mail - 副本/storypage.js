@@ -95,7 +95,7 @@ const dialogues = {
     { "name": "学姐", "text": "诶？你也看这部番吗，真是少见啊" },
     { "name": "你", "text": "嗯嗯！我也算这部作品的死忠粉呢" },
     { "name": "学姐", "text": "真是缘分啊，加个好友吧！以后继续聊！" },
-    { "name": "你", "text": "是过去的梦吗，能加上学姐的好友算是我命好吧..." },
+    { "name": "你", "text": "是过去的梦吗，能加上学姐的好友算是我命好吧..." },//room
     { "name": "你", "text": "虽然那次加上好友后 ，也没有再聊几句..." },
     { "name": "旁白", "text": "嗡嗡——" },
     { "name": "旁白", "text": "你麻木的关掉手机闹铃，从梦中苏醒，熬夜的大脑还有些晕眩" },
@@ -106,7 +106,7 @@ const dialogues = {
     { "name": "你", "text": "虽然对她很有好感，但是她学期末就将要留学，即使接近了感觉也不会长久" },
   { "name": "你", "text": "这...怎么办呢", triggerChoice: "todo" },// 在此触发：去外面转转/继续睡觉
     //继续睡觉 你：大概是还没睡醒吧...再睡一会吧
-    { name: "旁白", text: "周末的天街商场人头攒动，美食区的空气里混杂着各种令人食指大动的香气。" },
+    { name: "旁白", text: "周末的天街商场人头攒动，美食区的空气里混杂着各种令人食指大动的香气。" },//shopstreet
     { name: "旁白", text: "你正纠结于是吃火锅还是拉面时，一个熟悉的身影闯入了你的视线。" },
     { name: "旁白", text: "是学姐。她正和一位朋友有说有笑，似乎也面临着同样的选择困难。" },
     { "name": "你", "text": "这...是命运的选择吗？" },
@@ -119,7 +119,7 @@ const dialogues = {
     { name: "你", text: "我正好刷到视频，那边有家店味道好像不错，要不要一起？" },
     { name: "学姐", text: "好啊，我正愁做不出选择呢！", effect: { senpai: +5 } },
     { name: "你", text: "（啊，真的增加了）" },
-    { name: "旁白", text: "在一段时间排队后，我们成功的在店内入座" },
+    { name: "旁白", text: "在一段时间排队后，我们成功的在店内入座" },//shop
     { name: "旁白", text: "你试着问了几道菜，发现学姐的好感度也会发生细微的变化" },
     { name: "旁白", text: "依照这种变化，你很快找到了学姐的最爱" },
     { name: "你", text: "怎么样学姐，吃的还合口味吗？" },
@@ -187,6 +187,76 @@ let isFast = false;
 let hasMadeChoice = false;
 const affectionData = { senpai: 30 };
 localStorage.setItem('affectionData', JSON.stringify(affectionData));
+// 追踪是否在梦境中（用于梦醒转场）
+let isInDream = false;
+
+// -------------------- 梦境/现实 背景切换 --------------------
+function setDreamBackground() {
+  // 将背景设为纯黑，移除背景图
+  document.body.style.backgroundColor = '#000';
+  document.body.style.backgroundImage = 'none';
+}
+
+function restoreBackground() {
+  // 清除行内样式，回退到 CSS 中的背景设置
+  document.body.style.background = '';
+  document.body.style.backgroundColor = '';
+  document.body.style.backgroundImage = '';
+  document.body.style.backgroundSize = '';
+}
+
+function applyDreamBackground(branch, idx) {
+  // common 分支的前 3 句（索引 0,1,2）为梦境：黑屏；其余为现实
+  const inDreamNow = (branch === 'common' && idx <= 2);
+  // 只有从梦境 -> 现实时播放转场
+  if (isInDream && !inDreamNow) {
+    playWakeTransition();
+    // 仅在梦境结束的这一刻清空背景，后续非梦境对白不再清空，保证背景持续
+    restoreBackground();
+  }
+  isInDream = inDreamNow;
+  if (inDreamNow) setDreamBackground();
+}
+
+// -------------------- 场景背景切换（根据注释） --------------------
+const BG_BASE = "../../asset/images/";
+function setSceneBackground(imageFile) {
+  const url = BG_BASE + imageFile;
+  document.body.style.backgroundImage = `url('${url}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center center';
+}
+
+// 指定关键台词的背景图
+const SCENE_BG_MAP = {
+  common: {
+    3: 'room.png',         // //room
+    13: 'shopstreet.png'   // //shopstreet
+  },
+  approach: {
+    5: 'shopnoon.png'      // //shop（店内就座）
+  }
+};
+
+function applySceneBackground(branch, idx) {
+  const map = SCENE_BG_MAP[branch];
+  if (map && Object.prototype.hasOwnProperty.call(map, idx)) {
+    setSceneBackground(map[idx]);
+  }
+}
+
+function playWakeTransition() {
+  // 避免重复添加
+  if (document.getElementById('wake-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'wake-overlay';
+  document.body.appendChild(overlay);
+  const cleanup = () => {
+    overlay.removeEventListener('animationend', cleanup);
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+  };
+  overlay.addEventListener('animationend', cleanup);
+}
 
 
 // -------------------- 场景跳转 --------------------
@@ -257,6 +327,10 @@ function showDialogue(branch, idx) {
   index = idx;
   // 每次进入新台词，重置本句的选择使用权，支持多个选择点
   hasMadeChoice = false;
+  // 根据台词位置切换梦境/现实背景
+  applyDreamBackground(currentBranch, index);
+  // 根据注释标注切换对应场景背景
+  applySceneBackground(currentBranch, index);
   const dialogue = currentDialogues[index];
   nameBox.textContent = dialogue.name;
   toggleCharacterImage(dialogue.name);
@@ -519,7 +593,7 @@ if (saveBtn) {
       branch: currentBranch || "common",
       dialogueIndex: index || 0,
       affectionData: { ...affectionData },
-      background: bodyBg,  // 🔹 保存背景图
+  background: getBodyBackgroundAbsoluteUrl(),  // 🔹 保存当前背景图
       timestamp: Date.now()
     };
     console.log("存档进度：", saveData);

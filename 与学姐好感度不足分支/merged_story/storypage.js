@@ -126,7 +126,6 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
 
     // 合并所有剧情对话 - 按照文件夹名称顺序排列
     const dialogues = [
-      { name: "旁白", text: "一学期的大学生活，如同被风吹散的云烟，在不知不觉中走到了学姐约定的时刻" },
       { name: "旁白", text: "你的手机屏幕映出一片淡淡的白光，反射在天花板上，与傍晚的晚霞交织在一起。" },
       { name: "旁白", text: "你就这样看着天花板发呆，思绪纷飞。" },
 

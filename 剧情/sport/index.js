@@ -36,24 +36,207 @@ let isChoiceActive = false;
 let isPaused = false;
 let spaceDown = false; // 防止空格长按重复触发
 
+// 选择后的回退边界：不允许回退到该索引之前（用于防止回到选择前）
+let minIndex = 0;
+
+// 本章选择标志（用于最终判定）
+let sportFlags = { ramen: false, chashao: false };
+
+function loadSportFlags() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('sportFlags') || '{}');
+    if (saved && typeof saved === 'object') {
+      sportFlags.ramen = !!saved.ramen;
+      sportFlags.chashao = !!saved.chashao;
+    }
+  } catch (e) {}
+}
+
+function saveSportFlags() {
+  try { localStorage.setItem('sportFlags', JSON.stringify(sportFlags)); } catch (e) {}
+}
+
+function getStoryFlags() {
+  try { return JSON.parse(localStorage.getItem('storyFlags') || '{}'); } catch (e) { return {}; }
+}
+
+// -------------------- 背景切换（按注释语义） --------------------
+// 按注释语义的文本特征识别场景标签，直到下一个标签前背景保持不变
+let currentBgTag = null; // 'room' | 'shop' | 'yundonghui' | null
+const BG_BY_TAG = {
+  room: '../../asset/images/room.png',
+  shop: '../../asset/images/shopstreet.png',
+  yundonghui: '../../asset/images/yundonghui.jpg'
+};
+
+function setSceneBackground(url) {
+  if (!url) return;
+  try {
+    document.body.style.backgroundImage = `url("${url}")`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center center';
+    document.body.style.backgroundRepeat = 'no-repeat';
+  } catch (e) {}
+}
+
+function maybeUpdateBackgroundByDialogue(d) {
+  if (!d || !d.text) return;
+  const t = d.text;
+  // 根据注释对应的关键句识别
+  if (t.indexOf('转眼到了选课的日子') !== -1) {
+    if (currentBgTag !== 'room') {
+      currentBgTag = 'room';
+      setSceneBackground(BG_BY_TAG.room);
+    }
+    return;
+  }
+  if (t.indexOf('在校门口汇合，一起去了天街') !== -1) {
+    if (currentBgTag !== 'shop') {
+      currentBgTag = 'shop';
+      setSceneBackground(BG_BY_TAG.shop);
+    }
+    return;
+  }
+  if (t.indexOf('你们一起来到了操场') !== -1) {
+    if (currentBgTag !== 'yundonghui') {
+      currentBgTag = 'yundonghui';
+      setSceneBackground(BG_BY_TAG.yundonghui);
+    }
+    return;
+  }
+}
+
 // -------------------- 剧情对话 --------------------
 const dialogues = [
-  { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。" },
-  { name: "旁白", text: "开始游戏", playGame: "jianshu" },
+  { name: "旁白", text: "转眼到了选课的日子，你也投入到了紧张刺激的抢课环节。" },//room
+  { name: "旁白", text: "开始抢课", playGame: "jianshu" },
   { name: "你", text: "呼...学校的选课网站什么时候才能正常啊？" },
-  { name: "你", text: "最近有些奇怪，好感度总是没有反应" },
+  { name: "你", text: "真是气人..." },
+  { name: "你", text: "说起来，最近有些奇怪，好感度总是没有反应" },
   { name: "你", text: "和学姐聊天的时候，也能感觉到她好像有些顾虑" },
   { name: "你", text: "到底是怎么回事呢？" },
-  { name: "学姐", text: "我有点想出去逛逛，要跟我一起吗" },//todo:手机振动
+  { name: "学姐", text: "我有点想出去逛逛，要跟我一起吗" },
   { name: "你", text: "好！这就来！" },
-  { name: "学姐", text: "嗯嗯，我在校门口等你哦" },//结束手机
-  { name: "旁白", text: "你和学姐在校门口汇合，一起去了天街" },
+  { name: "学姐", text: "嗯嗯，我在校门口等你哦" },
+  { name: "旁白", text: "你和学姐在校门口汇合，一起去了天街" },//shop
+  { name: "学姐", text: "自从在天街偶然和你碰面，我就觉得你很特别呢" },
+  { name: "学姐", text: "你和其他人不一样，一直能照顾我的心情呢" },
+  { name: "学姐", text: "你不会是有什么特异功能吧?" },
+  { name: "学姐", text: "哈哈，开个玩笑，以前怎么没有发现你这么好的人呢" },
+  { name: "你", text: "这个......" },
+  { name: "学姐", text: "........." },
   { name: "学姐", text: "诶，那里好像有抢冰红茶的活动，去看看吧" },
   { name: "你", text: "好啊，看我的吧！", playGame: "binghongcha" },
-  { name: "学姐", text: "有点饿了，你有什想吃的吗" },
+  { name: "学姐", text: "哦吼 没想你的身手也挺好的嘛" },
+  { name: "学姐", text: "有点饿了，你有什么想吃的吗" },
   { name: "旁白", text: "你试着指了几个，发现好感度没有任何变化" },
-  { name: "你", text: "只能靠自己选了吗...", hasChoice: true }
+  { name: "你", text: "只能靠自己选了吗...学姐爱吃什么呢"},
+  { name: "你", text: "嗯...", hasChoice: true }
 ];
+
+// -------------------- 手机聊天（todo -> 结束手机 段） --------------------
+const PHONE_START_IDX = 7; // 对应 //todo:手机振动
+const PHONE_END_IDX = 9;   // 对应 //结束手机
+let phoneSequenceActive = false;
+let phoneSequenceDone = false;
+let phoneUIEl = null;
+let chatMessagesEl = null;
+let chatCloseBtnEl = null;
+
+function getPhoneEls() {
+  if (!phoneUIEl) phoneUIEl = document.getElementById('phone-chat-interface');
+  if (!chatMessagesEl) chatMessagesEl = document.getElementById('chat-messages');
+  if (!chatCloseBtnEl) chatCloseBtnEl = document.getElementById('chat-close-btn');
+  return !!(phoneUIEl && chatMessagesEl);
+}
+
+function bindPhoneUI() {
+  if (!getPhoneEls()) return;
+  if (chatCloseBtnEl && !chatCloseBtnEl._bound) {
+    chatCloseBtnEl.addEventListener('click', () => {
+      if (phoneSequenceActive) finishPhoneSequence(true);
+      else closeChatInterface();
+    });
+    chatCloseBtnEl._bound = true;
+  }
+}
+
+function openChatInterface() {
+  if (!getPhoneEls()) return;
+  phoneUIEl.classList.add('show');
+  setTimeout(() => { if (chatMessagesEl) chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight; }, 100);
+}
+
+function closeChatInterface() {
+  if (!getPhoneEls()) return;
+  phoneUIEl.classList.remove('show');
+}
+
+function addChatMessage(sender, text) {
+  if (!getPhoneEls()) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'message ' + (sender === 'sent' ? 'sent' : 'received');
+  const content = document.createElement('div');
+  content.className = 'message-content';
+  content.textContent = text;
+  wrap.appendChild(content);
+  chatMessagesEl.appendChild(wrap);
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+}
+
+function vibratePhone(ms = 600) {
+  try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+  if (getPhoneEls()) {
+    phoneUIEl.classList.add('phone-vibrating');
+    setTimeout(() => phoneUIEl.classList.remove('phone-vibrating'), ms);
+  }
+}
+
+function runSportPhoneSequence() {
+  if (phoneSequenceActive || phoneSequenceDone) return;
+  if (!getPhoneEls()) {
+    console.warn('未找到手机聊天界面，跳过手机聊天序列');
+    showDialogue(PHONE_END_IDX + 1);
+    return;
+  }
+
+  // 停止推进并隐藏对话框
+  isPaused = true;
+  clearInterval(typingInterval);
+  stopAutoPlay();
+  if (dialogBox) dialogBox.style.display = 'none';
+
+  phoneSequenceActive = true;
+
+  // 读取对话 6..8，学姐 -> received，你 -> sent
+  const seq = [];
+  for (let i = PHONE_START_IDX; i <= PHONE_END_IDX; i++) {
+    const d = dialogues[i];
+    if (!d) continue;
+    const sender = d.name === '你' ? 'sent' : 'received';
+    seq.push({ sender, text: d.text });
+  }
+
+  openChatInterface();
+  vibratePhone(800);
+  chatMessagesEl.innerHTML = '';
+
+  const step = 1200;
+  seq.forEach((m, i) => setTimeout(() => addChatMessage(m.sender, m.text), i * step));
+  const total = seq.length * step + 2000;
+  setTimeout(() => finishPhoneSequence(false), total);
+}
+
+function finishPhoneSequence(fromUserClose) {
+  phoneSequenceActive = false;
+  phoneSequenceDone = true;
+  isPaused = false;
+
+  if (getPhoneEls() && phoneUIEl.classList.contains('show')) closeChatInterface();
+  if (dialogBox) dialogBox.style.display = 'block';
+
+  showDialogue(PHONE_END_IDX + 1);
+}
 
 // -------------------- 好感度系统 --------------------
 
@@ -113,9 +296,23 @@ function typeText(text, callback) {
 }
 
 function showDialogue(idx) {
+  // 拦截到达手机段落的请求
+  if (idx === PHONE_START_IDX && !phoneSequenceActive && !phoneSequenceDone) {
+    runSportPhoneSequence();
+    return;
+  }
   if (idx < 0) idx = 0;
   if (idx >= dialogues.length) idx = dialogues.length - 1;
+  // 不允许回退到锁定边界之前（防止回到选择前）
+  if (idx < minIndex) idx = minIndex;
   index = idx;
+
+  // 动态触发两处 TODO 的选择
+  const maybe = dialogues[index];
+  if (maybe && maybe.triggerChoice && !isChoiceActive) {
+    showChoiceMenu(maybe.triggerChoice);
+    return;
+  }
 
   let currentName = dialogues[index].name;
   if (nameBox) nameBox.textContent = currentName;
@@ -152,12 +349,50 @@ function showDialogue(idx) {
 
   const currentDialogue = dialogues[index];
 
+  // 在显示文本前，按注释语义尝试切换背景（保持到下一个标签）
+  maybeUpdateBackgroundByDialogue(currentDialogue);
+
   // 如果是结局台词，直接显示文字并跳转
   if (currentDialogue.ending) {
     if (dialogText) dialogText.textContent = currentDialogue.text;
     charIndex = currentDialogue.text.length;
 
+    const endingType = currentDialogue.ending;
+    // 对于 'home' 结局：立刻提示并返回主页，不再推进剧情
+    if (endingType === 'home') {
+      stopAutoPlay();
+      isPaused = true;
+      try { alert('游戏结束'); } catch (e) {}
+      window.location.href = '../../index.html';
+      return;
+    }
+
     setTimeout(() => {
+      // 如果明确指定结局类型，则直接跳转对应结局
+      if (endingType === 'byFlags') {
+        const sf = getStoryFlags();
+        const sp = (function(){
+          try { return JSON.parse(localStorage.getItem('sportFlags') || '{}'); } catch (e) { return {}; }
+        })();
+        const hasPhoto = !!sf.photograph;
+        const choseRamen = !!(sportFlags.ramen || sp.ramen);
+        const choseChashao = !!(sportFlags.chashao || sp.chashao);
+        if (hasPhoto && choseRamen && choseChashao) {
+          window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html";
+        } else {
+          window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
+        }
+        return;
+      }
+      if (endingType === 'insufficient' || endingType === 'bad') {
+        window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
+        return;
+      }
+      if (endingType === 'sufficient' || endingType === 'good') {
+        window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html";
+        return;
+      }
+      // 否则按好感度阈值跳转
       console.log("当前好感度:", affectionData.fang);
       if (affectionData.fang < 70) {
         window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
@@ -222,16 +457,157 @@ function forceShowChoices() {
   stopAutoPlay();
 }
 
+// -------------------- 动态选择菜单（用于多处 todo） --------------------
+let currentChoiceType = null; // 'topping' | 'search' | 'reveal' | 'vision' | null
+
+function showChoiceMenu(choiceType) {
+  if (!choiceContainer) return;
+  currentChoiceType = choiceType;
+
+  // 准备选项列表
+  let options = [];
+  if (choiceType === 'topping') {
+    options = [
+      { text: '叉烧', code: 'topping_chashao' },
+      { text: '关东煮', code: 'topping_odenk' },
+      { text: '饺子', code: 'topping_dumpling' }
+    ];
+  } else if (choiceType === 'search') {
+    options = [
+      { text: '去北湖转转', code: 'search_beihu' },
+      { text: '去文萃转转', code: 'search_wencui' }
+    ];
+  } else if (choiceType === 'reveal') {
+    options = [
+      { text: '承认', code: 'reveal_confess' },
+      { text: '隐瞒', code: 'reveal_hide' }
+    ];
+  } else if (choiceType === 'vision') {
+    options = [
+      { text: '放弃', code: 'vision_abandon' },
+      { text: '犹豫', code: 'vision_hesitate' }
+    ];
+  }
+
+  // 准备按钮：优先复用已有按钮，不足则动态创建并在隐藏时移除
+  const staticBtns = Array.from(choiceContainer.querySelectorAll('.choice-btn'));
+  for (let i = 0; i < options.length; i++) {
+    let btn = staticBtns[i];
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.setAttribute('data-dynamic', '1');
+      choiceContainer.appendChild(btn);
+      // 为动态新增按钮添加点击处理
+      btn.addEventListener('click', () => {
+        if (!isChoiceActive) return;
+        handleChoice(btn.dataset.choice);
+      });
+    }
+    btn.textContent = options[i].text;
+    btn.dataset.choice = options[i].code;
+    btn.style.display = '';
+  }
+  // 多余的静态按钮隐藏
+  for (let i = options.length; i < staticBtns.length; i++) {
+    staticBtns[i].style.display = 'none';
+  }
+
+  // 显示容器
+  isChoiceActive = true;
+  choiceContainer.classList.remove('hidden');
+  if (dialogBox) dialogBox.style.display = 'none';
+  clearInterval(typingInterval);
+  stopAutoPlay();
+}
+
 // -------------------- 隐藏选择框 --------------------
 function hideChoices() {
   isChoiceActive = false;
   if (choiceContainer) choiceContainer.classList.add("hidden");
   if (dialogBox) dialogBox.style.display = "block";
+  // 清理动态创建的按钮
+  if (choiceContainer) {
+    const dyn = choiceContainer.querySelectorAll('.choice-btn[data-dynamic="1"]');
+    dyn.forEach(btn => btn.remove());
+    // 恢复被隐藏的静态按钮显示状态与默认文案（不强制重置文案，后续菜单会覆盖）
+    const statics = choiceContainer.querySelectorAll('.choice-btn:not([data-dynamic])');
+    statics.forEach(btn => btn.style.display = '');
+  }
 }
 
 // -------------------- 处理选择 --------------------
 function handleChoice(choice) {
   hideChoices();
+  // 锁定回退边界：做出选择后，上一句不得回到选择前
+  // 选择触发位置为当前 index（系统/提示行），实际进入的是 index+1
+  if (typeof index === 'number') {
+    minIndex = Math.max(minIndex, index + 1);
+  }
+  // 处理两处 TODO 的动态选择
+  if (currentChoiceType === 'topping') {
+    if (choice === 'topping_chashao') {
+      try { if (typeof updateAffection === 'function') updateAffection(5); } catch (e) {}
+  sportFlags.chashao = true; saveSportFlags();
+    }
+    currentChoiceType = null;
+    showDialogue(index + 1);
+    return;
+  }
+  if (currentChoiceType === 'search') {
+    // 去北湖：直接进入下一句（北湖分支）
+    if (choice === 'search_beihu') {
+      currentChoiceType = null;
+      showDialogue(index + 1);
+      return;
+    }
+    // 去文萃：跳到文萃分支第一句
+    if (choice === 'search_wencui') {
+      currentChoiceType = null;
+      let target = index + 1;
+      for (let i = index + 1; i < dialogues.length; i++) {
+        const d = dialogues[i];
+        if (d && typeof d.text === 'string' && d.text.indexOf('刚走入文萃') !== -1) {
+          target = i;
+          break;
+        }
+      }
+      showDialogue(target);
+      return;
+    }
+  }
+  if (currentChoiceType === 'reveal') {
+    if (choice === 'reveal_confess') {
+      // 插入承认分支对白，并小幅提升好感
+      dialogues.splice(index + 1, 0,
+        { name: '学姐', text: '哈哈，果然是这样吗...' },
+        { name: '你', text: '但是，无论有没有好感度，我都会喜欢上你的。' },
+        { name: '你', text: '如果对你有困扰，我真的很抱歉...' }
+      );
+      try { if (typeof updateAffection === 'function') updateAffection(5); } catch (e) {}
+      currentChoiceType = null;
+      showDialogue(index + 1);
+      return;
+    }
+    if (choice === 'reveal_hide') {
+      // 插入隐瞒分支对白，直接进入不足/坏结局
+      dialogues.splice(index + 1, 0,
+        { name: '学姐', text: '你不知道吗…' },
+        { name: '学姐', text: '抱歉，当我没说过。再给我一些时间缓冲一下吧。' },
+        { name: '学姐', text: '我可能没办法在这段时间正常地与你交流了。' },
+  { name: '旁白', text: '不知道是不是命运，之后你再也没有看到过学姐。', ending: 'home' }
+      );
+      currentChoiceType = null;
+      showDialogue(index + 1);
+      return;
+    }
+  }
+  if (currentChoiceType === 'vision') {
+    // 无论选择哪一个，都继续到下一句
+    currentChoiceType = null;
+    showDialogue(index + 1);
+    return;
+  }
   
   // 根据选择更新剧情
   if (choice === "A") {
@@ -243,34 +619,64 @@ function handleChoice(choice) {
       { name: "学姐", text: "嗯...还是吃拉面吧，有点想吃了。" },
       { name: "你", text: "诶...那一起去吧！" },
     );
+  sportFlags.ramen = true; saveSportFlags();
   } else if (choice === "C") {
     dialogues.push(
       { name: "学姐", text: "嗯...还是吃拉面吧，有点想吃了。" },
       { name: "你", text: "诶...那一起去吧！" },
     );
+  sportFlags.ramen = true; saveSportFlags();
   }
   
   // 继续剧情
   dialogues.push(
     { name: "旁白", text: "到了拉面店，你们各点了一碗拉面。" },
-    { name: "学姐", text: "唔，不知道什么配菜好呢，你有什么推荐的吗" },//todo:添加选择1.叉烧2.关东煮3.饺子 选1将第二个判定设为true
+  { name: "学姐", text: "唔，不知道什么配菜好呢，你有什么推荐的吗" },
+  { name: "系统", text: "", triggerChoice: 'topping' },
     { name: "学姐", text: "好啊，那就吃这个吧" },
     { name: "旁白", text: "你们一起吃完，坐上了回学校的摆渡车" },
     { name: "旁白", text: "你看着学姐，好感度一直没有变化" },
     { name: "学姐", text: "要不要去操场散散心？" },
-    { name: "你", text: "嗯嗯，听你安排" },
-    { name: "旁白", text: "你们一起来到了操场" },//切换场景
+    { name: "你", text: "嗯，啊...听你安排" },
+    { name: "旁白", text: "你们一起来到了操场" },//yundonghui
     { name: "学姐", text: "...其实，我一直有点顾虑" },
     { name: "学姐", text: "你总是能完美的迎合我的想法，仿佛能洞穿我的内心一样" },
     { name: "学姐", text: "这么想的时候，我的身边就发生了怪事" },
     { name: "学姐", text: "我好像能看到我自己类似好感度条的东西..." },
     { name: "学姐", text: "我想着最近和我相处的你，会不会也能看到呢？" },
-    { name: "你", text: "...这" },//选择：1.承认 2.隐瞒
-    //1.学姐：哈哈，果然是这样吗... 你：但是，无论有没有好感度，我都会喜欢上你的 /如果对你有困扰，我真的很抱歉...
-    //2.学姐：你不知道吗 抱歉，当我没说过 你：虽然不知道好感度条是什么，但我真的想要不断了解你，因为我真的很喜欢你
-    { name: "旁白", text: "学姐对着笑了笑" },
-    { name: "学姐", text: "是这样吗...考虑一下吧" },
-    { name: "学姐", text: "寒假之前，我会给你答复的",ending: true },//如三个判定有两个判定都是true，进足够1 1 4，否则进不足
+  { name: "你", text: "...这" },//todo:选择：1.承认 2.隐瞒
+  { name: "系统", text: "", triggerChoice: 'reveal' },
+  // 选择后将插入不同台词分支：见 handleChoice('reveal_*')
+    { name: "旁白", text: "学姐对着你笑了笑" },
+    { name: "学姐", text: "啊...是这样吗...让我考虑一下吧" },
+    { name: "学姐", text: "..." },
+{ name: "旁白", text: "在一阵无言的沉默之后，学姐转身跑开了" },
+{ name: "你", text: "啊..." },
+{ name: "旁白", text: "在你发愣时，学姐已经消失在了视野里" },
+{ name: "你", text: "不行...得去找学姐" },
+{ name: "你", text: "微信不回信息，电话也不接...怎么办呢" },
+  { name: "你", text: "该去哪里找呢" },
+  { name: "系统", text: "", triggerChoice: 'search' },
+//选1.
+{ name: "旁白", text: "冬日的北湖边显得格外凄清" },
+{ name: "旁白", text: "傍晚的斜阳映照在湖水中，仿佛流光碎金" },
+{ name: "你", text: "没在这里吗" },
+{ name: "旁白", text: "最终你还是没有找到学姐，只能在微信上留言后离开" },
+{ name: "旁白", text: "像是命运的作用，在这之后，你再也没有遇到学姐" },
+{ name: "你", text: "好感度吗，或许只是属于我的一场梦吧", ending: 'home' },//end
+//选2.
+{ name: "旁白", text: "刚走入文萃，你就音乐的听到了空气中弥漫的钢琴声" },//school
+{ name: "你", text: "在弹钢琴，学姐也十分纠结吗..." },
+{ name: "你", text: "..." },
+{ name: "学姐", text: "...（沉默的弹琴）" },
+{ name: "学姐", text: "其实我一直在想，如果没有好感度这种东西的话" },
+{ name: "学姐", text: "你大概肯定不会像这样与我相处吧" },
+{ name: "学姐", text: "但我果然，还是放不下对我无微不至的你" },
+{ name: "学姐", text: "生活中的那些人，或许只是有求于我，或是只觉得我好看" },
+{ name: "学姐", text: "但你却让我由衷的感到幸福" },
+{ name: "学姐", text: "如果说，让你放弃看到好感的能力，你会怎么选呢" },//choice：1.放弃2.犹豫
+{ name: "系统", text: "", triggerChoice: 'vision' },
+{ name: "学姐", text: "这就是你的选择吗，我明白了", ending: 'byFlags' },// 根据标志跳转到足够/不足结局
   );
 
   // 显示下一句对话
@@ -365,7 +771,7 @@ if (saveBtn) {
       branch: "common",
       dialogueIndex: index || 0,
       affectionData: { ...affectionData },
-      background: bodyBg,  // 🔹 保存背景图
+      background: getBodyBackgroundAbsoluteUrl(),  // 🔹 保存当前背景图
       timestamp: Date.now()
     };
     console.log("存档进度：", saveData);
@@ -535,6 +941,19 @@ function init() {
     window.phoneModule.initPhoneElements();
     window.phoneModule.initPhoneChat();
   }
+
+  // 监听手机界面开关，控制剧情推进
+  window.phoneOpen = false;
+  const phoneChatInterface = document.getElementById('phone-chat-interface');
+  if (phoneChatInterface) {
+    const observer = new MutationObserver(() => {
+      window.phoneOpen = phoneChatInterface.classList.contains('show');
+    });
+    observer.observe(phoneChatInterface, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // 绑定手机界面关闭按钮
+  bindPhoneUI();
 }
 
 // -------------------- DOMContentLoaded 初始化 --------------------
