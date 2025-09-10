@@ -29,7 +29,7 @@ let phoneContinueDone = false;
 
 // -------------------- 好感度数据 --------------------
 let affectionData = {
-  fang: 50,
+  fang: 100,
   other: 0
 };
 
@@ -224,8 +224,7 @@ function handlePhoneResponse() {
 
 // 简单的聊天记录显示与添加
 let phoneChatData = [
-  { sender: 'received', text: '学弟君，最近怎么样？', time: '10:30' },
-  { sender: 'sent', text: '还不错，就是有点忙。学姐呢？', time: '10:32' }
+
 ];
 
 function loadChatMessages() {
@@ -242,9 +241,8 @@ function loadChatMessages() {
 }
 
 function addPhoneFinalMessages() {
-  hasAddedPhoneMessages = true;
-  phoneChatData.push({ sender: 'received', text: '毕竟是工作上的大事 不能随便做决定', time: '12:28' });
-  phoneChatData.push({ sender: 'received', text: '但一定要等我的好消息哦~', time: '12:29' });
+ 
+
   loadChatMessages();
 }
 
@@ -273,7 +271,12 @@ function simulateReply() {
 // -------------------- 显示某条对话 --------------------
 function showDialogue(idx) {
   if (idx < 0) idx = 0;
-  if (idx >= dialogues.length) idx = dialogues.length - 1;
+  if (idx >= dialogues.length){
+    idx = dialogues.length - 1;
+    if (window.achievementSystem) {
+      achievementSystem.unlockAchievement("happyending");
+    }
+  }
   index = idx;
 
   // 名称映射逻辑
@@ -316,7 +319,7 @@ function showDialogue(idx) {
     if (index === 999) autoSave();
     if (index === 999) setTimeout(showChoices, 500);
     // TODO位置：学姐车离去后手机振动
-    if (index === 13) {
+    if (index === 999) {
       makePhoneVibrate();
     }
   });
@@ -334,7 +337,17 @@ function handleNext() {
         showDialogue(index + 1);
       } else {
         // 直接跳转到存档界面
-        window.location.href = "../storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
+        // 在这里添加成就解锁
+        if (window.achievementSystem) {
+          achievementSystem.unlockAchievement("happyending");
+          alert("游戏结束！");
+          
+        }
+        console.log("准备跳转到主页...");
+        // 使用短延时并替换历史记录，更可靠地跳转并避免产生新的历史记录记录
+        setTimeout(() => {
+          window.location.replace("../../index.html");
+        }, 120);
       }
     }
   stopAutoPlay();
@@ -387,6 +400,11 @@ function startAutoPlay() {
         // 游戏结束，显示提示而不跳转
         alert("游戏结束！");
         stopAutoPlay();
+        console.log("准备跳转到主页...");
+        // 使用短延时并替换历史记录，更可靠地跳转并避免产生新的历史记录记录
+        setTimeout(() => {
+          window.location.replace("../../index.html");
+        }, 120);
       }
     }
   }, 2000);

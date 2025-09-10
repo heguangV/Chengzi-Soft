@@ -55,6 +55,7 @@ const dialogues = [
   { name: "你", text: "只能靠自己选了吗...", hasChoice: true }
 ];
 
+
 // -------------------- 好感度系统 --------------------
 
 function updateAffection(value) {
@@ -151,6 +152,11 @@ function showDialogue(idx) {
     }
 
   const currentDialogue = dialogues[index];
+     // 如果到达特定剧情，解锁成就
+     if (index === 3) { 
+      achievementSystem.unlockAchievement("qiangke");
+    }
+  
 
   // 如果是结局台词，直接显示文字并跳转
   if (currentDialogue.ending) {
@@ -531,7 +537,7 @@ function init() {
   initAffection();
   showDialogue(0);
   bindEventListeners();
-  
+
   if (window.phoneModule && window.phoneModule.initPhoneElements) {
     window.phoneModule.initPhoneElements();
     window.phoneModule.initPhoneChat();

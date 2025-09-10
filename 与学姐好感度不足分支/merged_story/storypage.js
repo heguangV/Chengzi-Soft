@@ -450,8 +450,10 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       if (idx < 0) idx = 0;
       if (idx >= dialogues.length) idx = dialogues.length - 1;
       index = idx;
+          // 如果到达特定剧情，解锁成就
 
       let displayName = dialogues[index].name;
+
       if (displayName === 'C') {
         displayName = '旁白';
         avatarContainer.style.display = 'none';
@@ -463,6 +465,9 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
         avatarImg.src = '../../学姐.png';
         avatarContainer.style.display = 'block';
       } else if (displayName === 'BE') {
+        if (window.achievementSystem) {
+          achievementSystem.unlockAchievement("badending");
+        }
         displayName = '结局';
         avatarContainer.style.display = 'none';
       } else {

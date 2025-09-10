@@ -152,6 +152,10 @@ function handleNext() {
       } else {
         // 游戏结束：隐藏选择、停止自动播放、提示并返回主页
         try { hideChoices(); } catch (e) { /* ignore if not available */ }
+
+        if (window.achievementSystem) {
+          achievementSystem.unlockAchievement("midending");
+        }
         stopAutoPlay();
         alert("游戏结束！");
         console.log("准备跳转到主页...");
