@@ -3,25 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>剧情页面 - 合并版</title>
+  <title>剧情页面</title>
   <link rel="stylesheet" href="../../css/storypage.css">
+      
+  <script src="storypage.js" defer></script>
+<style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      transition: opacity 1s ease;
+      opacity: 0;
+      background: url('../../asset/images/chezhan.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: "微软雅黑", sans-serif;
+      /* 禁用文本选择 */
+      -webkit-user-select: none;
+         -moz-user-select: none;
+          -ms-user-select: none;
+              user-select: none;
+      /* 禁用拖拽 */
+      -webkit-user-drag: none;
+         -khtml-user-drag: none;
+           -moz-user-drag: none;
+            -ms-user-drag: none;
+    }
+</style>
 </head>
 <body>
-<!-- 对话框 -->
+<div id="character-avatar-container" class="character-avatar-container">
+    <img id="character-avatar" class="character-avatar" src="" alt="角色头像">
+  </div>
+
+  <!-- 对话框 -->
   <div class="dialog-box">
     <div class="character-name">学姐</div>
     <div class="dialog-text" id="dialog-text"></div>
-    <div class="character-avatar">
-      <img src="" alt="角色头像" id="character-avatar">
-    </div>
+
     <div class="dialog-controls">
-      <img src="images/kuang.png" alt="对话框" class="dialog-img">
-      <div class="control-images">
-        <img src="images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img">
-        <img src="images/jiasu.png" alt="加速" id="speed-btn" class="control-img">
-        <img src="images/zidong.png" alt="自动播放" id="auto-btn" class="control-img">
-        <img src="images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img">
-        <img src="images/xiayiju.png" alt="下一句" id="next-btn" class="control-img">
+      <img src="../../storypage2.0/images/kuang.png" alt="对话框" class="dialog-img">
+        <div class="control-images">
+          <img src="../../storypage2.0/images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img">
+          <img src="../../storypage2.0/images/jiasu.png" alt="加速" id="speed-btn" class="control-img">
+          <img src="../../storypage2.0/images/zidong.png" alt="自动播放" id="auto-btn" class="control-img">
+          <img src="../../storypage2.0/images/tiaoguo.png" alt="跳过" id="skip-btn" class="control-img">
+          <img src="../../storypage2.0/images/xiayiju.png" alt="下一句" id="next-btn" class="control-img">
       </div>
     </div>
   </div>
@@ -29,7 +56,7 @@
   <!-- 好感度条 -->
   <div class="affection-container">
     <div class="affection-bar">
-      <div class="affection-bg" style="background-image: url('images/6.png')"></div>
+      <div class="affection-bg" style="background-image: url('../../storypage2.0/images/6.png')"></div>
       <div class="affection-fill" data-character="fang" style="width: 50%"></div>
       <div class="affection-text">学姐: 50%</div>
     </div>
@@ -44,7 +71,7 @@
     <div class="sidebar-buttons">
       <button id="main-menu-btn">回到主菜单</button>
       <button id="load-btn">读档</button>
-      <button id="save-btn">存档</button>
+      <button id="save-btn">存档</button> <!-- 新增存档按钮 -->
       <button id="music-btn">音乐暂停</button>
     </div>
 
@@ -54,14 +81,17 @@
     </div>
   </div>
 
+  <audio id="bg-music" src="../../storypage2.0/music/bg-music.mp3" loop></audio>
+
   <!-- 选择界面 -->
-  <div id="choice-container" class="hidden">
+  <div id="choice-container" class="hidden" >
+
     <button class="choice-btn" data-choice="A">选项A</button>
     <button class="choice-btn" data-choice="B">选项B</button>
     <button class="choice-btn" data-choice="C">选项C</button>
   </div>
-  
-  <!-- 手机图像 - 常驻显示在右上方 -->
+  <div id="auto-save-notice" class="hidden">已存档</div>
+
   <div id="phone-image">
     <img src="../../phone.png" alt="手机" style="width: 130px; height: 150px;">
   </div>
@@ -85,12 +115,7 @@
       <button class="chat-send-btn">↵</button>
     </div>
   </div>
-  
-  <div id="auto-save-notice" class="hidden">已存档</div>
-
+  <script src="../../与学姐好感度不足分支/merged_story/phone.js"></script>
   <script src="../../script/achievement.js"></script>
-  <script src="storypage.js"></script>
-  <script src="phone.js"></script>
-
 </body>
 </html>

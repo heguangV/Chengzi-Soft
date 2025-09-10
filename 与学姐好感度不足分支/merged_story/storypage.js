@@ -449,8 +449,10 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       if (idx < 0) idx = 0;
       if (idx >= dialogues.length) idx = dialogues.length - 1;
       index = idx;
+          // 如果到达特定剧情，解锁成就
 
       let displayName = dialogues[index].name;
+
       if (displayName === 'C') {
         displayName = '旁白';
         avatarContainer.style.display = 'none';
@@ -462,6 +464,9 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
         avatarImg.src = '../../学姐.png';
         avatarContainer.style.display = 'block';
       } else if (displayName === 'BE') {
+        if (window.achievementSystem) {
+          achievementSystem.unlockAchievement("badending");
+        }
         displayName = '结局';
         avatarContainer.style.display = 'none';
       } else {
@@ -719,11 +724,15 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       });
     }
 
-    if (mainMenuBtn) {
-      mainMenuBtn.addEventListener("click", () => { 
-        alert("返回主菜单"); 
-      });
-    }
+// 可选：主菜单按钮也加淡出动画
+
+mainMenuBtn.addEventListener("click", () => {
+  document.body.classList.remove("fade-in");
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    window.location.href = "../../index.html";
+  }, 500);
+});
 
     // 自动存档
     function autoSave() {

@@ -602,6 +602,15 @@ window.addEventListener("DOMContentLoaded", () => {
     observer.observe(phoneChatInterface, { attributes: true, attributeFilter: ["class"] });
   }
 });
+// 可选：主菜单按钮也加淡出动画
+const mainMenuBtn = document.getElementById("main-menu-btn");
+mainMenuBtn.addEventListener("click", () => {
+  document.body.classList.remove("fade-in");
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    window.location.href = "../../index.html";
+  }, 500);
+});
 
 // -------------------- 手机聊天序列（TODO->终止段落） --------------------
 function getPhoneEls() {

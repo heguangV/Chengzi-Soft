@@ -53,15 +53,55 @@ class AchievementSystem {
                 target: 1
             },
             {
-                id: 'game_master',
-                name: '游戏大师',
-                description: '完成所有主要功能',
+                id: 'qiangke',
+                name: '运气之子',
+                description: '你在北理工有选修课上了！',
                 completed: false,
                 completedTime: null,
-                icon: '👑',
+                icon: '🎉',
                 progress: 0,
                 target: 1
-            }
+            },
+            {
+                id: 'pofang',
+                name: '考试周破防',
+                description: '真复习不过来了c',
+                completed: false,
+                completedTime: null,
+                icon: '😭',
+                progress: 0,
+                target: 1
+            },
+            {
+                id: 'happyending',
+                name: '甜蜜结局',
+                description: '你居然在北理工谈上了？！',
+                completed: false,
+                completedTime: null,
+                icon: '❤️',
+                progress: 0,
+                target: 1
+            },
+            {
+                id: 'badending',
+                name: '遗憾结局',
+                description: '智者不入爱河，建设美丽祖国',
+                completed: false,
+                completedTime: null,
+                icon: '💔',
+                progress: 0,
+                target: 1
+            },
+            {
+                id: 'midending',
+                name: '两厢情愿',
+                description: '也许呢',
+                completed: false,
+                completedTime: null,
+                icon: '😎',
+                progress: 0,
+                target: 1
+            },
         ];
         
         this.currentTab = 'completed';
@@ -320,12 +360,22 @@ class AchievementSystem {
         const saved = localStorage.getItem('achievements');
         if (saved) {
             try {
-                this.achievements = JSON.parse(saved);
+                const savedAchievements = JSON.parse(saved);
+                // 合并新成就
+                this.achievements.forEach(ach => {
+                    const savedAch = savedAchievements.find(a => a.id === ach.id);
+                    if (savedAch) {
+                        ach.completed = savedAch.completed;
+                        ach.completedTime = savedAch.completedTime;
+                        ach.progress = savedAch.progress;
+                    }
+                });
             } catch (e) {
                 console.error('加载成就数据失败:', e);
             }
         }
     }
+    
 
     // 外部调用的解锁方法
     unlockStoryProgress() {
@@ -345,13 +395,8 @@ class AchievementSystem {
     }
 }
 
-// 初始化成就系统
-let achievementSystem;
-
-// 等待DOM加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
-    achievementSystem = new AchievementSystem();
+    const achievementSystemInstance = new AchievementSystem();
+    // 全局可访问
+    window.achievementSystem = achievementSystemInstance;
 });
-
-// 导出成就系统供其他脚本使用
-window.achievementSystem = achievementSystem;

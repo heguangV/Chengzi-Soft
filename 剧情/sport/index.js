@@ -351,6 +351,11 @@ function showDialogue(idx) {
 
   // 在显示文本前，按注释语义尝试切换背景（保持到下一个标签）
   maybeUpdateBackgroundByDialogue(currentDialogue);
+     // 如果到达特定剧情，解锁成就
+     if (index === 3) { 
+      achievementSystem.unlockAchievement("qiangke");
+    }
+  
 
   // 如果是结局台词，直接显示文字并跳转
   if (currentDialogue.ending) {
@@ -711,17 +716,13 @@ function startAutoPlay() {
 
 // -------------------- 侧边栏控制 --------------------
 
+// -------------------- 侧边栏控制 --------------------
+
 const toggleBtn = document.getElementById("sidebar-toggle");
+
 if (toggleBtn && sidebar) {
   toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
-}
-
-// 提供 toggleSidebar 函数以防止引用错误
-function toggleSidebar() {
-  if (sidebar) sidebar.classList.toggle('show');
-}
-
-// -------------------- 音乐控制 --------------------
+}// -------------------- 音乐控制 --------------------
 function toggleMusic() {
   if (bgMusic) {
     if (bgMusic.paused) {
@@ -861,9 +862,14 @@ function bindEventListeners() {
     });
   }
 
-  if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-  if (mainMenuBtn) mainMenuBtn.addEventListener('click', () => {
-    window.location.href = '../../index.html';
+
+  
+  mainMenuBtn.addEventListener("click", () => {
+    document.body.classList.remove("fade-in");
+    document.body.classList.add("fade-out");
+    setTimeout(() => {
+      window.location.href = "../../index.html";
+    }, 500);
   });
 
   if (musicBtn) musicBtn.addEventListener('click', toggleMusic);
@@ -936,7 +942,7 @@ function init() {
   initAffection();
   showDialogue(0);
   bindEventListeners();
-  
+
   if (window.phoneModule && window.phoneModule.initPhoneElements) {
     window.phoneModule.initPhoneElements();
     window.phoneModule.initPhoneChat();
@@ -1249,6 +1255,7 @@ function showDialogueWrapper(i) {
 
   originalShowDialogue(i);
 }
+
 
 // 覆盖原函数
 showDialogue = showDialogueWrapper;
