@@ -305,17 +305,13 @@ function startAutoPlay() {
 
 // -------------------- 侧边栏控制 --------------------
 
+// -------------------- 侧边栏控制 --------------------
+
 const toggleBtn = document.getElementById("sidebar-toggle");
+
 if (toggleBtn && sidebar) {
   toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
-}
-
-// 提供 toggleSidebar 函数以防止引用错误
-function toggleSidebar() {
-  if (sidebar) sidebar.classList.toggle('show');
-}
-
-// -------------------- 音乐控制 --------------------
+}// -------------------- 音乐控制 --------------------
 function toggleMusic() {
   if (bgMusic) {
     if (bgMusic.paused) {
@@ -455,14 +451,15 @@ function bindEventListeners() {
     });
   }
 
-  if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-mainMenuBtn.addEventListener("click", () => {
-  document.body.classList.remove("fade-in");
-  document.body.classList.add("fade-out");
-  setTimeout(() => {
-    window.location.href = "../../index.html";
-  }, 500);
-});
+
+  
+  mainMenuBtn.addEventListener("click", () => {
+    document.body.classList.remove("fade-in");
+    document.body.classList.add("fade-out");
+    setTimeout(() => {
+      window.location.href = "../../index.html";
+    }, 500);
+  });
 
   if (musicBtn) musicBtn.addEventListener('click', toggleMusic);
   if (volumeRange && bgMusic) {
