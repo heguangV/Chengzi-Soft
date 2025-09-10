@@ -6,6 +6,8 @@ let sidebar, toggleBtn;
 let autoSaveNotice, saveBtn, loadBtn;
 // 头像相关元素
 let characterAvatarContainer, characterAvatar;
+// 主菜单按钮
+let mainMenuBtn;
 
 // -------------------- 状态变量 --------------------
 let index = 0;
@@ -19,8 +21,11 @@ let isFast = false;
 let isChoiceActive = false; // 新增：标记选择是否激活
 let spaceDown = false; // 防止空格长按连续触发
 
- // -------------------- 剧情控制 --------------------
- const dialogues = [
+// -------------------- 好感度数据 --------------------
+const affectionData = { fang: 50, other: 30 };
+
+// -------------------- 剧情控制 --------------------
+const dialogues = [
   { name: "C", text: "时间飞逝 今天好像就是之前约定好的学姐离开的日子" },
   { name: "C", text: "你看着晚霞映红的天花板发呆 手机中打开着的是学姐的对话框 忽然 手机振动了一下" },
   { name: "A", text: "怎么不来送送我！我还在校门口等你呢（颜文字：生气）" },
@@ -32,6 +37,7 @@ let spaceDown = false; // 防止空格长按连续触发
   { name: "B", text: "你看着学姐的手 心里闪回着与学姐间的点点滴滴 虽然时间不长 但这一份回忆已经要比天边的那一抹骄阳还要炽热 看着眼前这幅即将离自己远去的脸 不由得心头一紧" },
   { name: "B", text: " ", hasChoice: true, choiceType: "final" },
 ];
+
 // -------------------- DOMContentLoaded 初始化 --------------------
 window.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("fade-in");
@@ -60,6 +66,7 @@ window.addEventListener("DOMContentLoaded", () => {
   autoSaveNotice = document.getElementById("auto-save-notice");
   saveBtn = document.getElementById("save-btn");
   loadBtn = document.getElementById("load-btn");
+  mainMenuBtn = document.getElementById("main-menu-btn"); // 获取主菜单按钮
 
   // 头像相关元素
   characterAvatarContainer = document.getElementById('character-avatar-container');
@@ -107,7 +114,7 @@ function showDialogue(idx) {
       // 旁白：隐藏头像
       displayName = '旁白';
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
-       characterAvatar.src = '';
+      characterAvatar.src = '';
     } else if (currentName === 'B') {
       // 主角：显示男主头像
       displayName = '男主';
@@ -127,7 +134,6 @@ function showDialogue(idx) {
     } else {
       // 其他角色：隐藏头像
       if (characterAvatarContainer) characterAvatarContainer.style.display = 'none';
-     
     }
 
     nameBox.textContent = displayName;
@@ -147,13 +153,13 @@ function handleNext() {
     charIndex = dialogText.textContent.length;
     if (index === 8) setTimeout(showChoices, 500);
   } else {
-      if (index < dialogues.length - 1) {
-        showDialogue(index + 1);
-      } else {
-        // 游戏结束，显示提示而不跳转
+    if (index < dialogues.length - 1) {
+      showDialogue(index + 1);
+    } else {
+      // 游戏结束，显示提示而不跳转
       alert("请选择");
-      }
     }
+  }
   stopAutoPlay();
 }
 
@@ -251,8 +257,6 @@ function handleChoice(event) {
 }
 
 // -------------------- 好感度系统 --------------------
-const affectionData = { fang: 50, other: 30 };
-
 function updateAffection(character, value) {
   affectionData[character] = Math.max(0, Math.min(100, value));
   const bar = document.querySelector(`.affection-fill[data-character="${character}"]`);
@@ -261,7 +265,6 @@ function updateAffection(character, value) {
     bar.style.width = `${affectionData[character]}%`;
     if (text) text.textContent = `${character === 'fang' ? '学姐' : '其他'}: ${affectionData[character]}%`;
   }
-  
 }
 
 function initAffection() {
@@ -317,39 +320,53 @@ function bindControlButtons() {
   }
 
   // -------------------- 音乐控制 --------------------
-    // 创建音频元素并自动播放Spring.mp3
-    const bgAudio = document.createElement("audio");
-    bgAudio.src = "../../audio/Spring.mp3";
-    bgAudio.loop = true;
-    bgAudio.autoplay = true;
-    bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
-    bgAudio.style.display = "none";
-    document.body.appendChild(bgAudio);
-    if (volumeRange) {
-      // 初始化滑块为音量值
-      volumeRange.value = Math.round(bgAudio.volume * 100);
-      volumeRange.addEventListener("input", () => {
-        bgAudio.volume = volumeRange.value / 100;
-      });
-    }
+  // 创建音频元素并自动播放Spring.mp3
+  const bgAudio = document.createElement("audio");
+  bgAudio.src = "../../audio/Spring.mp3";
+  bgAudio.loop = true;
+  bgAudio.autoplay = true;
+  bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
+  bgAudio.style.display = "none";
+  document.body.appendChild(bgAudio);
+  if (volumeRange) {
+    // 初始化滑块为音量值
+    volumeRange.value = Math.round(bgAudio.volume * 100);
+    volumeRange.addEventListener("input", () => {
+      bgAudio.volume = volumeRange.value / 100;
+    });
+  }
 
-    if (musicBtn) {
-      musicBtn.addEventListener("click", () => {
-        if (bgAudio.paused) {
-          bgAudio.play();
-          musicBtn.textContent = "音乐暂停";
-        } else {
-          bgAudio.pause();
-          musicBtn.textContent = "音乐播放";
-        }
-      });
-    }
+  if (musicBtn) {
+    musicBtn.addEventListener("click", () => {
+      if (bgAudio.paused) {
+        bgAudio.play();
+        musicBtn.textContent = "音乐暂停";
+      } else {
+        bgAudio.pause();
+        musicBtn.textContent = "音乐播放";
+      }
+    });
+  }
+  
   // -------------------- 侧边栏 --------------------
   if (toggleBtn) {
     const newToggleBtn = toggleBtn.cloneNode(true);
     toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
     newToggleBtn.addEventListener("click", () => {
       if (sidebar) sidebar.classList.toggle("show");
+    });
+  }
+
+  // -------------------- 主菜单按钮 --------------------
+  if (mainMenuBtn) {
+    const newMainMenuBtn = mainMenuBtn.cloneNode(true);
+    mainMenuBtn.parentNode.replaceChild(newMainMenuBtn, mainMenuBtn);
+    newMainMenuBtn.addEventListener("click", () => {
+      document.body.classList.remove("fade-in");
+      document.body.classList.add("fade-out");
+      setTimeout(() => {
+        window.location.href = "../../index.html";
+      }, 500);
     });
   }
 

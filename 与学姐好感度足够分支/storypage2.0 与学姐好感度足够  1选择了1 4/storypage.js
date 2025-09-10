@@ -663,3 +663,12 @@ window.addEventListener('click', (e) => {
   // 对话已显示完整，推进下一句
   handleNext();
 });
+// 可选：主菜单按钮也加淡出动画
+const mainMenuBtn = document.getElementById("main-menu-btn");
+mainMenuBtn.addEventListener("click", () => {
+  document.body.classList.remove("fade-in");
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    window.location.href = "../../index.html";
+  }, 500);
+});

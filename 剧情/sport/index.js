@@ -456,13 +456,13 @@ function bindEventListeners() {
   }
 
   if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-  mainMenuBtn.addEventListener("click", () => {
-    document.body.classList.remove("fade-in");
-    document.body.classList.add("fade-out");
-    setTimeout(() => {
-      window.location.href = "../../index.html";
-    }, 500);
-  });
+mainMenuBtn.addEventListener("click", () => {
+  document.body.classList.remove("fade-in");
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    window.location.href = "../../index.html";
+  }, 500);
+});
 
   if (musicBtn) musicBtn.addEventListener('click', toggleMusic);
   if (volumeRange && bgMusic) {
