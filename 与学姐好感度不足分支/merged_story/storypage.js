@@ -1,9 +1,6 @@
     window.addEventListener("DOMContentLoaded", () => {
       document.body.classList.add("fade-in");
       
-      // 初始化好感度系统
-      initAffection();
-      
       // 显示初始对话
       showDialogue(0);
       
@@ -13,6 +10,10 @@
           e.preventDefault();
           // 如果已经按下，不重复触发
           if (spaceDown) return;
+          // 手机界面打开 / 等待手机响应 / 游戏暂停 时不推进
+          if ((phoneChatInterface && phoneChatInterface.classList.contains("show")) || waitingForPhoneResponse || gamePaused) {
+            return;
+          }
           spaceDown = true;
           triggerNextDialogue();
         }
@@ -100,13 +101,15 @@
   let spaceDown = false; // 防止空格长按连续触发
     let waitingForItem = false;
     let isSpecialItemClicked = false;
-    let hasReceivedFinalMessage = false;
+  let hasReceivedFinalMessage = false;
+  let hasReceivedInitialMessage = false; // 新增：是否已显示开场简短消息
     let waitingForPhoneResponse = false; // 新增：等待手机响应的状态
     let phoneNotification = null; // 新增：手机通知标记
     let gamePaused = false; // 新增：游戏暂停状态
+  let advanceAfterPhoneClose = false; // 新增：关闭手机后推进下一句
+  let autoFarewellSent = false; // 新增：是否已自动发送“再见了学姐”
 
-    // 好感度数据
-    
+  // 已移除：本分支不使用好感度系统
 
     // 获取 body 背景图片的绝对路径
 function getBodyBackgroundAbsoluteUrl() {
@@ -174,6 +177,10 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       if (chatCloseBtn) {
         chatCloseBtn.addEventListener("click", () => {
           closeChatInterface();
+          if (advanceAfterPhoneClose) {
+            advanceAfterPhoneClose = false;
+            showDialogue(index + 1);
+          }
         });
       }
 
@@ -200,6 +207,7 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       // 暂停游戏
       stopAutoPlay();
       clearInterval(typingInterval);
+  gamePaused = true;
       
       // 确保聊天界面滚动到底部
       setTimeout(() => {
@@ -212,6 +220,7 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
     // 关闭聊天界面
     function closeChatInterface() {
       phoneChatInterface.classList.remove("show");
+  gamePaused = false;
     }
 
     // 让手机震动并显示通知
@@ -284,6 +293,18 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       
       // 滚动到底部
       chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // 显示一条来自对方的首条简短消息并打开聊天界面（只触发一次）
+    function showIncomingPhoneMessage(message) {
+      if (hasReceivedInitialMessage) return;
+      hasReceivedInitialMessage = true;
+      const now = new Date();
+      const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+      chatData.push({ sender: 'received', text: message, time });
+      loadChatMessages();
+      openChatInterface();
+  advanceAfterPhoneClose = true;
     }
 
     // 添加最后的消息到聊天记录
@@ -387,6 +408,9 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
           specialItem.classList.remove("hidden");
           waitingForItem = true;
         }
+
+  // 若本句包含手机相关文案（被加速到整句时），也要触发手机逻辑
+  ensurePhoneTriggersForCurrentLine();
       } else {
         // 检查是否需要让手机震动（第26条对话之后）
         if (index === 25) {
@@ -401,6 +425,24 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
         }
       }
       stopAutoPlay();
+    }
+
+    // 确保在被“加速到整句”时也能触发手机交互
+    function ensurePhoneTriggersForCurrentLine() {
+      const line = dialogues[index] && dialogues[index].text;
+      if (typeof line !== 'string') return;
+      // 来信：展示简短消息
+      if (line.indexOf('你拿起手机，屏幕上是一条简短的消息') !== -1) {
+        setTimeout(() => {
+          showIncomingPhoneMessage('抱歉 我还是不太了解你 下学期我就要转学了 照顾好自己哦');
+        }, 0);
+      }
+      // 发送：自动发送“再见了学姐”
+      else if (line.indexOf('你在手机上打出') !== -1) {
+        if (!autoFarewellSent) {
+          setTimeout(() => autoSendFarewellMessage('再见了学姐'), 0);
+        }
+      }
     }
 
     // 特殊物品显示判断
@@ -466,6 +508,13 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       } else if (displayName === 'BE') {
         if (window.achievementSystem) {
           achievementSystem.unlockAchievement("badending");
+          // 额外成就：有命无分（当出现该 BE 台词时点亮）
+          try {
+            const line = dialogues[index] && dialogues[index].text;
+            if (typeof line === 'string' && line.indexOf('此情可待成追忆，只是当时已惘然。') !== -1) {
+              achievementSystem.unlockAchievement("youming_wufen");
+            }
+          } catch (e) { /* noop */ }
         }
         displayName = '结局';
         avatarContainer.style.display = 'none';
@@ -475,11 +524,19 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
 
       nameBox.textContent = displayName;
       
-      // 检查是否是"最终你按下了发送键"这句台词(索引36)
-      if (index === 36) {
-        // 显示完文字后自动触发特殊事件
-        typeText(dialogues[index].text, function() {
-          setTimeout(autoSendFarewellMessage, 500);
+      // 在“你拿起手机，屏幕上是一条简短的消息：”时，展示对方来信
+      const currentLine = dialogues[index].text;
+      if (typeof currentLine === 'string' && currentLine.indexOf('你拿起手机，屏幕上是一条简短的消息') !== -1) {
+        typeText(currentLine, function() {
+          setTimeout(() => {
+            showIncomingPhoneMessage('抱歉 我还是不太了解你 下学期我就要转学了 照顾好自己哦');
+          }, 300);
+        });
+      }
+      // 在“你在手机上打出：”这一句时，自动通过手机发送“再见了学姐”
+      else if (typeof currentLine === 'string' && currentLine.indexOf('你在手机上打出') !== -1) {
+        typeText(currentLine, function() {
+          setTimeout(() => autoSendFarewellMessage('再见了学姐'), 500);
         });
       } else {
         typeText(dialogues[index].text);
@@ -491,8 +548,9 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
     }
 
     // 自动发送"再见了"消息并关闭手机
-    function autoSendFarewellMessage() {
+    function autoSendFarewellMessage(message = '再见了') {
       console.log('autoSendFarewellMessage triggered');
+  autoFarewellSent = true; // 标记已自动发送，避免重复触发
       
       // 保存当前索引值
       const currentIndex = index;
@@ -541,10 +599,10 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       
       // 等待界面完全显示后再操作
       setTimeout(function() {
-        // 在输入框中预填"再见了"
+        // 在输入框中预填要发送的消息
         if (chatInput) {
-          console.log('Filling message: 再见了');
-          chatInput.value = "再见了";
+          console.log('Filling message:', message);
+          chatInput.value = message;
           
           // 自动聚焦输入框
           chatInput.focus();
@@ -593,6 +651,8 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
                   
                   // 重置暂停标志
                   gamePaused = false;
+                  // 自动发送路径：直接推进，不依赖关闭按钮
+                  advanceAfterPhoneClose = false;
                   
                   if (typeof showDialogue === 'function') {
                     console.log('Continuing story with next dialogue...');
@@ -649,6 +709,8 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
         clearInterval(typingInterval);
         dialogText.textContent = dialogues[index].text;
         charIndex = dialogues[index].text.length;
+  // 跳过到整句后，同样触发手机相关逻辑
+  ensurePhoneTriggersForCurrentLine();
         stopAutoPlay();
       });
     }
@@ -674,6 +736,8 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
           clearInterval(typingInterval);
           dialogText.textContent = dialogues[index].text;
           charIndex = dialogues[index].text.length;
+          // 自动播放将本句加速到整句时，也触发手机逻辑
+          ensurePhoneTriggersForCurrentLine();
         } else {
           if (index < dialogues.length - 1) showDialogue(index + 1);
           else stopAutoPlay();
@@ -780,7 +844,6 @@ if (saveBtn) {
       scene: scene,
       branch:"common",
       dialogueIndex: index || 0,
-      affectionData: { ...affectionData },
       background: bodyBg,  // 🔹 保存背景图
       timestamp: Date.now()
     };
@@ -816,15 +879,11 @@ if (loadBtn) {
       dialogBox.style.display = "block";
     }
 
-    if (choiceBtns && choiceBtns.length > 0) {
+  if (choiceBtns && choiceBtns.length > 0) {
       choiceBtns.forEach(btn => {
         btn.addEventListener("click", () => {
           const choice = btn.dataset.choice;
           hideChoices();
-
-          if (choice === "A") updateAffection('fang', affectionData.fang + 10);
-          else if (choice === "B") updateAffection('fang', affectionData.fang - 5);
-          else updateAffection('other', affectionData.other + 5);
 
           if (choice === "A") showDialogue(index + 1);
           else if (choice === "B") showDialogue(index + 2);
@@ -832,32 +891,3 @@ if (loadBtn) {
         });
       });
     }
-
-    // 好感度系统
-    function updateAffection(character, value) {
-      affectionData[character] = Math.max(0, Math.min(100, value));
-      const bar = document.querySelector(`.affection-fill[data-character="${character}"]`);
-      if (bar) {
-        const text = bar.parentElement.querySelector('.affection-text');
-        bar.style.width = `${affectionData[character]}%`;
-        if (text) {
-          text.textContent = `${character === 'fang' ? '学姐' : '其他'}: ${affectionData[character]}%`;
-        }
-        
-      }
-    }
-
-    function initAffection() {
-      const savedData = localStorage.getItem('affectionData');
-      if (savedData) {
-        try {
-          Object.assign(affectionData, JSON.parse(savedData));
-        } catch (e) {
-          console.error("Error parsing affection data:", e);
-        }
-      }
-      
-      for (const [character, value] of Object.entries(affectionData)) {
-        updateAffection(character, value);
-      }
-    } 

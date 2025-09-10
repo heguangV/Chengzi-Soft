@@ -322,6 +322,16 @@ function showDialogue(idx) {
     if (index === 999) {
       makePhoneVibrate();
     }
+
+    // 结尾台词触发成就：开创未来
+    try {
+      const line = dialogues[index] && dialogues[index].text;
+      if (typeof line === 'string' && line.indexOf('在这温软的对话之间 周围好像变得越来越亮 我相信 我们的未来也会想这样无比耀眼吧…') !== -1) {
+        if (window.achievementSystem) {
+          achievementSystem.unlockAchievement('kaichuang_weilai');
+        }
+      }
+    } catch (e) { /* no-op */ }
   });
 }
 

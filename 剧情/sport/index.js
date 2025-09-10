@@ -365,6 +365,13 @@ function showDialogue(idx) {
     const endingType = currentDialogue.ending;
     // 对于 'home' 结局：立刻提示并返回主页，不再推进剧情
     if (endingType === 'home') {
+      // 北湖分支的终句：“好感度吗，或许只是属于我的一场梦吧” —— 点亮“终为陌路”
+      try {
+        const text = (currentDialogue && currentDialogue.text) || '';
+        if (text.indexOf('好感度吗，或许只是属于我的一场梦吧') !== -1 && window.achievementSystem && typeof window.achievementSystem.unlockAchievement === 'function') {
+          window.achievementSystem.unlockAchievement('zhongwei_molu');
+        }
+      } catch (e) { /* noop */ }
       stopAutoPlay();
       isPaused = true;
       try { alert('游戏结束'); } catch (e) {}
@@ -563,6 +570,8 @@ function handleChoice(choice) {
     // 去北湖：直接进入下一句（北湖分支）
     if (choice === 'search_beihu') {
       currentChoiceType = null;
+  // 锁到北湖分支第一句，禁止回到选择前
+  minIndex = Math.max(minIndex, index + 1);
       showDialogue(index + 1);
       return;
     }
@@ -577,6 +586,8 @@ function handleChoice(choice) {
           break;
         }
       }
+  // 进一步收紧边界：直接锁到文萃首句，防止回到北湖分支
+  minIndex = Math.max(minIndex, target);
       showDialogue(target);
       return;
     }
@@ -1029,6 +1040,9 @@ function openGame(key) {
     return;
   }
 
+  // 锁定回退边界：一旦进入小游戏，禁止回到该行，防止重复触发
+  try { minIndex = Math.max(minIndex, index + 1); } catch (e) {}
+
   createGameOverlay();
   const iframe = document.getElementById(gameOverlayId + '-frame');
   const overlay = document.getElementById(gameOverlayId);
@@ -1124,6 +1138,22 @@ window.addEventListener('message', (ev) => {
 
     // 如果小游戏返回了 courses 字段，按不同 item 分支处理（例如冰红茶需要阈值判断）
     if (typeof data.courses === 'number') {
+      // 根据当前触发的小游戏类型解锁成就
+      try {
+        const cur = dialogues[index];
+        if (cur && cur.playGame === 'jianshu') {
+          // 抢课：返回 5 节课则解锁“气运之子”
+          if (data.courses === 5 && window.achievementSystem && typeof window.achievementSystem.unlockAchievement === 'function') {
+            window.achievementSystem.unlockAchievement('qiyun_zhizi');
+          }
+        } else if (cur && cur.playGame === 'binghongcha') {
+          // 冰红茶：得分 > 2000 解锁“破防高手”
+          if (data.courses > 2000 && window.achievementSystem && typeof window.achievementSystem.unlockAchievement === 'function') {
+            window.achievementSystem.unlockAchievement('pofang_gaoshou');
+          }
+        }
+      } catch (e) { /* noop */ }
+
       const itemLabel = typeof data.item === 'string' ? data.item : '节课';
       if (itemLabel === '瓶冰红茶') {
         // 冰红茶按分数阈值判断成功或失败（>1000 成功）

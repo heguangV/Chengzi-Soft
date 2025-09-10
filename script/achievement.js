@@ -1,7 +1,7 @@
 // 成就系统
 class AchievementSystem {
     constructor() {
-        this.achievements = [
+    this.achievements = [
             {
                 id: 'first_login',
                 name: '初次登录',
@@ -52,56 +52,73 @@ class AchievementSystem {
                 progress: 0,
                 target: 1
             },
+
             {
-                id: 'qiangke',
-                name: '运气之子',
-                description: '你在北理工有选修课上了！',
+                id: 'missed_chance',
+                name: '给你机会你不中用',
+                description: '选择继续睡觉或转身离开并触发结局',
                 completed: false,
                 completedTime: null,
-                icon: '🎉',
+                icon: '😴',
                 progress: 0,
                 target: 1
             },
-            {
-                id: 'pofang',
-                name: '考试周破防',
-                description: '真复习不过来了c',
-                completed: false,
-                completedTime: null,
-                icon: '😭',
-                progress: 0,
-                target: 1
-            },
-            {
-                id: 'happyending',
-                name: '甜蜜结局',
-                description: '你居然在北理工谈上了？！',
-                completed: false,
-                completedTime: null,
-                icon: '❤️',
-                progress: 0,
-                target: 1
-            },
-            {
-                id: 'badending',
-                name: '遗憾结局',
-                description: '智者不入爱河，建设美丽祖国',
-                completed: false,
-                completedTime: null,
-                icon: '💔',
-                progress: 0,
-                target: 1
-            },
-            {
-                id: 'midending',
-                name: '两厢情愿',
-                description: '也许呢',
-                completed: false,
-                completedTime: null,
-                icon: '😎',
-                progress: 0,
-                target: 1
-            },
+                {
+                    id: 'zhongwei_molu',
+                    name: '终为陌路',
+                    description: '北湖分支触发结局',
+                    completed: false,
+                    completedTime: null,
+                    icon: '🧊',
+                    progress: 0,
+                    target: 1
+                },
+                {
+                    id: 'qiyun_zhizi',
+                    name: '气运之子',
+                    description: '抢课返回值为 5 时解锁',
+                    icon: '🍀',
+                    progress: 0,
+                    target: 1
+                },
+                {
+                    id: 'pofang_gaoshou',
+                    name: '破防高手',
+                    description: '冰红茶得分大于 2000 时解锁',
+                    icon: '🥤',
+                    progress: 0,
+                    target: 1
+                },
+                {
+                    id: 'youming_wufen',
+                    name: '有命无分',
+                    description: '在不足分支触发 BE「此情可待成追忆，只是当时已惘然。」',
+                    completed: false,
+                    completedTime: null,
+                    icon: '🍂',
+                    progress: 0,
+                    target: 1
+                },
+                {
+                    id: 'kaichuang_weilai',
+                    name: '开创未来',
+                    description: '在温软的对话渐亮的结局中点亮希望',
+                    completed: false,
+                    completedTime: null,
+                    icon: '🌟',
+                    progress: 0,
+                    target: 1
+                },
+                {
+                    id: 'ending_master',
+                    name: '结局掌控者',
+                    description: '集齐所有结局成就',
+                    completed: false,
+                    completedTime: null,
+                    icon: '👑',
+                    progress: 0,
+                    target: 1
+                },
         ];
         
         this.currentTab = 'completed';
@@ -115,6 +132,9 @@ class AchievementSystem {
         
         // 自动解锁一些成就
         this.autoUnlockAchievements();
+
+    // 初始化后检查一次是否已集齐所有结局成就
+    this.checkEndingMaster();
     }
 
     setupEventListeners() {
@@ -223,7 +243,7 @@ class AchievementSystem {
             return;
         }
 
-        achievementList.innerHTML = filteredAchievements.map(achievement => {
+    achievementList.innerHTML = filteredAchievements.map(achievement => {
             const timeStr = achievement.completedTime 
                 ? new Date(achievement.completedTime).toLocaleString('zh-CN')
                 : '未完成';
@@ -259,6 +279,9 @@ class AchievementSystem {
             
             // 显示解锁提示
             this.showUnlockNotification(achievement);
+
+            // 任一成就解锁后，检查是否满足“结局掌控者”
+            this.checkEndingMaster();
         }
     }
 
@@ -373,6 +396,15 @@ class AchievementSystem {
             } catch (e) {
                 console.error('加载成就数据失败:', e);
             }
+        }
+    }
+    
+    // 检查是否集齐所有结局成就（自动点亮“结局掌控者”）
+    checkEndingMaster() {
+        const endingIds = ['missed_chance', 'zhongwei_molu', 'youming_wufen', 'kaichuang_weilai'];
+        const allCompleted = endingIds.every(id => this.achievements.find(a => a.id === id)?.completed);
+        if (allCompleted) {
+            this.unlockAchievement('ending_master');
         }
     }
     

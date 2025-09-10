@@ -190,6 +190,16 @@ localStorage.setItem('affectionData', JSON.stringify(affectionData));
 // 追踪是否在梦境中（用于梦醒转场）
 let isInDream = false;
 
+// 选择后的回退边界（分支级）：不允许回退到该索引之前，防止回到选择前
+const minIndexByBranch = {};
+function getMinIndex(branch) {
+  return minIndexByBranch[branch] || 0;
+}
+function lockMinIndex(branch, idx) {
+  const cur = getMinIndex(branch);
+  minIndexByBranch[branch] = Math.max(cur, idx);
+}
+
 // -------------------- 梦境/现实 背景切换 --------------------
 function setDreamBackground() {
   // 将背景设为纯黑，移除背景图
@@ -262,13 +272,27 @@ function playWakeTransition() {
 // -------------------- 场景跳转 --------------------
 function goToNextScene(sceneUrl) {
   console.log("跳转到下一个页面:", sceneUrl);
-  document.body.classList.add("fade-out");
-  
+
+  // 延长停留时间，保证成就提示有时间显示
+  const REDIRECT_DELAY = 4000; // ms，成就展示 3s + 入/出场 0.5s + 余量
+  const FADE_DURATION = 500;   // 与 CSS 动画时长匹配（如有不同可调整）
+
   localStorage.setItem('affectionData', JSON.stringify(affectionData));
-  
+  // 在离开或睡觉分支触发结局时，解锁“给你机会你不中用”
+  try {
+    if ((currentBranch === 'leave' || currentBranch === 'sleep') && window.achievementSystem) {
+      window.achievementSystem.unlockAchievement('missed_chance');
+    }
+  } catch (e) {}
+
+  // 在跳转前的最后一段时间再开始淡出动画，避免过早遮挡成就提示
+  setTimeout(() => {
+    document.body.classList.add("fade-out");
+  }, Math.max(REDIRECT_DELAY - FADE_DURATION, 0));
+
   setTimeout(() => {
     window.location.href = sceneUrl || "next_scene.html";
-  }, 1000);
+  }, REDIRECT_DELAY);
 }
 
 // -------------------- 打字机效果 --------------------
@@ -322,6 +346,9 @@ function showDialogue(branch, idx) {
     console.log("分支剧情结束");
     return;
   }
+  // 不允许回退到锁定边界之前（防止回到选择前）
+  const branchMin = getMinIndex(branch);
+  if (idx < branchMin) idx = branchMin;
   
   currentBranch = branch;
   index = idx;
@@ -421,6 +448,8 @@ function handleChoice(event) {
   const choice = event.currentTarget.dataset.choice;
   hideAllChoices();
   hasMadeChoice = true;
+  // 锁定当前分支的回退边界：点击选择后无法返回到选择前的上一句
+  lockMinIndex(currentBranch, index + 1);
   // 处理新增的 todo 阶段选择
   if (choice === 'goOut') {
     // 选择外出：继续当前分支剧情（进入商场剧情）
