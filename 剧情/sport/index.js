@@ -390,26 +390,26 @@ function showDialogue(idx) {
         const choseRamen = !!(sportFlags.ramen || sp.ramen);
         const choseChashao = !!(sportFlags.chashao || sp.chashao);
         if (hasPhoto && choseRamen && choseChashao) {
-          window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html";
+          window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
         } else {
-          window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
+          window.location.href = "../../与学姐好感度不足分支/merged_story/storypage.html";
         }
         return;
       }
       if (endingType === 'insufficient' || endingType === 'bad') {
-        window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
+        window.location.href = "../../与学姐好感度不足分支/merged_story/storypage.html";
         return;
       }
       if (endingType === 'sufficient' || endingType === 'good') {
-        window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html";
+        window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
         return;
       }
       // 否则按好感度阈值跳转
       console.log("当前好感度:", affectionData.fang);
       if (affectionData.fang < 70) {
-        window.location.href = "../../与学姐好感度不足分支/merge_story/storypage.html";
+        window.location.href = "../../与学姐好感度不足分支/merged_story/storypage.html";
       } else {
-        window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够 1/storypage.html";
+        window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
       }
     }, 2000);
 
