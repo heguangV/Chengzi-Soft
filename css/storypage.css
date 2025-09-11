@@ -430,6 +430,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
+  transform-origin: center center;
   width: 320px;
   height: 600px; /* 默认高度 */
   background: #f5f5f5;
@@ -437,13 +438,19 @@
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   overflow: hidden;
-  display: none;
+  /* 预先参与布局并计算变换，防止首次显示时位置抖动 */
+  display: block;
+  visibility: hidden;
+  pointer-events: none;
   opacity: 0;
-  transition: all 0.3s ease;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 #phone-chat-interface.show {
-  display: block;
+  visibility: visible;
+  pointer-events: auto;
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }

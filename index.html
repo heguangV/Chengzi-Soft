@@ -208,6 +208,19 @@
             opacity: 1;
             pointer-events: auto;
         }
+
+        /* 允许音乐音量控制可交互与可选择（修复滑块无法拖动） */
+        .volume-control, .volume-control * {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
+        }
+        .volume-slider {
+            pointer-events: auto;
+            /* 改善触摸端拖动体验 */
+            touch-action: manipulation;
+        }
     </style>
 </head>
 
@@ -445,6 +458,18 @@
             // 添加额外的防止文本选择事件监听器
             document.querySelectorAll('.function-item, .title, .music-player, .music-title').forEach(element => {
                 element.addEventListener('mousedown', function(e) {
+                    const t = e.target;
+                    // 放开对交互控件（尤其是音量滑块）的默认行为，避免阻止拖动
+                    if (
+                        t.closest && t.closest('.volume-control') ||
+                        t.tagName === 'INPUT' ||
+                        t.tagName === 'BUTTON' ||
+                        t.tagName === 'SELECT' ||
+                        t.tagName === 'TEXTAREA' ||
+                        t.isContentEditable
+                    ) {
+                        return; // 不阻止默认行为
+                    }
                     e.preventDefault();
                 });
             });
@@ -454,12 +479,29 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 禁用文本选择
             disableTextSelection();
+            
+            // 音量滑块与音频联动（保证拖动即生效）
+            const audioEl = document.getElementById('bg-music');
+            const volSlider = document.getElementById('volume-range');
+            if (audioEl && volSlider) {
+                const clamp = v => Math.max(0, Math.min(1, v));
+                // 初始化音量与滑块一致
+                audioEl.volume = clamp(Number(volSlider.value) / 100);
+                // 拖动时实时调节
+                volSlider.addEventListener('input', () => {
+                    audioEl.volume = clamp(Number(volSlider.value) / 100);
+                });
+            }
         });
         
         function disableTextSelection() {
             // 为所有不应被选择的元素添加类
             const noSelectElements = document.querySelectorAll('.function-item, .title, .music-player, .music-title, .music-btn');
             noSelectElements.forEach(el => {
+                // 对包含音量控件的容器（如 .music-player）不强行加 no-select，避免影响交互
+                try {
+                    if (el.querySelector && el.querySelector('.volume-control')) return;
+                } catch {}
                 el.classList.add('no-select');
             });
             

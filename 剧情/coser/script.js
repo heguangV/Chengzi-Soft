@@ -69,7 +69,7 @@ let phoneUIEl = null;
 let chatMessagesEl = null;
 let chatCloseBtnEl = null;
 const PHONE_START_IDX = 7; // 指向 TODO: 手机震动 的那句
-const PHONE_END_IDX = 12;  // 指向 //手机终止 的那句
+const PHONE_END_IDX = 13;  // 指向 //手机终止 的那句（包含“那就这么说定啦！”）
 let phoneSequenceActive = false; // 手机聊天序列进行中 -> 强制暂停剧情
 let phoneSequenceDone = false;   // 手机聊天序列已完成 -> 后续不再触发
 // 获取 body 背景图片的绝对路径
@@ -524,36 +524,51 @@ function bindSaveLoadButtons() {
   }
 }
 
-// -------------------- 音频控制 --------------------
-// 创建音频元素并自动播放Spring.mp3
-const bgAudio = document.createElement("audio");
-bgAudio.src = "../../audio/Spring.mp3";
-bgAudio.loop = true;
-bgAudio.autoplay = true;
-bgAudio.volume = 0.5; // 默认音量
-bgAudio.style.display = "none";
-document.body.appendChild(bgAudio);
+// -------------------- 音频控制（统一使用页面中的 <audio id="bg-music">） --------------------
+const bgAudio = document.getElementById('bg-music');
+const volumeRange = document.getElementById('volume-range');
+const musicBtn = document.getElementById('music-btn');
 
-// 获取音量控制元素
-const volumeRange = document.getElementById("volume-range");
-const musicBtn = document.getElementById("music-btn");
-
-if (volumeRange) {
-  // 初始化滑块为音量值
-  volumeRange.value = Math.round(bgAudio.volume * 100);
-  volumeRange.addEventListener("input", () => {
-    bgAudio.volume = volumeRange.value / 100;
+function tryAutoPlayMusic() {
+  if (!bgAudio) return;
+  // 初始音量与滑块同步
+  if (volumeRange) {
+    const v = Math.max(0, Math.min(100, Number(volumeRange.value) || 50));
+    bgAudio.volume = v / 100;
+  } else if (bgAudio.volume == null) {
+    bgAudio.volume = 0.5;
+  }
+  const attempt = () => bgAudio.play().catch(() => Promise.reject());
+  attempt().catch(() => {
+    const onFirstGesture = () => {
+      attempt().finally(() => {
+        document.removeEventListener('click', onFirstGesture);
+        document.removeEventListener('keydown', onFirstGesture);
+        document.removeEventListener('touchstart', onFirstGesture, { passive: true });
+      });
+    };
+    document.addEventListener('click', onFirstGesture, { once: true });
+    document.addEventListener('keydown', onFirstGesture, { once: true });
+    document.addEventListener('touchstart', onFirstGesture, { once: true, passive: true });
   });
 }
 
-if (musicBtn) {
-  musicBtn.addEventListener("click", () => {
+if (volumeRange && bgAudio) {
+  // 初始化滑块与音量同步（若未在上方同步过）
+  volumeRange.value = Math.round((bgAudio.volume ?? 0.5) * 100);
+  volumeRange.addEventListener('input', () => {
+    bgAudio.volume = Math.max(0, Math.min(1, Number(volumeRange.value) / 100));
+  });
+}
+
+if (musicBtn && bgAudio) {
+  musicBtn.addEventListener('click', () => {
     if (bgAudio.paused) {
-      bgAudio.play();
-      musicBtn.textContent = "音乐暂停";
+      bgAudio.play().catch(() => {});
+      musicBtn.textContent = '音乐暂停';
     } else {
       bgAudio.pause();
-      musicBtn.textContent = "音乐播放";
+      musicBtn.textContent = '音乐播放';
     }
   });
 }
@@ -568,6 +583,9 @@ window.addEventListener("DOMContentLoaded", () => {
   bindScreenClick();
   checkImages(); // 添加图片检查
   console.log("漫展约定事件初始化完成");
+
+  // 默认播放（策略拦截则在首次用户交互时播放）
+  tryAutoPlayMusic();
 
   // 🔹 页面加载时检查是否通过 URL 读档
   const urlParams = new URLSearchParams(window.location.search);

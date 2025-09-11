@@ -752,31 +752,44 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       if (autoBtn) autoBtn.src = "images/zidong.png";
     }
 
-    // 音乐控制 - 背景音乐文件暂未提供
-    // 创建音频元素并自动播放Spring.mp3
-    const bgAudio = document.createElement("audio");
-    bgAudio.src = "../../audio/Spring.mp3";
-    bgAudio.loop = true;
-    bgAudio.autoplay = true;
-    bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
-    bgAudio.style.display = "none";
-    document.body.appendChild(bgAudio);
-    if (volumeRange) {
-      // 初始化滑块为音量值
-      volumeRange.value = Math.round(bgAudio.volume * 100);
-      volumeRange.addEventListener("input", () => {
-        bgAudio.volume = volumeRange.value / 100;
+    // 音乐控制（统一使用页面中的 <audio id="bg-music">）
+    const pageAudio = document.getElementById('bg-music');
+    function tryAutoPlayMusic() {
+      if (!pageAudio) return;
+      // 初始化音量（与滑块同步，默认 50%）
+      const v = Math.max(0, Math.min(100, Number(volumeRange && volumeRange.value) || 50));
+      pageAudio.volume = v / 100;
+      if (volumeRange) {
+        volumeRange.value = String(v);
+        volumeRange.addEventListener('input', () => {
+          pageAudio.volume = Math.max(0, Math.min(1, Number(volumeRange.value) / 100));
+        });
+      }
+      const attempt = () => pageAudio.play().then(() => {
+        if (musicBtn) musicBtn.textContent = '音乐暂停';
+      }).catch(() => Promise.reject());
+      attempt().catch(() => {
+        const onFirstGesture = () => {
+          attempt().finally(() => {
+            document.removeEventListener('click', onFirstGesture);
+            document.removeEventListener('keydown', onFirstGesture);
+            document.removeEventListener('touchstart', onFirstGesture, { passive: true });
+          });
+        };
+        document.addEventListener('click', onFirstGesture, { once: true });
+        document.addEventListener('keydown', onFirstGesture, { once: true });
+        document.addEventListener('touchstart', onFirstGesture, { once: true, passive: true });
       });
     }
-
-    if (musicBtn) {
-      musicBtn.addEventListener("click", () => {
-        if (bgAudio.paused) {
-          bgAudio.play();
-          musicBtn.textContent = "音乐暂停";
+    tryAutoPlayMusic();
+    if (musicBtn && pageAudio) {
+      musicBtn.addEventListener('click', () => {
+        if (pageAudio.paused) {
+          pageAudio.play().catch(() => {});
+          musicBtn.textContent = '音乐暂停';
         } else {
-          bgAudio.pause();
-          musicBtn.textContent = "音乐播放";
+          pageAudio.pause();
+          musicBtn.textContent = '音乐播放';
         }
       });
     }

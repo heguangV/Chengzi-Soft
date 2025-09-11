@@ -132,6 +132,10 @@ window.addEventListener("DOMContentLoaded", () => {
       if (sidebar) sidebar.classList.toggle("show");
     });
   }
+
+  // 音乐：初始化与自动播放尝试
+  initMusicControls();
+  tryAutoPlayMusic();
 });
 
 // -------------------- 打字机效果 --------------------
@@ -523,34 +527,8 @@ function bindControlButtons() {
     });
   }
 
-  // -------------------- 音乐控制 --------------------
-    // 创建音频元素并自动播放Spring.mp3
-    const bgAudio = document.createElement("audio");
-    bgAudio.src = "../../audio/Spring.mp3";
-    bgAudio.loop = true;
-    bgAudio.autoplay = true;
-    bgAudio.volume = volumeRange ? (volumeRange.value / 100) : 0.5;
-    bgAudio.style.display = "none";
-    document.body.appendChild(bgAudio);
-    if (volumeRange) {
-      // 初始化滑块为音量值
-      volumeRange.value = Math.round(bgAudio.volume * 100);
-      volumeRange.addEventListener("input", () => {
-        bgAudio.volume = volumeRange.value / 100;
-      });
-    }
-
-    if (musicBtn) {
-      musicBtn.addEventListener("click", () => {
-        if (bgAudio.paused) {
-          bgAudio.play();
-          musicBtn.textContent = "音乐暂停";
-        } else {
-          bgAudio.pause();
-          musicBtn.textContent = "音乐播放";
-        }
-      });
-    }
+  // -------------------- 音乐控制（使用页面上的 #bg-music） --------------------
+  // 这里不再创建新的 <audio>，统一控制现有的 bgMusic（已在 DOMContentLoaded 调用初始化）
     
   // -------------------- 存档按钮 --------------------
   if (saveBtn) {
@@ -599,6 +577,74 @@ function bindControlButtons() {
     loadBtn.parentNode.replaceChild(newLoadBtn, loadBtn);
     newLoadBtn.addEventListener("click", () => window.location.href = "../../savepage/savepage2.0/save.htm");
   }
+}
+
+// -------------------- 音乐：初始化控件与联动 --------------------
+function initMusicControls() {
+  if (!bgMusic) return;
+
+  // 初始音量与滑块同步
+  if (volumeRange) {
+    if (volumeRange.value == null || volumeRange.value === "") {
+      volumeRange.value = Math.round((bgMusic.volume || 0.5) * 100);
+    } else {
+      // 如果滑块有默认值，用它设置音量
+      const v = Math.max(0, Math.min(100, parseInt(volumeRange.value, 10)));
+      bgMusic.volume = v / 100;
+    }
+    volumeRange.addEventListener("input", () => {
+      const v = Math.max(0, Math.min(100, parseInt(volumeRange.value || "0", 10)));
+      bgMusic.volume = v / 100;
+    });
+  }
+
+  // 播放/暂停按钮
+  if (musicBtn) {
+    // 设置初始文案，未播放时显示“音乐播放”
+    updateMusicButtonText();
+    musicBtn.addEventListener("click", async () => {
+      if (!bgMusic) return;
+      try {
+        if (bgMusic.paused) {
+          await bgMusic.play();
+        } else {
+          bgMusic.pause();
+        }
+      } catch (_) {
+        // 忽略
+      } finally {
+        updateMusicButtonText();
+      }
+    });
+  }
+
+  // 根据播放状态更新按钮文案
+  bgMusic.addEventListener("play", updateMusicButtonText);
+  bgMusic.addEventListener("pause", updateMusicButtonText);
+}
+
+function updateMusicButtonText() {
+  if (!musicBtn || !bgMusic) return;
+  musicBtn.textContent = bgMusic.paused ? "音乐播放" : "音乐暂停";
+}
+
+// -------------------- 音乐：自动播放 + 用户手势回退 --------------------
+function tryAutoPlayMusic() {
+  if (!bgMusic) return;
+  // 若浏览器支持自动播放，这里会直接播放；否则会抛出或被拒绝
+  const attempt = () => bgMusic.play().catch(() => { /* 静默失败，等待手势 */ });
+  attempt();
+
+  // 第一次用户交互后再尝试播放一次
+  const onFirstGesture = async () => {
+    document.removeEventListener("click", onFirstGesture, true);
+    document.removeEventListener("keydown", onFirstGesture, true);
+    document.removeEventListener("touchstart", onFirstGesture, true);
+    try { await bgMusic.play(); } catch (_) { /* 忽略 */ }
+  };
+  document.addEventListener("click", onFirstGesture, true);
+  document.addEventListener("keydown", onFirstGesture, true);
+  document.addEventListener("touchstart", onFirstGesture, true);
 }
 
 // 获取 body 背景图片的绝对路径

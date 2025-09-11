@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>001</title>
   <link rel="stylesheet" href="../../css/storypage.css">
-  <script src="storypage.js" defer></script>
   <style>
     .hidden { display: none; }
   </style>
@@ -53,7 +52,7 @@
       <button id="main-menu-btn">回到主菜单</button>
       <button id="load-btn">读档</button>
       <button id="save-btn">存档</button>
-      <button id="music-btn">音乐暂停</button>
+  <button id="music-btn">音乐播放</button>
     </div>
 
     <div class="volume-control">
@@ -62,7 +61,7 @@
     </div>
   </div>
 
-  <audio id="bg-music" src="../../audio/Spring.mp3" loop></audio>
+  <audio id="bg-music" src="../../asset/sounds/BGM06.wav" loop autoplay playsinline></audio>
 
   <!-- 一级选择界面 -->
   <div id="choice-container" class="hidden">

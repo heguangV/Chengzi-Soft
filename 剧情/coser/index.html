@@ -28,6 +28,27 @@
            -moz-user-drag: none;
             -ms-user-drag: none;
     }
+    /* 仅在本页调整人物立绘位置，让其更居中且不遮挡对话框 */
+    .character-img {
+      left: 50%;
+      right: auto;
+      bottom: 24%; /* 相比全局的 20% 再上移，避免压住对话区 */
+      transform: translateX(-50%);
+    }
+
+    /* 移动端与较矮屏幕：再上移一些，并适当降低最大高度，减少遮挡 */
+    @media (max-width: 900px) {
+      .character-img {
+        bottom: 26%;
+        max-height: 72%;
+      }
+    }
+    @media (max-width: 600px), (max-height: 700px) {
+      .character-img {
+        bottom: 28%;
+        max-height: 68%;
+      }
+    }
 </style>
 </head>
 <body>
@@ -43,7 +64,7 @@
     <div class="character-name" id="speaker-name">系统</div>
     <div class="dialog-text" id="dialog-text"></div>
     <div class="dialog-controls">
-      <img src="./images/kuang.png" alt="对话框" class="dialog-img" onerror="handleImageError(this, 'dialog')">
+      <img src="images/kuang.png" alt="对话框" class="dialog-img" onerror="handleImageError(this, 'dialog')">
       <div class="control-images">
         <img src="./images/shangyiju.png" alt="上一句" id="prev-btn" class="control-img" onerror="handleImageError(this, 'control')">
         <img src="./images/jiasu.png" alt="加速" id="speed-btn" class="control-img" onerror="handleImageError(this, 'control')">
@@ -73,7 +94,7 @@
       <button id="main-menu-btn">回到主菜单</button>
       <button id="load-btn">读档</button>
       <button id="save-btn">存档</button>
-      <button id="music-btn">音乐暂停</button>
+  <button id="music-btn">音乐播放</button>
     </div>
 
     <div class="volume-control">
@@ -82,7 +103,7 @@
     </div>
   </div>
 
-  <audio id="bg-music" src="./bgm/comiket_bgm.mp3" loop onerror="handleAudioError()"></audio>
+  <audio id="bg-music" src="../../asset/sounds/BGM06.wav" loop autoplay playsinline onerror="handleAudioError()"></audio>
 
   <!-- 选择界面 -->
   <div id="choice-container" class="hidden">

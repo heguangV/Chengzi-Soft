@@ -60,6 +60,9 @@ window.addEventListener("DOMContentLoaded", () => {
   checkImages(); // 添加图片检查
   console.log("漫展约定事件初始化完成");
 
+  // 音乐默认播放（受浏览器策略约束，失败则在首次用户交互时播放）
+  tryAutoPlayMusic();
+
   // 🔹 页面加载时检查是否通过 URL 读档
   const urlParams = new URLSearchParams(window.location.search);
   const loadTimestamp = urlParams.get("load");
@@ -656,3 +659,29 @@ mainMenuBtn.addEventListener("click", () => {
     window.location.href = "../../index.html";
   }, 500);
 });
+
+function tryAutoPlayMusic() {
+  const audio = document.getElementById('bg-music');
+  const vol = document.getElementById('volume-range');
+  if (!audio) return;
+  // 与滑块同步初始音量
+  if (vol) {
+    const v = Math.max(0, Math.min(100, Number(vol.value) || 50));
+    audio.volume = v / 100;
+  }
+
+  const attempt = () => audio.play().catch(() => Promise.reject());
+  attempt().catch(() => {
+    // 添加一次性交互兜底
+    const onFirstGesture = () => {
+      attempt().finally(() => {
+        document.removeEventListener('click', onFirstGesture);
+        document.removeEventListener('keydown', onFirstGesture);
+        document.removeEventListener('touchstart', onFirstGesture, { passive: true });
+      });
+    };
+    document.addEventListener('click', onFirstGesture, { once: true });
+    document.addEventListener('keydown', onFirstGesture, { once: true });
+    document.addEventListener('touchstart', onFirstGesture, { once: true, passive: true });
+  });
+}

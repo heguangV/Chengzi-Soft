@@ -971,6 +971,9 @@ function init() {
 
   // 绑定手机界面关闭按钮
   bindPhoneUI();
+
+  // 音乐默认播放（若被策略阻止，首次用户交互再播放）；同时同步初始音量
+  tryAutoPlayMusic();
 }
 
 // -------------------- DOMContentLoaded 初始化 --------------------
@@ -978,6 +981,35 @@ document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.add("fade-in");
   init();
 });
+
+// ------- 音乐默认播放兜底与初始化 -------
+function tryAutoPlayMusic() {
+  if (!bgMusic) return;
+  // 初始化音量为滑块值或 50%
+  const v = Math.max(0, Math.min(100, Number(volumeRange && volumeRange.value) || 50));
+  bgMusic.volume = v / 100;
+  if (volumeRange) {
+    volumeRange.value = String(v);
+    volumeRange.addEventListener('input', () => {
+      bgMusic.volume = Math.max(0, Math.min(1, Number(volumeRange.value) / 100));
+    });
+  }
+  const attempt = () => bgMusic.play().then(() => {
+    if (musicBtn) musicBtn.textContent = '音乐暂停';
+  }).catch(() => Promise.reject());
+  attempt().catch(() => {
+    const onFirstGesture = () => {
+      attempt().finally(() => {
+        document.removeEventListener('click', onFirstGesture);
+        document.removeEventListener('keydown', onFirstGesture);
+        document.removeEventListener('touchstart', onFirstGesture, { passive: true });
+      });
+    };
+    document.addEventListener('click', onFirstGesture, { once: true });
+    document.addEventListener('keydown', onFirstGesture, { once: true });
+    document.addEventListener('touchstart', onFirstGesture, { once: true, passive: true });
+  });
+}
 
 // -------------------- 小游戏覆盖层（iframe）支持 --------------------
 // 在剧情中任何对话对象里使用 playGame: "key" 即可打开对应根目录下的小游戏页面
