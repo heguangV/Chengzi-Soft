@@ -156,14 +156,87 @@ const dialogues = {
   ]
 };
 
+  // -------------------- 每句对白音效（speak） --------------------
+  const SFX_SPEAK_URL = '../../asset/sounds/speak.ogg';
+  let _speakAudio = null;
+  let _speakLastKey = null;
+  function getSpeakAudio() {
+    if (_speakAudio) return _speakAudio;
+    try {
+      _speakAudio = new Audio(SFX_SPEAK_URL);
+      _speakAudio.preload = 'auto';
+      _speakAudio.volume = 0.6;
+    } catch (e) {}
+    return _speakAudio;
+  }
+  function playSpeakOnceFor(key) {
+    const k = Array.isArray(key) ? key.join(':') : String(key);
+    if (_speakLastKey === k) return;
+    _speakLastKey = k;
+    const a = getSpeakAudio();
+    if (!a) return;
+    try { a.pause(); a.currentTime = 0; a.play().catch(() => {}); } catch (e) {}
+  }
 
   // -------------------- 场景背景切换（根据注释） --------------------
   const BG_BASE = "../../asset/images/";
+  // 背景转场：黑场淡入淡出
+  let _bgFadeOverlay = null;
+  let _bgFadeBusy = false;
+  let _bgFadePending = null;
+
+  function getBgFadeOverlay() {
+    if (_bgFadeOverlay) return _bgFadeOverlay;
+    const ov = document.createElement('div');
+    ov.id = 'bg-fade-overlay';
+    ov.style.position = 'fixed';
+    ov.style.left = '0';
+    ov.style.top = '0';
+    ov.style.width = '100%';
+    ov.style.height = '100%';
+    ov.style.background = '#000';
+    ov.style.opacity = '0';
+    ov.style.transition = 'opacity 220ms linear';
+    ov.style.pointerEvents = 'none';
+    ov.style.zIndex = '9998';
+    document.body.appendChild(ov);
+    _bgFadeOverlay = ov;
+    return ov;
+  }
+
   function setSceneBackground(imageFile) {
-    const url = BG_BASE + imageFile;
-    document.body.style.backgroundImage = `url('${url}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center center';
+    const nextUrl = BG_BASE + imageFile;
+    try {
+      const ov = getBgFadeOverlay();
+      const perform = () => {
+        ov.style.transition = 'opacity 220ms linear';
+        ov.style.opacity = '1';
+        setTimeout(() => {
+          document.body.style.backgroundImage = `url('${nextUrl}')`;
+          document.body.style.backgroundSize = 'cover';
+          document.body.style.backgroundPosition = 'center center';
+          requestAnimationFrame(() => {
+            ov.style.transition = 'opacity 300ms ease';
+            ov.style.opacity = '0';
+            setTimeout(() => {
+              _bgFadeBusy = false;
+              if (_bgFadePending) {
+                const p = _bgFadePending; _bgFadePending = null;
+                setSceneBackground(p.replace(BG_BASE, ''));
+              }
+            }, 310);
+          });
+        }, 230);
+      };
+      if (_bgFadeBusy) { _bgFadePending = nextUrl; return; }
+      _bgFadeBusy = true;
+      perform();
+    } catch (e) {
+      // 回退到直接切换
+      document.body.style.backgroundImage = `url('${nextUrl}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center center';
+    }
   }
 
   // 对应台词索引的背景图映射
@@ -261,6 +334,8 @@ function showDialogue(branch, idx) {
     console.log("分支剧情结束");
     return;
   }
+  // 播放每句对白开始音效
+  playSpeakOnceFor([currentBranch, index]);
   
   currentBranch = branch;
   index = idx;

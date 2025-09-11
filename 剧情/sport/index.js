@@ -60,22 +60,101 @@ function getStoryFlags() {
   try { return JSON.parse(localStorage.getItem('storyFlags') || '{}'); } catch (e) { return {}; }
 }
 
+// -------------------- 每句对白音效（speak） --------------------
+const SFX_SPEAK_URL = '../../asset/sounds/speak.ogg';
+let _speakAudio = null;
+let _speakLastIndex = -1;
+function getSpeakAudio() {
+  if (_speakAudio) return _speakAudio;
+  try {
+    _speakAudio = new Audio(SFX_SPEAK_URL);
+    _speakAudio.preload = 'auto';
+    _speakAudio.volume = 0.6;
+  } catch (e) { /* noop */ }
+  return _speakAudio;
+}
+function playSpeakOnceFor(indexVal) {
+  if (typeof indexVal !== 'number') return;
+  if (_speakLastIndex === indexVal) return; // 避免重复渲染同一句时重复播放
+  _speakLastIndex = indexVal;
+  const a = getSpeakAudio();
+  if (!a) return;
+  try {
+    a.pause();
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  } catch (e) { /* ignore */ }
+}
+
 // -------------------- 背景切换（按注释语义） --------------------
 // 按注释语义的文本特征识别场景标签，直到下一个标签前背景保持不变
-let currentBgTag = null; // 'room' | 'shop' | 'yundonghui' | null
+let currentBgTag = null; // 'room' | 'shop' | 'yundonghui' | 'school' | null
 const BG_BY_TAG = {
   room: '../../asset/images/room.png',
   shop: '../../asset/images/shopstreet.png',
-  yundonghui: '../../asset/images/yundonghui.jpg'
+  yundonghui: '../../asset/images/yundonghui.jpg',
+  school: '../../asset/images/school.png'
 };
+
+// 背景转场：黑场淡入淡出，避免突兀切换
+let _bgFadeOverlay = null;
+let _bgFadeBusy = false;
+let _bgFadePending = null;
+
+function getBgFadeOverlay() {
+  if (_bgFadeOverlay) return _bgFadeOverlay;
+  const ov = document.createElement('div');
+  ov.id = 'bg-fade-overlay';
+  ov.style.position = 'fixed';
+  ov.style.left = '0';
+  ov.style.top = '0';
+  ov.style.width = '100%';
+  ov.style.height = '100%';
+  ov.style.background = '#000';
+  ov.style.opacity = '0';
+  ov.style.transition = 'opacity 220ms linear';
+  ov.style.pointerEvents = 'none';
+  ov.style.zIndex = '9998'; // 低于游戏覆盖层(9999)，但高于普通背景
+  document.body.appendChild(ov);
+  _bgFadeOverlay = ov;
+  return ov;
+}
 
 function setSceneBackground(url) {
   if (!url) return;
   try {
-    document.body.style.backgroundImage = `url("${url}")`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center center';
-    document.body.style.backgroundRepeat = 'no-repeat';
+    const ov = getBgFadeOverlay();
+    const doSwap = (nextUrl) => {
+      // 淡入黑场
+      ov.style.transition = 'opacity 220ms linear';
+      ov.style.opacity = '1';
+      setTimeout(() => {
+        // 切换背景
+        document.body.style.backgroundImage = `url("${nextUrl}")`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        // 淡出黑场
+        requestAnimationFrame(() => {
+          ov.style.transition = 'opacity 300ms ease';
+          ov.style.opacity = '0';
+          setTimeout(() => {
+            _bgFadeBusy = false;
+            if (_bgFadePending) {
+              const pending = _bgFadePending; _bgFadePending = null;
+              setSceneBackground(pending);
+            }
+          }, 310);
+        });
+      }, 230);
+    };
+
+    if (_bgFadeBusy) {
+      _bgFadePending = url; // 合并快速连续的切换
+      return;
+    }
+    _bgFadeBusy = true;
+    doSwap(url);
   } catch (e) {}
 }
 
@@ -101,6 +180,14 @@ function maybeUpdateBackgroundByDialogue(d) {
     if (currentBgTag !== 'yundonghui') {
       currentBgTag = 'yundonghui';
       setSceneBackground(BG_BY_TAG.yundonghui);
+    }
+    return;
+  }
+  // 进入文萃或北湖的两处台词时切换为校园背景
+  if (t.indexOf('刚走入文萃') !== -1 || t.indexOf('冬日的北湖边显得格外凄清') !== -1) {
+    if (currentBgTag !== 'school') {
+      currentBgTag = 'school';
+      setSceneBackground(BG_BY_TAG.school);
     }
     return;
   }
@@ -303,6 +390,9 @@ function showDialogue(idx) {
   }
   if (idx < 0) idx = 0;
   if (idx >= dialogues.length) idx = dialogues.length - 1;
+
+  // 播放每句对白开始音效
+  playSpeakOnceFor(index);
   // 不允许回退到锁定边界之前（防止回到选择前）
   if (idx < minIndex) idx = minIndex;
   index = idx;
@@ -382,14 +472,12 @@ function showDialogue(idx) {
     setTimeout(() => {
       // 如果明确指定结局类型，则直接跳转对应结局
       if (endingType === 'byFlags') {
-        const sf = getStoryFlags();
         const sp = (function(){
           try { return JSON.parse(localStorage.getItem('sportFlags') || '{}'); } catch (e) { return {}; }
         })();
-        const hasPhoto = !!sf.photograph;
         const choseRamen = !!(sportFlags.ramen || sp.ramen);
         const choseChashao = !!(sportFlags.chashao || sp.chashao);
-        if (hasPhoto && choseRamen && choseChashao) {
+        if (choseRamen && choseChashao) {
           window.location.href = "../../与学姐好感度足够分支/storypage2.0 与学姐好感度足够  1选择了1 4/storypage.html";
         } else {
           window.location.href = "../../与学姐好感度不足分支/merged_story/storypage.html";
@@ -630,6 +718,8 @@ function handleChoice(choice) {
     dialogues.push(
       { name: "学姐", text: "啊，正巧我也想吃呢，一起去吧~" },
     );//增加一个判定为true
+  // 选择拉面 -> 标记 ramen 为 true
+  sportFlags.ramen = true; saveSportFlags();
   } else if (choice === "B") {
     dialogues.push(
       { name: "学姐", text: "嗯...还是吃拉面吧，有点想吃了。" },
@@ -674,7 +764,7 @@ function handleChoice(choice) {
   { name: "你", text: "该去哪里找呢" },
   { name: "系统", text: "", triggerChoice: 'search' },
 //选1.
-{ name: "旁白", text: "冬日的北湖边显得格外凄清" },
+{ name: "旁白", text: "冬日的北湖边显得格外凄清" },//school
 { name: "旁白", text: "傍晚的斜阳映照在湖水中，仿佛流光碎金" },
 { name: "你", text: "没在这里吗" },
 { name: "旁白", text: "最终你还是没有找到学姐，只能在微信上留言后离开" },

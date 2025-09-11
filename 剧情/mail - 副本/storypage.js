@@ -193,6 +193,28 @@ localStorage.setItem('affectionData', JSON.stringify(affectionData));
 // 追踪是否在梦境中（用于梦醒转场）
 let isInDream = false;
 
+// -------------------- 每句对白音效（speak） --------------------
+const SFX_SPEAK_URL = '../../asset/sounds/speak.ogg';
+let _sfxAudio = null;
+let _sfxLastKey = null;
+function getSpeakAudio() {
+  if (_sfxAudio) return _sfxAudio;
+  try {
+    _sfxAudio = new Audio(SFX_SPEAK_URL);
+    _sfxAudio.preload = 'auto';
+    _sfxAudio.volume = 0.6;
+  } catch (e) {}
+  return _sfxAudio;
+}
+function playSpeakOnceFor(key) {
+  const k = Array.isArray(key) ? key.join(':') : String(key);
+  if (_sfxLastKey === k) return;
+  _sfxLastKey = k;
+  const a = getSpeakAudio();
+  if (!a) return;
+  try { a.pause(); a.currentTime = 0; a.play().catch(() => {}); } catch (e) {}
+}
+
 // 选择后的回退边界（分支级）：不允许回退到该索引之前，防止回到选择前
 const minIndexByBranch = {};
 function getMinIndex(branch) {
@@ -233,11 +255,70 @@ function applyDreamBackground(branch, idx) {
 
 // -------------------- 场景背景切换（根据注释） --------------------
 const BG_BASE = "../../asset/images/";
+// 背景转场：黑场淡入淡出，避免突兀切换
+let _bgFadeOverlay = null;
+let _bgFadeBusy = false;
+let _bgFadePending = null;
+
+function getBgFadeOverlay() {
+  if (_bgFadeOverlay) return _bgFadeOverlay;
+  const ov = document.createElement('div');
+  ov.id = 'bg-fade-overlay';
+  ov.style.position = 'fixed';
+  ov.style.left = '0';
+  ov.style.top = '0';
+  ov.style.width = '100%';
+  ov.style.height = '100%';
+  ov.style.background = '#000';
+  ov.style.opacity = '0';
+  ov.style.transition = 'opacity 220ms linear';
+  ov.style.pointerEvents = 'none';
+  ov.style.zIndex = '9998';
+  document.body.appendChild(ov);
+  _bgFadeOverlay = ov;
+  return ov;
+}
+
 function setSceneBackground(imageFile) {
-  const url = BG_BASE + imageFile;
-  document.body.style.backgroundImage = `url('${url}')`;
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundPosition = 'center center';
+  const nextUrl = BG_BASE + imageFile;
+  try {
+    const ov = getBgFadeOverlay();
+    const perform = () => {
+      // 淡入黑场
+      ov.style.transition = 'opacity 220ms linear';
+      ov.style.opacity = '1';
+      setTimeout(() => {
+        // 切换背景
+        document.body.style.backgroundImage = `url('${nextUrl}')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        // 淡出黑场
+        requestAnimationFrame(() => {
+          ov.style.transition = 'opacity 300ms ease';
+          ov.style.opacity = '0';
+          setTimeout(() => {
+            _bgFadeBusy = false;
+            if (_bgFadePending) {
+              const p = _bgFadePending; _bgFadePending = null;
+              // p 是完整 URL，转回文件名再调用
+              const fname = p.startsWith(BG_BASE) ? p.slice(BG_BASE.length) : p;
+              setSceneBackground(fname);
+            }
+          }, 310);
+        });
+      }, 230);
+    };
+    if (_bgFadeBusy) { _bgFadePending = nextUrl; return; }
+    _bgFadeBusy = true;
+    perform();
+  } catch (e) {
+    // 兜底：直接切换
+    document.body.style.backgroundImage = `url('${nextUrl}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center center';
+    document.body.style.backgroundRepeat = 'no-repeat';
+  }
 }
 
 // 指定关键台词的背景图
@@ -355,6 +436,8 @@ function showDialogue(branch, idx) {
   
   currentBranch = branch;
   index = idx;
+  // 播放每句对白开始音效
+  playSpeakOnceFor([currentBranch, index]);
   // 每次进入新台词，重置本句的选择使用权，支持多个选择点
   hasMadeChoice = false;
   // 根据台词位置切换梦境/现实背景

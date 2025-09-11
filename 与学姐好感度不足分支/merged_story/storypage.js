@@ -111,6 +111,28 @@
 
   // 已移除：本分支不使用好感度系统
 
+  // 每句对白音效（speak）
+  const SFX_SPEAK_URL = '../../asset/sounds/speak.ogg';
+  let _speakAudio = null;
+  let _speakLastKey = null;
+  function getSpeakAudio() {
+    if (_speakAudio) return _speakAudio;
+    try {
+      _speakAudio = new Audio(SFX_SPEAK_URL);
+      _speakAudio.preload = 'auto';
+      _speakAudio.volume = 0.6;
+    } catch (e) {}
+    return _speakAudio;
+  }
+  function playSpeakOnceFor(key) {
+    const k = String(key);
+    if (_speakLastKey === k) return;
+    _speakLastKey = k;
+    const a = getSpeakAudio();
+    if (!a) return;
+    try { a.pause(); a.currentTime = 0; a.play().catch(() => {}); } catch (e) {}
+  }
+
     // 获取 body 背景图片的绝对路径
 function getBodyBackgroundAbsoluteUrl() {
   const bg = window.getComputedStyle(document.body).backgroundImage; 
@@ -491,6 +513,8 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       if (idx < 0) idx = 0;
       if (idx >= dialogues.length) idx = dialogues.length - 1;
       index = idx;
+  // 播放每句对白开始音效
+  playSpeakOnceFor(index);
           // 如果到达特定剧情，解锁成就
 
       let displayName = dialogues[index].name;

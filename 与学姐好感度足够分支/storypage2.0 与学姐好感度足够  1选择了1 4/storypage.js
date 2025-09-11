@@ -36,22 +36,23 @@ let affectionData = {
 // -------------------- 剧情台词 --------------------
 // -------------------- 剧情数据 --------------------
 const dialogues = [
-  { name: "B", text: "最终 学姐答应了我的告白" },
+  { name: "B", text: "最终 学姐答应了我的告白" },//room
   { name: "C", text: "寒假中 你们约定好一同去水族馆 而你起晚了" },
   { name: "B", text: "这不能怪我啊！ 明明订好了闹钟为什么会不响啊！！" }, 
   { name: "C", text: "不管了！ 去水族馆要紧" }, 
-  { name: "C", text: "你飞奔下楼 骑上一辆共享单车 天遂人愿 你勉强在约定的时间中赶到了水族馆前" },
+  { name: "C", text: "你飞奔下楼 骑上一辆共享单车 天遂人愿 你勉强在约定的时间中赶到了水族馆前" },//street
   { name: "C", text: "她站在水族馆门口 以一副幽怨的眼神注视着你 伸出手指在你的脑袋上敲了一下" },
   { name: "A", text: "“头发都没梳好 还说自己起床了！ 我教你的穿搭技巧倒是有好好在学…”" },
   { name: "A", text: "用手轻轻梳理着你的头发 一边打量着你全身的穿着" },
   { name: "B", text: "这可是我花了一晚上才挑选出来的 要不然怎么会起晚） 想着 你也观察起她的穿着" },
-  { name: "C", text: "她身着一件淡蓝色的衬衫 外面是一件短款的夹克 下身穿着一件高腰牛仔裤 头上戴着一只米色的棒球帽 虽然简约 但在她如同明星般的比例与气质的映衬下 还是让人难以移开目光 惹得走过的路人频频注目" },
+  { name: "C", text: "她身着一件淡蓝色的衬衫 一件短款的夹克 穿着一件高腰牛仔裤 戴着一只米色的棒球帽 " },
+  { name: "C", text: "虽然简约 但在她如同明星般的比例与气质的映衬下 还是让人难以移开目光 惹得走过的路人频频注目" },
   { name: "A", text: "怎么样 学姐的专业穿搭” 她的脸上扬起一种自豪感 仿佛在等待你的夸奖" },
   { name: "B", text: "非常漂亮，真是让人移不开眼睛呢" },
   { name: "B", text: "你将内心的想法和盘托出" },
   { name: "C", text: "学姐愣了一下，转身牵起你的手走进了水族馆" },
   { name: "B", text: "你发现，学姐的耳根微微发红" },
-  { name: "C", text: "水族馆中的灯光暗淡 只剩下水箱中淡淡的蓝色弥漫在空气之中" },
+  { name: "C", text: "水族馆中的灯光暗淡 只剩下水箱中淡淡的蓝色弥漫在空气之中" },//shuizuguan
   { name: "A", text: "牵着你的手 向着一个方向快速前进着 像是有什么确定的目标 你虽然疑惑 但也毫无抗拒着跟着不断向前" }, 
   { name: "C", text: "在走过一段长廊后 迎面而来的是一个「360 度全透明」的水下世界 水下的各种植物与动物毫无掩饰的展现在眼前 光源也只剩下了水中泛出的微光 世界仿佛都黯淡了下来" },
   { name: "A", text: "「这里是我朋友推荐的哦 怎么样 很有震撼感吧~」" },  
@@ -73,6 +74,80 @@ const dialogues = [
   { name: "A", text: "“说好了 可就不能反悔了哦 我们要永远在一起”" }, 
   { name: "C", text: "在这温软的对话之间 周围好像变得越来越亮 我相信 我们的未来也会想这样无比耀眼吧…" }, 
 ];
+
+// -------------------- 场景背景切换（按注释） --------------------
+// 已有资源：room.png, street.png, shizuguan.png（对应“水族馆”）
+let currentBgTag = null; // 'room' | 'street' | 'shuizuguan'
+const BG_BY_TAG = {
+  room: '../../asset/images/room.png',
+  street: '../../asset/images/street.png',
+  shuizuguan: '../../asset/images/shizuguan.png'
+};
+
+// 轻量淡入淡出覆盖层，避免突兀切换
+let _bgFadeOverlay = null, _bgFadeBusy = false, _bgFadePending = null;
+function getBgFadeOverlay() {
+  if (_bgFadeOverlay) return _bgFadeOverlay;
+  const ov = document.createElement('div');
+  ov.id = 'bg-fade-overlay';
+  ov.style.position = 'fixed';
+  ov.style.left = '0';
+  ov.style.top = '0';
+  ov.style.width = '100%';
+  ov.style.height = '100%';
+  ov.style.background = '#000';
+  ov.style.opacity = '0';
+  ov.style.transition = 'opacity 220ms linear';
+  ov.style.pointerEvents = 'none';
+  ov.style.zIndex = '9998';
+  document.body.appendChild(ov);
+  _bgFadeOverlay = ov;
+  return ov;
+}
+
+function setSceneBackground(url) {
+  if (!url) return;
+  try {
+    const ov = getBgFadeOverlay();
+    const perform = (u) => {
+      ov.style.transition = 'opacity 220ms linear';
+      ov.style.opacity = '1';
+      setTimeout(() => {
+        document.body.style.backgroundImage = `url("${u}")`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        requestAnimationFrame(() => {
+          ov.style.transition = 'opacity 300ms ease';
+          ov.style.opacity = '0';
+          setTimeout(() => {
+            _bgFadeBusy = false;
+            if (_bgFadePending) { const p = _bgFadePending; _bgFadePending = null; setSceneBackground(p); }
+          }, 310);
+        });
+      }, 230);
+    };
+    if (_bgFadeBusy) { _bgFadePending = url; return; }
+    _bgFadeBusy = true;
+    perform(url);
+  } catch (e) { /* noop */ }
+}
+
+function maybeUpdateBackgroundByIndex(i) {
+  // 0 -> room, 4 -> street, 15 -> shuizuguan
+  if (i === 0) {
+    if (currentBgTag !== 'room') { currentBgTag = 'room'; setSceneBackground(BG_BY_TAG.room); }
+    return;
+  }
+  if (i === 4) {
+    if (currentBgTag !== 'street') { currentBgTag = 'street'; setSceneBackground(BG_BY_TAG.street); }
+    return;
+  }
+  if (i === 15) {
+    if (currentBgTag !== 'shuizuguan') { currentBgTag = 'shuizuguan'; setSceneBackground(BG_BY_TAG.shuizuguan); }
+    return;
+  }
+}
 
 // -------------------- DOMContentLoaded 初始化 --------------------
 window.addEventListener("DOMContentLoaded", () => {
@@ -282,6 +357,24 @@ function showDialogue(idx) {
     }
   }
   index = idx;
+  // 播放每句对白开始音效
+  (function(){
+    try {
+      const url = '../../asset/sounds/speak.ogg';
+      if (!window.__sfx_speak) {
+        window.__sfx_speak = new Audio(url);
+        window.__sfx_speak.preload = 'auto';
+        window.__sfx_speak.volume = 0.6;
+        window.__sfx_last = -1;
+      }
+      if (window.__sfx_last !== index) {
+        window.__sfx_last = index;
+        const a = window.__sfx_speak; a.pause(); a.currentTime = 0; a.play().catch(()=>{});
+      }
+    } catch (e) {}
+  })();
+  // 根据注释索引切换背景
+  maybeUpdateBackgroundByIndex(index);
 
   // 名称映射逻辑
   let currentName = dialogues[index].name;
