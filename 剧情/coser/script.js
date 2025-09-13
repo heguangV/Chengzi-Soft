@@ -62,8 +62,8 @@ const autoBtn = document.getElementById("auto-btn");
 const choiceContainer = document.getElementById("choice-container");
 const choiceBtns = document.querySelectorAll(".choice-btn");
 const dialogBox = document.querySelector(".dialog-box");
-const senpaiImg = document.getElementById("senpai-img");
-const friendImg = document.getElementById("friend-img");
+const characterAvatarContainer = document.getElementById("character-avatar-container");
+const characterAvatar = document.getElementById("character-avatar");
 // 手机聊天界面元素（按需获取）- 使用独立变量名避免与下方同名常量冲突
 let phoneUIEl = null;
 let chatMessagesEl = null;
@@ -288,28 +288,72 @@ function typeText(text, callback) {
   }, typingSpeed);
 }
 
+// -------- 选项兜底：当本句带有 triggerChoice 时，防止因快速点击越过 --------
+function isCurrentLineNeedingChoice() {
+  try {
+    const currentDialogues = dialogues[currentBranch];
+    const d = currentDialogues && currentDialogues[index];
+    return !!(d && d.triggerChoice && !hasMadeChoice);
+  } catch (e) { return false; }
+}
+
+function ensureChoiceIfNeeded() {
+  if (isCurrentLineNeedingChoice()) {
+    const currentDialogues = dialogues[currentBranch];
+    const d = currentDialogues[index];
+    showChoices(d.triggerChoice);
+    return true;
+  }
+  return false;
+}
+
 // -------------------- 切换角色立绘 --------------------
 function toggleCharacterImage(speaker) {
-  const characterImages = document.querySelectorAll('.character-img');
-  characterImages.forEach(img => {
-    img.classList.add('hidden');
-  });
+  if (!characterAvatarContainer || !characterAvatar) return;
 
   switch(speaker) {
     case '学姐':
-      if (senpaiImg) senpaiImg.classList.remove('hidden');
+      characterAvatar.src = '../../学姐.png';
+      characterAvatar.alt = '学姐头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
       break;
     case '朋友':
-      if (friendImg) friendImg.classList.remove('hidden');
+      characterAvatar.src = '../../青梅.png';
+      characterAvatar.alt = '朋友头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
       break;
     case '老师':
-      if (friendImg) friendImg.classList.remove('hidden'); // 使用朋友立绘代替老师
+      characterAvatar.src = '../../青梅.png'; // 使用朋友立绘代替老师
+      characterAvatar.alt = '老师头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
       break;
     case '主角':
+    case '你':
+      characterAvatar.src = '../../男主.png';
+      characterAvatar.alt = '主角头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
+      break;
+    case '旁白':
     default:
-      // 旁白或其他对话时显示主角
-      const mainCharacterImg = document.getElementById('main-character');
-      if (mainCharacterImg) mainCharacterImg.classList.remove('hidden');
+      // 旁白或其他对话时隐藏立绘
+      characterAvatarContainer.style.display = 'none';
+      characterAvatarContainer.style.visibility = 'hidden';
+      characterAvatar.style.display = 'none';
+      characterAvatar.style.visibility = 'hidden';
+      characterAvatar.src = '';
+      characterAvatar.alt = '';
       break;
   }
 }
@@ -354,36 +398,50 @@ function handleNext() {
   if (window.phoneOpen || phoneSequenceActive) return;
 
   const currentDialogues = dialogues[currentBranch];
-  
+
   if (charIndex < currentDialogues[index].text.length) {
     clearInterval(typingInterval);
     dialogText.textContent = currentDialogues[index].text;
     charIndex = currentDialogues[index].text.length;
+    // 文本补全后，如本句需要选项则立即弹出并阻止继续
+    if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
     return;
   }
-  
+
   const currentDialogue = currentDialogues[index];
-  
+  // 在推进到下一句前，若本句需要出现选项则先弹出
+  if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
+
   if (currentDialogue.triggerChoice && !hasMadeChoice) {
     showChoices(currentDialogue.triggerChoice);
     return;
   }
-  
+
   if (currentDialogue.effect) {
     applyEffect(currentDialogue.effect);
   }
-  
+
   if (currentDialogue.nextScene) {
     goToNextScene(currentDialogue.nextScene);
     return;
   }
-  
+
   if (index < currentDialogues.length - 1) {
     showDialogue(currentBranch, index + 1);
   } else {
     console.log("已经是最后一句对话");
   }
-  
+
+  stopAutoPlay();
+}
+
+function handleSkip() {
+  clearInterval(typingInterval);
+  const currentDialogues = dialogues[currentBranch];
+  dialogText.textContent = currentDialogues[index].text;
+  charIndex = currentDialogues[index].text.length;
+  // 跳过补全文本后，如本句需要选项则立即弹出
+  ensureChoiceIfNeeded();
   stopAutoPlay();
 }
 
@@ -491,7 +549,11 @@ function toggleAutoPlay() {
 
 function startAutoPlay() {
   clearInterval(autoInterval);
-  autoInterval = setInterval(() => handleNext(), 3000);
+  autoInterval = setInterval(() => {
+    // 自动播放循环前先检查是否需要选项
+    if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
+    handleNext();
+  }, 3000);
 }
 
 function stopAutoPlay() {
@@ -518,6 +580,8 @@ function handleSkip() {
   const currentDialogues = dialogues[currentBranch];
   dialogText.textContent = currentDialogues[index].text;
   charIndex = currentDialogues[index].text.length;
+  // 跳过补全文本后，如本句需要选项则立即弹出
+  ensureChoiceIfNeeded();
   stopAutoPlay();
 }
 

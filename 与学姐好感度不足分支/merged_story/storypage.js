@@ -71,8 +71,8 @@
     const loadBtn = document.getElementById("load-btn");
     const dialogText = document.getElementById("dialog-text");
     const nameBox = document.querySelector(".character-name");
-    const avatarContainer = document.querySelector(".character-avatar");
-    const avatarImg = document.getElementById("character-avatar");
+    const characterAvatarContainer = document.getElementById("character-avatar-container");
+    const characterAvatar = document.getElementById("character-avatar");
     const nextBtn = document.getElementById("next-btn");
     const prevBtn = document.getElementById("prev-btn");
     const speedBtn = document.getElementById("speed-btn");
@@ -521,14 +521,39 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
 
       if (displayName === 'C') {
         displayName = '旁白';
-        avatarContainer.style.display = 'none';
+        if (characterAvatarContainer) {
+          characterAvatarContainer.style.display = 'none';
+          characterAvatarContainer.style.visibility = 'hidden';
+        }
+        if (characterAvatar) {
+          characterAvatar.src = '';
+          characterAvatar.alt = '';
+          characterAvatar.style.display = 'none';
+          characterAvatar.style.visibility = 'hidden';
+        }
       } else if (displayName === 'B') {
         displayName = '主角';
-        avatarImg.src = '../../男主.png';
-        avatarContainer.style.display = 'block';
+        if (characterAvatar) {
+          characterAvatar.src = '../../男主.png';
+          characterAvatar.alt = '主角头像';
+          characterAvatar.style.display = 'block';
+          characterAvatar.style.visibility = 'visible';
+        }
+        if (characterAvatarContainer) {
+          characterAvatarContainer.style.display = 'block';
+          characterAvatarContainer.style.visibility = 'visible';
+        }
       } else if (displayName.includes('学姐')) {
-        avatarImg.src = '../../学姐.png';
-        avatarContainer.style.display = 'block';
+        if (characterAvatar) {
+          characterAvatar.src = '../../学姐.png';
+          characterAvatar.alt = '学姐头像';
+          characterAvatar.style.display = 'block';
+          characterAvatar.style.visibility = 'visible';
+        }
+        if (characterAvatarContainer) {
+          characterAvatarContainer.style.display = 'block';
+          characterAvatarContainer.style.visibility = 'visible';
+        }
       } else if (displayName === 'BE') {
         if (window.achievementSystem) {
           achievementSystem.unlockAchievement("badending");
@@ -541,9 +566,27 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
           } catch (e) { /* noop */ }
         }
         displayName = '结局';
-        avatarContainer.style.display = 'none';
+        if (characterAvatarContainer) {
+          characterAvatarContainer.style.display = 'none';
+          characterAvatarContainer.style.visibility = 'hidden';
+        }
+        if (characterAvatar) {
+          characterAvatar.src = '';
+          characterAvatar.alt = '';
+          characterAvatar.style.display = 'none';
+          characterAvatar.style.visibility = 'hidden';
+        }
       } else {
-        avatarContainer.style.display = 'none';
+        if (characterAvatarContainer) {
+          characterAvatarContainer.style.display = 'none';
+          characterAvatarContainer.style.visibility = 'hidden';
+        }
+        if (characterAvatar) {
+          characterAvatar.src = '';
+          characterAvatar.alt = '';
+          characterAvatar.style.display = 'none';
+          characterAvatar.style.visibility = 'hidden';
+        }
       }
 
       nameBox.textContent = displayName;

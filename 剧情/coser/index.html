@@ -28,26 +28,13 @@
            -moz-user-drag: none;
             -ms-user-drag: none;
     }
-    /* 仅在本页调整人物立绘位置，让其更居中且不遮挡对话框 */
-    .character-img {
-      left: 50%;
-      right: auto;
-      bottom: 24%; /* 相比全局的 20% 再上移，避免压住对话区 */
-      transform: translateX(-50%);
-    }
-
-    /* 移动端与较矮屏幕：再上移一些，并适当降低最大高度，减少遮挡 */
-    @media (max-width: 900px) {
-      .character-img {
-        bottom: 26%;
-        max-height: 72%;
-      }
-    }
-    @media (max-width: 600px), (max-height: 700px) {
-      .character-img {
-        bottom: 28%;
-        max-height: 68%;
-      }
+    
+    /* 确保立绘使用统一定位 */
+    #character-avatar-container,
+    .character-avatar-container {
+      position: fixed !important;
+      right: 10% !important;
+      bottom: 20% !important;
     }
 </style>
 </head>
@@ -55,10 +42,11 @@
   <!-- 背景 - 使用绝对路径确保能找到 -->
   
 
-  <!-- 角色立绘 - 统一使用 character-img class -->
-  <img src="../../男主.png" alt="主角" class="character-img" id="main-character">
-  <img src="../../学姐.png" alt="学姐" class="character-img" id="senpai-img">
-  <img src="../../青梅.png" alt="朋友" class="character-img hidden" id="friend-img">
+  <!-- 角色立绘 -->
+  <div id="character-avatar-container" class="character-avatar-container" style="display: none;">
+    <img id="character-avatar" class="character-avatar" src="" alt="角色头像" style="display: none;">
+  </div>
+
   <!-- 对话框 -->
   <div class="dialog-box">
     <div class="character-name" id="speaker-name">系统</div>

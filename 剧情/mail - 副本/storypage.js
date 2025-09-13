@@ -135,7 +135,7 @@ const dialogues = {
   leave: [
   { name: "旁白", text: "你犹豫了一下，最终还是选择了离开。人群很快淹没了她的背影。" },
   { name: "旁白", text: "也许保持距离才是正确的选择。" },
-  { name: "你", text: "好感度这种东西，大概只是我的臆想吧..." },
+  { name: "你", "text": "好感度这种东西，大概只是我的臆想吧..." },
   { name: "旁白", text: "你独自一人吃完了晚饭。错过了本可改变命运的一天。" },
   { name: "旁白", text: "游戏结束。", nextScene: "../../index.html" }
   ]
@@ -396,28 +396,133 @@ function typeText(text, callback) {
   }, typingSpeed);
 }
 
+// -------- 选项兜底：当本句带有 triggerChoice 时，防止因快速点击越过 --------
+function isCurrentLineNeedingChoice() {
+  try {
+    const currentDialogues = dialogues[currentBranch];
+    const d = currentDialogues && currentDialogues[index];
+    return !!(d && d.triggerChoice && !hasMadeChoice);
+  } catch (e) { return false; }
+}
+
+function ensureChoiceIfNeeded() {
+  if (isCurrentLineNeedingChoice()) {
+    const currentDialogues = dialogues[currentBranch];
+    const d = currentDialogues[index];
+    showChoices(d.triggerChoice);
+    return true;
+  }
+  return false;
+}
+
+function handleNext() {
+  const currentDialogues = dialogues[currentBranch];
+
+  if (charIndex < currentDialogues[index].text.length) {
+    clearInterval(typingInterval);
+    dialogText.textContent = currentDialogues[index].text;
+    charIndex = currentDialogues[index].text.length;
+    // 文本补全后，如本句需要选项则立即弹出并阻止继续
+    if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
+    return;
+  }
+
+  const currentDialogue = currentDialogues[index];
+  // 在推进到下一句前，若本句需要出现选项则先弹出
+  if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
+
+  if (currentDialogue.triggerChoice && !hasMadeChoice) {
+    showChoices(currentDialogue.triggerChoice);
+    return;
+  }
+
+  if (currentDialogue.effect) {
+    applyEffect(currentDialogue.effect);
+  }
+
+  if (currentDialogue.nextScene) {
+    goToNextScene(currentDialogue.nextScene);
+    return;
+  }
+
+  if (index < currentDialogues.length - 1) {
+    showDialogue(currentBranch, index + 1);
+  } else {
+    console.log("已经是最后一句对话");
+  }
+  
+  stopAutoPlay();
+}
+
+function handleSkip() {
+  clearInterval(typingInterval);
+  const currentDialogues = dialogues[currentBranch];
+  dialogText.textContent = currentDialogues[index].text;
+  charIndex = currentDialogues[index].text.length;
+  // 跳过补全文本后，如本句需要选项则立即弹出
+  ensureChoiceIfNeeded();
+  stopAutoPlay();
+}
+
+function startAutoPlay() {
+  clearInterval(autoInterval);
+  autoInterval = setInterval(() => {
+    // 自动播放循环前先检查是否需要选项
+    if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
+    handleNext();
+  }, 3000);
+}
+
 // -------------------- 切换角色立绘 --------------------
 function toggleCharacterImage(speaker) {
-  const characterImages = document.querySelectorAll('.character-img');
-  characterImages.forEach(img => {
-    img.classList.add('hidden');
-  });
+  const characterAvatarContainer = document.getElementById('character-avatar-container');
+  const characterAvatar = document.getElementById('character-avatar');
+  
+  if (!characterAvatarContainer || !characterAvatar) return;
 
   switch(speaker) {
     case '学姐':
-      if (senpaiImg) senpaiImg.classList.remove('hidden');
+      characterAvatar.src = '../../学姐.png';
+      characterAvatar.alt = '学姐头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
       break;
     case '朋友':
-      if (friendImg) friendImg.classList.remove('hidden');
+      characterAvatar.src = '../../青梅.png';
+      characterAvatar.alt = '朋友头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
       break;
     case '老师':
-      if (friendImg) friendImg.classList.remove('hidden'); // 使用朋友立绘代替老师
+      characterAvatar.src = '../../青梅.png'; // 使用朋友立绘代替老师
+      characterAvatar.alt = '老师头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
       break;
     case '主角':
+    case '你':
+      characterAvatar.src = '../../男主.png';
+      characterAvatar.alt = '主角头像';
+      characterAvatar.style.display = 'block';
+      characterAvatar.style.visibility = 'visible';
+      characterAvatarContainer.style.display = 'block';
+      characterAvatarContainer.style.visibility = 'visible';
+      break;
+    case '旁白':
     default:
-      // 系统或其他对话时显示主角
-      const mainCharacterImg = document.getElementById('main-character');
-      if (mainCharacterImg) mainCharacterImg.classList.remove('hidden');
+      // 旁白或其他对话时隐藏立绘
+      characterAvatarContainer.style.display = 'none';
+      characterAvatarContainer.style.visibility = 'hidden';
+      characterAvatar.style.display = 'none';
+      characterAvatar.style.visibility = 'hidden';
+      characterAvatar.src = '';
+      characterAvatar.alt = '';
       break;
   }
 }
@@ -459,11 +564,15 @@ function handleNext() {
     clearInterval(typingInterval);
     dialogText.textContent = currentDialogues[index].text;
     charIndex = currentDialogues[index].text.length;
+    // 文本补全后，如本句需要选项则立即弹出并阻止继续
+    if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
     return;
   }
   
   const currentDialogue = currentDialogues[index];
-  
+  // 在推进到下一句前，若本句需要出现选项则先弹出
+  if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
+
   if (currentDialogue.triggerChoice && !hasMadeChoice) {
     showChoices(currentDialogue.triggerChoice);
     return;
@@ -609,7 +718,11 @@ function toggleAutoPlay() {
 
 function startAutoPlay() {
   clearInterval(autoInterval);
-  autoInterval = setInterval(() => handleNext(), 3000);
+  autoInterval = setInterval(() => {
+    // 自动播放循环前先检查是否需要选项
+    if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
+    handleNext();
+  }, 3000);
 }
 
 function stopAutoPlay() {
@@ -636,6 +749,8 @@ function handleSkip() {
   const currentDialogues = dialogues[currentBranch];
   dialogText.textContent = currentDialogues[index].text;
   charIndex = currentDialogues[index].text.length;
+  // 跳过补全文本后，如本句需要选项则立即弹出
+  ensureChoiceIfNeeded();
   stopAutoPlay();
 }
 

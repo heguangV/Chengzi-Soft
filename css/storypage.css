@@ -35,48 +35,42 @@
       opacity: 0;
     }
 
-    /* 角色立绘 */
-      .character-img {
-    position: absolute;
-    bottom: 20%;
-    right: 60px;
-    z-index: 10;
-    max-height: 80%;
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
-      rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
-    );
-  }
-
-  
-  .character-avatar {
-      /* 保留样式但去除 display: flex，避免影响图片显示 */
-      position: absolute;
-    bottom: 20%;
-    right: 60px;
-    z-index: 10;
-    max-height: 80%;
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
-      rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
-    );
+    /* 角色立绘 - 统一所有立绘显示位置 */
+    .character-img,
+    .character-avatar,
+    #character-avatar,
+    .character-avatar-container {
+      position: fixed !important;
+      bottom: 20% !important;
+      right: 10% !important;
+      z-index: 10 !important;
+      max-height: 80% !important;
+      width: auto !important;
+      mask-image: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
+        rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
+      ) !important;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 1) 70%,
+        rgba(0, 0, 0, 0) 100%
+      ) !important;
     }
 
-    /* 角色头像图片 */
-    #character-avatar {
-      /* 当页面中直接使用 #character-avatar 而非包裹在 .character-avatar 时，补上定位和尺寸保证显示一致 */
-      position: absolute;
-      right: 60px;
-      bottom: 20%;
-      z-index: 10;
-    max-height: 80%;
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 70%,  /* 70% 以下完全不透明 */
-      rgba(0, 0, 0, 0) 100%  /* 100% 以下完全透明 */
-    );
+    /* 角色头像容器 */
+    .character-avatar-container {
+      display: block !important;
+    }
+
+    /* 角色头像图片 - 确保图片本身也遵循统一定位 */
+    #character-avatar,
+    .character-avatar img {
+      position: relative !important;
+      width: 100% !important;
+      height: auto !important;
+      object-fit: contain !important;
+      display: block !important;
     }
 
   .background-img {
@@ -573,7 +567,7 @@
       align-items: center;
     }
 
-    /* 响应式 */
+    /* 响应式 - 调整立绘位置 */
     @media (max-width: 600px) {
   .dialog-box {
     width: 95%;
@@ -612,6 +606,16 @@
   .affection-text {
     line-height: 25px;
     font-size: 0.8em;
+  }
+
+  /* 移动端立绘调整 */
+  .character-img,
+  .character-avatar,
+  #character-avatar,
+  .character-avatar-container {
+    right: 5% !important;
+    bottom: 25% !important;
+    max-height: 70% !important;
   }
 
 }

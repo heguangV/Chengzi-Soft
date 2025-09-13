@@ -14,9 +14,10 @@
 
 
   <!-- 角色立绘 -->
- <img src="../../男主.png" alt="主角" class="character-img" id="main-character" onerror="handleImageError(this, 'character')">
-  <img src="../../学姐.png" alt="学姐" class="character-img" id="senpai-img" onerror="handleImageError(this, 'character')">
-  
+  <div id="character-avatar-container" class="character-avatar-container" style="display: none;">
+    <img id="character-avatar" class="character-avatar" src="" alt="角色头像" style="display: none;">
+  </div>
+
   <!-- 对话框 -->
   <div class="dialog-box">
     <div class="character-name" id="speaker-name">旁白</div>

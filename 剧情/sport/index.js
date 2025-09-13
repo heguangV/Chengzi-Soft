@@ -1,7 +1,7 @@
 const dialogText = document.getElementById("dialog-text");
 const nameBox = document.querySelector(".character-name");
 const characterAvatar = document.querySelector("#character-avatar");
-const avatarContainer = document.querySelector(".character-avatar");
+const characterAvatarContainer = document.querySelector("#character-avatar-container");
 
 const nextBtn = document.getElementById("next-btn");
 const prevBtn = document.getElementById("prev-btn");
@@ -410,30 +410,50 @@ function showDialogue(idx) {
   // 根据角色显示不同头像
     if (currentName === "旁白") {
       // 旁白不显示任何立绘
-      if (avatarContainer) avatarContainer.style.display = 'none';
+      if (characterAvatarContainer) {
+        characterAvatarContainer.style.display = 'none';
+        characterAvatarContainer.style.visibility = 'hidden';
+      }
       if (characterAvatar) {
         characterAvatar.style.display = 'none';
+        characterAvatar.style.visibility = 'hidden';
         // 清除 src 避免残留图片
         characterAvatar.src = '';
+        characterAvatar.alt = '';
       }
     } else if (currentName === "学姐") {
       if (characterAvatar) {
         characterAvatar.src = "../../学姐.png";
+        characterAvatar.alt = "学姐头像";
         characterAvatar.style.display = 'block';
+        characterAvatar.style.visibility = 'visible';
       }
-      if (avatarContainer) avatarContainer.style.display = 'flex';
+      if (characterAvatarContainer) {
+        characterAvatarContainer.style.display = 'block';
+        characterAvatarContainer.style.visibility = 'visible';
+      }
     } else if (currentName === "你") {
       if (characterAvatar) {
         characterAvatar.src = "../../男主.png";
+        characterAvatar.alt = "主角头像";
         characterAvatar.style.display = 'block';
+        characterAvatar.style.visibility = 'visible';
       }
-      if (avatarContainer) avatarContainer.style.display = 'flex';
+      if (characterAvatarContainer) {
+        characterAvatarContainer.style.display = 'block';
+        characterAvatarContainer.style.visibility = 'visible';
+      }
     } else {
       // 未知角色默认不显示立绘，但不报错
-      if (avatarContainer) avatarContainer.style.display = 'none';
+      if (characterAvatarContainer) {
+        characterAvatarContainer.style.display = 'none';
+        characterAvatarContainer.style.visibility = 'hidden';
+      }
       if (characterAvatar) {
         characterAvatar.style.display = 'none';
+        characterAvatar.style.visibility = 'hidden';
         characterAvatar.src = '';
+        characterAvatar.alt = '';
       }
     }
 
@@ -555,6 +575,23 @@ function forceShowChoices() {
   clearInterval(typingInterval);
   clearInterval(autoInterval);
   stopAutoPlay();
+}
+
+// 辅助：当前行是否需要显示选项（用于防止快速点击跳过回调）
+function isCurrentLineNeedingChoice() {
+  try {
+    const d = dialogues[index];
+    return !!(d && d.hasChoice === true);
+  } catch (e) { return false; }
+}
+
+// 辅助：若当前行应显示选项且尚未显示，则立刻显示，并返回 true 表示已处理
+function ensureChoiceIfNeeded() {
+  if (isCurrentLineNeedingChoice() && !isChoiceActive) {
+    forceShowChoices();
+    return true;
+  }
+  return false;
 }
 
 // -------------------- 动态选择菜单（用于多处 todo） --------------------
@@ -804,10 +841,17 @@ function startAutoPlay() {
       stopAutoPlay();
       return;
     }
+    // 若当前句应有选项但尚未显示，立即弹出并停止自动
+    if (ensureChoiceIfNeeded()) {
+      stopAutoPlay();
+      return;
+    }
     
     if (charIndex < dialogues[index].text.length) {
       clearInterval(typingInterval);
       if (dialogText) dialogText.textContent = dialogues[index].text;
+      // 补全文本后再次检测是否需要出现选项
+      ensureChoiceIfNeeded();
     } else {
       if (index < dialogues.length - 1) showDialogue(index + 1);
       else stopAutoPlay();
@@ -910,7 +954,11 @@ function bindEventListeners() {
       clearInterval(typingInterval);
       if (dialogText) dialogText.textContent = dialogues[index].text;
       charIndex = dialogues[index].text.length;
+      // 兜底：该句应出现选项时，立即弹出并阻止继续
+      if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
     } else {
+      // 若当前句需要选项但尚未弹出，则先弹出
+      if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
       if (index < dialogues.length - 1) {
         showDialogue(index + 1);
       }
@@ -951,6 +999,8 @@ function bindEventListeners() {
     clearInterval(typingInterval);
     if (dialogText) dialogText.textContent = dialogues[index].text;
     charIndex = dialogues[index].text.length;
+    // 若该句需要选项，立即显示
+    ensureChoiceIfNeeded();
   });
 
   if (choiceBtns && choiceBtns.forEach) {
@@ -996,7 +1046,9 @@ function bindEventListeners() {
       clearInterval(typingInterval);
       if (dialogText) dialogText.textContent = dialogues[index].text;
       charIndex = dialogues[index].text.length;
+      if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
     } else {
+      if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
       if (index < dialogues.length - 1) {
         showDialogue(index + 1);
       }
@@ -1028,7 +1080,9 @@ function bindEventListeners() {
         clearInterval(typingInterval);
         if (dialogText) dialogText.textContent = dialogues[index].text;
         charIndex = dialogues[index].text.length;
+        if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
       } else {
+        if (ensureChoiceIfNeeded()) { stopAutoPlay(); return; }
         if (index < dialogues.length - 1) {
           showDialogue(index + 1);
         }
