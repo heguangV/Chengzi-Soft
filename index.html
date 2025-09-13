@@ -359,8 +359,8 @@
         </div>
     </div>
 
-    <!-- 背景图片 -->
-    <img src="./asset/images/background.jpg" alt="背景图" class="background-img">
+    <!-- 背景图片（增加兜底：若 background.jpg 缺失则使用 street.png） -->
+    <img src="./asset/images/background.jpg" alt="背景图" class="background-img" onerror="this.onerror=null; this.src='./asset/images/street.png';">
     
     <!-- 黑屏转场效果元素 -->
     <div class="fade-transition" id="fadeTransition"></div>
@@ -415,8 +415,8 @@
                         window.close();
                     }
                 } else if (id === 'team') {
-                    // 团队信息逻辑
-                    alert('开发团队信息将在这里显示');
+                    // 团队信息：跳转到团队页
+                    window.location.href = './login/team.htm';
                 }
             });
         });
@@ -514,10 +514,10 @@
         }
     </script>
     
-    <script src="./script/menu.js"></script>
-    <script src="./script/achievement.js"></script>
-    <script src="./script/save.js"></script>
-    <script src="./script/music.js"></script>
-    <script src="./script/login.js"></script>
+    <script src="./login/script/menu.js"></script>
+    <script src="./login/script/achievement.js"></script>
+    <script src="./login/script/save.js"></script>
+    <script src="./login/script/music.js"></script>
+    <script src="./login/script/login.js"></script>
 </body>
 </html>

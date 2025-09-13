@@ -71,7 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 团队信息
     document.getElementById('team').addEventListener('click', function() {
-        window.location.href = 'team.htm';
+        // 从根目录 index.html 进入，需要跳转到 login/team.htm
+        window.location.href = './login/team.htm';
     });
 
     // 为除开始游戏外的功能项添加点击反馈动画

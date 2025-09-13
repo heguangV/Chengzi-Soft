@@ -1,0 +1,90 @@
+/* 基础设置 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+/* 头部容器样式 - 新增 */
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    gap: 20px;
+}
+
+/* 头部信息样式 */
+header {
+    flex: 1; /* 让头部信息占据剩余空间 */
+    text-align: left; /* 改为左对齐，与图片配合更协调 */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+/* 照片样式调整 */
+.photo {
+    width: 200px; /* 固定照片宽度 */
+    flex-shrink: 0; /* 防止照片被压缩 */
+}
+
+.photo img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 主要内容样式 */
+.introduction {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: #3498db;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f1f1f1;
+}
+
+p {
+    margin-bottom: 15px;
+}
+
+/* 响应式设计 - 适配手机 */
+@media (max-width: 600px) {
+    .header-container {
+        flex-direction: column; /* 小屏幕下改为垂直排列 */
+        align-items: center;
+    }
+    
+    header {
+        text-align: center; /* 小屏幕下恢复居中对齐 */
+        width: 100%;
+    }
+    
+    .photo {
+        width: 150px;
+    }
+}
