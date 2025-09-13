@@ -534,7 +534,7 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
       } else if (displayName === 'B') {
         displayName = '主角';
         if (characterAvatar) {
-          characterAvatar.src = '../../男主.png';
+          characterAvatar.src = '../../asset/images/男主.png';
           characterAvatar.alt = '主角头像';
           characterAvatar.style.display = 'block';
           characterAvatar.style.visibility = 'visible';
@@ -545,7 +545,7 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
         }
       } else if (displayName.includes('学姐')) {
         if (characterAvatar) {
-          characterAvatar.src = '../../学姐.png';
+          characterAvatar.src = '../../asset/images/学姐.png';
           characterAvatar.alt = '学姐头像';
           characterAvatar.style.display = 'block';
           characterAvatar.style.visibility = 'visible';

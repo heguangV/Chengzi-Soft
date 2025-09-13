@@ -313,7 +313,7 @@ function toggleCharacterImage(speaker) {
 
   switch(speaker) {
     case '学姐':
-      characterAvatar.src = '../../学姐.png';
+      characterAvatar.src = '../../asset/images/学姐.png';
       characterAvatar.alt = '学姐头像';
       characterAvatar.style.display = 'block';
       characterAvatar.style.visibility = 'visible';
@@ -338,7 +338,7 @@ function toggleCharacterImage(speaker) {
       break;
     case '主角':
     case '你':
-      characterAvatar.src = '../../男主.png';
+      characterAvatar.src = '../../asset/images/男主.png';
       characterAvatar.alt = '主角头像';
       characterAvatar.style.display = 'block';
       characterAvatar.style.visibility = 'visible';
