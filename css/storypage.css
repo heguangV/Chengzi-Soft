@@ -112,7 +112,7 @@
       top: 50%;
       left: 10%;
       transform: translateY(-50%);
-      width: 80%;
+      width: 65%; /* 缩小宽度，防止被手机遮挡 */
       min-height: 3em;
       font-size: 1.3em;
       color: black;
@@ -407,7 +407,7 @@
     /* 手机图像样式 */
     #phone-image {
       position: fixed;
-      top: 100px;
+      top: 90px; /* 向下移，避免遮挡好感度 */
       right: 20px;
       z-index: 100;
       cursor: pointer;
@@ -421,18 +421,17 @@
     /* 手机聊天界面 */
     #phone-chat-interface {
   position: fixed;
-  top: 50%;
+  top: 18%; /* 向下移，避免遮挡好感度 */
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: translate(-50%, 0) scale(0.85);
   transform-origin: center center;
-  width: 320px;
-  height: 600px; /* 默认高度 */
+  width: 280px;
+  height: 480px;
   background: #f5f5f5;
-  border-radius: 30px;
+  border-radius: 24px;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   overflow: hidden;
-  /* 预先参与布局并计算变换，防止首次显示时位置抖动 */
   display: block;
   visibility: hidden;
   pointer-events: none;
@@ -446,7 +445,7 @@
   visibility: visible;
   pointer-events: auto;
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, 0) scale(1);
 }
 
 
@@ -576,6 +575,7 @@
 
   .dialog-text {
     font-size: 1em;
+    width: 60%; /* 移动端进一步缩小宽度 */
   }
 
   .control-img {
@@ -614,23 +614,33 @@
   #character-avatar,
   .character-avatar-container {
     right: 5% !important;
-    bottom: 25% !important;
+    bottom: 32% !important; /* 向上移 */
     max-height: 70% !important;
+  }
+
+  /* 移动端角色名上移 */
+  .character-name {
+    margin-top: -1.2em;
   }
 
 }
 @media (max-width: 600px), (max-height: 800px) {
-      #phone-chat-interface {
-    width: 50vw;
-    height: 80vh ; /* 使用视口高度 */
-    max-height: 600px ;
-    max-width: 320px ;
-    min-height: 400px ;
-    border-radius: 20px;
+  #phone-image {
+    top: 60px;
+    right: 10px;
   }
-  
+  #phone-chat-interface {
+    width: 80vw;
+    height: 60vh;
+    max-height: 400px;
+    max-width: 260px;
+    min-height: 280px;
+    border-radius: 16px;
+    top: 12%;
+    transform: translate(-50%, 0) scale(0.95);
+  }
   .chat-messages {
-    height: calc(100% - 120px);
+    height: calc(100% - 110px);
   }
 }
 
