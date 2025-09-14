@@ -67,7 +67,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const loadTimestamp = urlParams.get("load");
   if (loadTimestamp) {
-  const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
   const save = saves.find(s => s.timestamp == loadTimestamp);
     if (save) {
     currentBranch = save.branch;
@@ -92,6 +92,12 @@ window.addEventListener("DOMContentLoaded", () => {
     observer.observe(phoneChatInterface, { attributes: true, attributeFilter: ["class"] });
   }
 });
+
+// 统一：按账号返回存档键
+function getStorySaveKey() {
+  const user = localStorage.getItem('currentUser');
+  return user ? 'storySaves_' + user : 'storySaves_guest';
+}
 
 const dialogues = {
   common: [
@@ -806,7 +812,7 @@ const saveBtn = document.getElementById("save-btn");
 if (saveBtn) {
   saveBtn.addEventListener("click", () => {
     // 读现有存档数组
-    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
 
     // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
     let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
@@ -829,7 +835,7 @@ if (saveBtn) {
     console.log("存档进度：", saveData);
 
     saves.push(saveData);
-    localStorage.setItem("storySaves", JSON.stringify(saves));
+  localStorage.setItem(getStorySaveKey(), JSON.stringify(saves));
 
     console.log("存档已写入：", saveData);
     alert("游戏已存档！");

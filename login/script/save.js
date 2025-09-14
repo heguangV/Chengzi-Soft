@@ -7,6 +7,21 @@ class SaveSystem {
     }
 
     init() {
+        // 一次性迁移旧的全局存档（storySaves）到当前用户键，避免旧存档丢失
+        try {
+            const legacy = localStorage.getItem('storySaves');
+            if (legacy) {
+                const legacyArr = JSON.parse(legacy) || [];
+                const cur = JSON.parse(localStorage.getItem(this.getCurrentUserKey()) || '[]');
+                // 简单合并后按时间排序去重（以 timestamp 为主键）
+                const map = new Map();
+                [...cur, ...legacyArr].forEach(s => { if (s && s.timestamp) map.set(String(s.timestamp), s); });
+                const merged = Array.from(map.values()).sort((a,b) => b.timestamp - a.timestamp);
+                localStorage.setItem(this.getCurrentUserKey(), JSON.stringify(merged));
+                // 清空旧全局键，避免重复迁移
+                localStorage.removeItem('storySaves');
+            }
+        } catch (e) { /* ignore */ }
         this.loadSaves();
         this.setupEventListeners();
         this.renderSaveSlots();
@@ -53,6 +68,12 @@ class SaveSystem {
     getCurrentUserKey() {
         const user = localStorage.getItem('currentUser');
         return user ? 'storySaves_' + user : 'storySaves_guest';
+    }
+
+    isUserLoggedIn() {
+        try {
+            return localStorage.getItem('isLoggedIn') === 'true' && !!localStorage.getItem('currentUser');
+        } catch { return false; }
     }
 
     loadSaves() {
@@ -246,6 +267,19 @@ class SaveSystem {
     }
 
     showModal() {
+        // 登录校验：未登录不显示存档，转而提示并打开登录框
+        if (!this.isUserLoggedIn()) {
+            try {
+                if (typeof window.showToast === 'function') {
+                    window.showToast('请先登录后再查看存档');
+                } else {
+                    alert('请先登录后再查看存档');
+                }
+                const loginModal = document.getElementById('loginModal');
+                if (loginModal) loginModal.style.display = 'flex';
+            } catch (_) {}
+            return;
+        }
         const modal = document.getElementById('saveModal');
         if (!modal) return;
 

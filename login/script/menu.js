@@ -41,7 +41,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 加载存档
     document.getElementById('load').addEventListener('click', function() {
-        // 检查存档系统是否可用，如果可用则显示模态框，否则跳转到原存档页面
+        // 未登录则阻止进入存档，提示并弹出登录框
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' && !!localStorage.getItem('currentUser');
+        if (!isLoggedIn) {
+            if (typeof window.showToast === 'function') {
+                window.showToast('请先登录后再查看存档');
+            } else {
+                alert('请先登录后再查看存档');
+            }
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) loginModal.style.display = 'flex';
+            return;
+        }
+        // 已登录：检查存档系统是否可用，如果可用则显示模态框，否则跳转到原存档页面
         if (window.saveSystem) {
             window.saveSystem.showModal();
         } else {

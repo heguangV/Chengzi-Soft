@@ -655,7 +655,7 @@ function bindControlButtons() {
     saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
     newSaveBtn.addEventListener("click", () => {
       // 读现有存档数组
-      const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
 
       // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
       let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
@@ -678,7 +678,7 @@ function bindControlButtons() {
       console.log("存档进度：", saveData);
 
       saves.push(saveData);
-      localStorage.setItem("storySaves", JSON.stringify(saves));
+  localStorage.setItem(getStorySaveKey(), JSON.stringify(saves));
 
       console.log("存档已写入：", saveData);
       alert("游戏已存档！");
@@ -781,6 +781,11 @@ function getBodyBackgroundAbsoluteUrl() {
 }
 
 const bodyBg = getBodyBackgroundAbsoluteUrl();
+// 统一：按账号返回存档键
+function getStorySaveKey() {
+  const user = localStorage.getItem('currentUser');
+  return user ? 'storySaves_' + user : 'storySaves_guest';
+}
 
 // -------------------- 自动存档 --------------------
 function autoSave() {
@@ -792,9 +797,9 @@ function autoSave() {
     background: bodyBg,
     timestamp: Date.now()
   };
-  let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  let saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
   saves.push(saveData);
-  localStorage.setItem("storySaves", JSON.stringify(saves));
+  localStorage.setItem(getStorySaveKey(), JSON.stringify(saves));
 
   if (autoSaveNotice) {
     autoSaveNotice.classList.remove("hidden");

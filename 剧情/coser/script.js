@@ -617,8 +617,8 @@ function bindSaveLoadButtons() {
     saveBtn.addEventListener("click", function(e) {
       e.stopPropagation();
       
-      // 读现有存档数组
-      const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+  // 读现有存档数组（按账号键）
+  const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
 
       // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
       let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
@@ -642,7 +642,7 @@ function bindSaveLoadButtons() {
       console.log("存档进度：", saveData);
 
       saves.push(saveData);
-      localStorage.setItem("storySaves", JSON.stringify(saves));
+  localStorage.setItem(getStorySaveKey(), JSON.stringify(saves));
 
       console.log("存档已写入：", saveData);
       alert("游戏已存档！");
@@ -730,7 +730,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const loadTimestamp = urlParams.get("load");
   if (loadTimestamp) {
-    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+    const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
     const save = saves.find(s => s.timestamp == loadTimestamp);
     if (save) {
       currentBranch = save.branch;

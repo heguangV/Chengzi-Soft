@@ -137,13 +137,21 @@ class AchievementSystem {
     this.checkEndingMaster();
     }
 
+    // 登录校验：必须存在 currentUser 且 isLoggedIn === 'true'
+    isUserLoggedIn() {
+        return localStorage.getItem('isLoggedIn') === 'true' && !!localStorage.getItem('currentUser');
+    }
+
     setupEventListeners() {
         // 成就按钮点击事件
         const achievementBtn = document.getElementById('achievement');
         if (achievementBtn) {
             achievementBtn.addEventListener('click', () => {
                 this.showModal();
-                this.unlockAchievement('achievement_hunter');
+                // 仅登录后才记录“成就猎人”
+                if (this.isUserLoggedIn()) {
+                    this.unlockAchievement('achievement_hunter');
+                }
             });
         }
 
@@ -270,6 +278,10 @@ class AchievementSystem {
     }
 
     unlockAchievement(achievementId) {
+        // 未登录不允许解锁成就
+        if (!this.isUserLoggedIn()) {
+            return;
+        }
         const achievement = this.achievements.find(a => a.id === achievementId);
         if (achievement && !achievement.completed) {
             achievement.completed = true;
@@ -286,6 +298,10 @@ class AchievementSystem {
     }
 
     updateAchievementProgress(achievementId, progress) {
+        // 未登录不记录进度
+        if (!this.isUserLoggedIn()) {
+            return;
+        }
         const achievement = this.achievements.find(a => a.id === achievementId);
         if (achievement && !achievement.completed) {
             achievement.progress = Math.min(progress, achievement.target);
@@ -379,15 +395,19 @@ class AchievementSystem {
 
     getCurrentUserKey() {
         const user = localStorage.getItem('currentUser');
-        return user ? 'achievements_' + user : 'achievements_guest';
+        return user ? 'achievements_' + user : null; // 未登录不返回 guest key
     }
 
     saveAchievements() {
-        localStorage.setItem(this.getCurrentUserKey(), JSON.stringify(this.achievements));
+        const key = this.getCurrentUserKey();
+        if (!key) return; // 未登录不保存
+        localStorage.setItem(key, JSON.stringify(this.achievements));
     }
 
     loadAchievements() {
-        const saved = localStorage.getItem(this.getCurrentUserKey());
+        const key = this.getCurrentUserKey();
+        if (!key) return; // 未登录时使用默认内存状态（全部未完成）
+        const saved = localStorage.getItem(key);
         if (saved) {
             try {
                 const savedAchievements = JSON.parse(saved);

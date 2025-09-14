@@ -1,15 +1,28 @@
 // -------------------- 多存档功能整合 --------------------
 
+// 统一获取当前应使用的存档键（按账号，未登录则存入 guest 桶）
+function getStorySaveKey() {
+    const user = localStorage.getItem('currentUser');
+    return user ? 'storySaves_' + user : 'storySaves_guest';
+}
+
+// 检查是否已登录（用于本页访问控制）
+function isUserLoggedIn() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const user = localStorage.getItem('currentUser');
+    return isLoggedIn && !!user;
+}
+
 // 🔹 初始化存档界面（显示多存档信息）
 function initSaveUI() {
     const storeWin = document.querySelector(".saves");
     if (!storeWin) return;
 
-    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+    const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
 
     // 按时间戳降序排序
     saves.sort((a, b) => b.timestamp - a.timestamp);
-    localStorage.setItem("storySaves", JSON.stringify(saves));
+    localStorage.setItem(getStorySaveKey(), JSON.stringify(saves));
 
     const saveSlots = storeWin.querySelectorAll('.save');
 
@@ -52,7 +65,7 @@ function initSaveUI() {
 
 
 function readSave(idx) {
-    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+    const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
     if (idx >= saves.length) return;
 
     const save = saves[idx];
@@ -69,18 +82,32 @@ function readSave(idx) {
 
 // 🔹 删除指定存档
 function deleteSave(idx) {
-    let saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+    let saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
     if (idx >= saves.length) return;
 
     if (confirm("确定要删除这个存档吗？")) {
         saves.splice(idx, 1);
-        localStorage.setItem("storySaves", JSON.stringify(saves));
+    localStorage.setItem(getStorySaveKey(), JSON.stringify(saves));
         initSaveUI();
     }
 }
 
 // -------------------- 页面加载时检查 URL 是否有读档参数 --------------------
 window.addEventListener("DOMContentLoaded", () => {
+    // 未登录则不允许查看存档页面，直接提示并返回/跳转首页
+    if (!isUserLoggedIn()) {
+        alert('请先登录后再查看存档。');
+        const urlParams = new URLSearchParams(window.location.search);
+        const from = urlParams.get('from');
+        if (from) {
+            window.location.href = from;
+        } else {
+            // 从 savepage/savepage2.0/ 返回站点首页
+            window.location.href = "../../index.html";
+        }
+        return;
+    }
+
     // 为返回按钮添加返回上一页功能
     const closeBtn = document.querySelector('.close');
     if (closeBtn) {
@@ -101,7 +128,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
     const loadTimestamp = urlParams.get("load");
     if (loadTimestamp) {
-        const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+        const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
         const save = saves.find(s => s.timestamp == loadTimestamp);
         if (save) {
             currentBranch = save.branch;

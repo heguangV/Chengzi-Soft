@@ -900,7 +900,7 @@ const bodyBg = getBodyBackgroundAbsoluteUrl();
 if (saveBtn) {
   saveBtn.addEventListener("click", () => {
     // 读现有存档数组
-    const saves = JSON.parse(localStorage.getItem("storySaves") || "[]");
+    const saves = JSON.parse(localStorage.getItem(getStorySaveKey()) || "[]");
 
     // 规范化 scene：优先使用 pathname，但如果是 file:// (本地) 去掉驱动器前缀
     let scene = window.location.pathname.startsWith("/") ? window.location.pathname : "/" + window.location.pathname;
@@ -923,7 +923,7 @@ if (saveBtn) {
     console.log("存档进度：", saveData);
 
     saves.push(saveData);
-    localStorage.setItem("storySaves", JSON.stringify(saves));
+  localStorage.setItem(getStorySaveKey(), JSON.stringify(saves));
 
     console.log("存档已写入：", saveData);
     alert("游戏已存档！");
@@ -942,6 +942,12 @@ if (loadBtn) {
         // 直接跳转到存档界面
         window.location.href = "../../savepage/savepage2.0/save.htm";
     });
+}
+
+// 统一存档键：按账号或 guest
+function getStorySaveKey() {
+  const user = localStorage.getItem('currentUser');
+  return user ? 'storySaves_' + user : 'storySaves_guest';
 }
 
 
