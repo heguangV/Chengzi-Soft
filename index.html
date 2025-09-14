@@ -221,6 +221,30 @@
             /* 改善触摸端拖动体验 */
             touch-action: manipulation;
         }
+
+        /* 轻量 Toast 提示 */
+        #toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.2;
+            opacity: 0;
+            transition: opacity 200ms ease, transform 200ms ease;
+            z-index: 10000;
+            pointer-events: none;
+            max-width: 80vw;
+            text-align: center;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 
@@ -278,7 +302,7 @@
             <div class="divider"></div>
             
             <div class="function-item" id="exit">
-                <span class="function-text">退出游戏</span>
+                <span class="function-text">退出登录</span>
             </div>
             <div class="divider"></div>
             
@@ -364,6 +388,8 @@
     
     <!-- 黑屏转场效果元素 -->
     <div class="fade-transition" id="fadeTransition"></div>
+    <!-- 轻量提示 -->
+    <div id="toast" role="status" aria-live="polite"></div>
     
     <script>
         // 添加落叶动画
@@ -401,8 +427,8 @@
                 // 根据ID执行相应操作
                 const id = this.id;
                 if (id === 'start') {
-                    // 开始游戏逻辑
-                    document.getElementById('loginModal').style.display = 'block';
+                    // 开始游戏逻辑：打开登录（使用 flex 以保证居中）
+                    document.getElementById('loginModal').style.display = 'flex';
                 } else if (id === 'load') {
                     // 加载存档逻辑
                     document.getElementById('saveModal').style.display = 'block';
@@ -410,10 +436,20 @@
                     // 成就页面逻辑
                     document.getElementById('achievementModal').style.display = 'block';
                 } else if (id === 'exit') {
-                    // 退出游戏逻辑
-                    if (confirm('确定要退出游戏吗？')) {
-                        window.close();
+                    // 退出登录逻辑（不再弹出确认框）
+                    localStorage.setItem('isLoggedIn', 'false');
+                    localStorage.removeItem('currentUser');
+                    // 清空登录表单
+                    var loginUser = document.getElementById('login-username');
+                    var loginPwd = document.getElementById('login-password');
+                    if (loginUser) loginUser.value = '';
+                    if (loginPwd) loginPwd.value = '';
+                    // 轻量提示
+                    if (typeof showToast === 'function') {
+                        showToast('已退出登录');
                     }
+                    // 弹出登录框（flex 居中）
+                    document.getElementById('loginModal').style.display = 'flex';
                 } else if (id === 'team') {
                     // 团队信息：跳转到团队页
                     window.location.href = './login/team.htm';
@@ -511,6 +547,18 @@
                     e.preventDefault();
                 }
             });
+        }
+
+        // 轻量 Toast 函数
+        function showToast(message, duration = 1800) {
+            const el = document.getElementById('toast');
+            if (!el) return;
+            el.textContent = message;
+            el.classList.add('show');
+            clearTimeout(window.__toastTimer);
+            window.__toastTimer = setTimeout(() => {
+                el.classList.remove('show');
+            }, Math.max(800, duration));
         }
     </script>
     

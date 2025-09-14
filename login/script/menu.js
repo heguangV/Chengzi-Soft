@@ -58,14 +58,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 退出游戏
+    // 退出登录（无确认弹窗）
     document.getElementById('exit').addEventListener('click', function() {
-        if (confirm('确定要退出游戏吗？')) {
-            window.close();
-            // 如果window.close()不起作用，显示提示
-            if (!window.closed) {
-                alert('请手动关闭浏览器标签页');
+        try {
+            localStorage.setItem('isLoggedIn', 'false');
+            localStorage.removeItem('currentUser');
+            const loginUser = document.getElementById('login-username');
+            const loginPwd = document.getElementById('login-password');
+            if (loginUser) loginUser.value = '';
+            if (loginPwd) loginPwd.value = '';
+            // 轻量提示（如存在）
+            if (typeof showToast === 'function') {
+                showToast('已退出登录');
             }
+            // 弹出居中的登录框（如存在）
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) loginModal.style.display = 'flex';
+        } catch (e) {
+            console.warn('退出登录时发生异常：', e);
         }
     });
 

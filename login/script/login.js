@@ -151,32 +151,30 @@ class LoginSystem {
     // 登录验证
     goNextPage() {
         const email = document.getElementById('login-username').value.trim();
-        // 移除错误的登录状态设置
         const password = document.getElementById('login-password').value;
         const errorDiv = document.getElementById("login-error");
 
         const users = this.getUsers();
-
-       
         const user = users.find(u => u.email === email && u.password === password);
 
         if (user) {
             // 设置登录状态为已登录
             localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('currentUser', email); // 记录当前账号
             console.log('✅ 用户登录成功:', email);
-            
+
             // 如果成就系统可用，解锁"初次登录"成就
             if (window.achievementSystem) {
                 window.achievementSystem.unlockAchievement('first_login');
             }
-            
+
             // 隐藏模态框
             this.hideModal();
-            
+
             // 添加黑屏转场效果
             const fadeTransition = document.getElementById('fadeTransition');
             fadeTransition.classList.add('active');
-            
+
             // 跳转到故事页面，与已登录用户跳转目标保持一致
             setTimeout(() => {
                 window.location.href = "./剧情/mail - 副本/storypage.html";
@@ -200,9 +198,6 @@ class LoginSystem {
         errorDiv.style.display = "none";
         errorDiv.innerText = "";
 
-        // 邮箱格式校验
-        
-
         if (!password || !confirmPassword) {
             errorDiv.innerText = "请填写完整信息";
             errorDiv.style.display = "block";
@@ -225,6 +220,11 @@ class LoginSystem {
         // 保存用户
         users.push({ email, password });
         this.saveUsers(users);
+
+        // 注册时清空/初始化该账号的存档和成就
+        localStorage.setItem('storySaves_' + email, JSON.stringify([]));
+        localStorage.setItem('achievements_' + email, JSON.stringify([]));
+        localStorage.setItem('currentUser', email);
 
         // 回到登录表单并回显
         this.showLogin();

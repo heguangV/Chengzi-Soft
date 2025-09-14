@@ -349,9 +349,11 @@ class AchievementSystem {
     }
 
     autoUnlockAchievements() {
-        // 自动解锁初次登录成就
-        this.unlockAchievement('first_login');
-        
+        // 只有已登录账号才自动解锁初次登录成就
+        const user = localStorage.getItem('currentUser');
+        if (user) {
+            this.unlockAchievement('first_login');
+        }
         // 检查其他可能的成就
         this.checkMusicAchievement();
         this.checkTeamAchievement();
@@ -375,12 +377,17 @@ class AchievementSystem {
         }
     }
 
+    getCurrentUserKey() {
+        const user = localStorage.getItem('currentUser');
+        return user ? 'achievements_' + user : 'achievements_guest';
+    }
+
     saveAchievements() {
-        localStorage.setItem('achievements', JSON.stringify(this.achievements));
+        localStorage.setItem(this.getCurrentUserKey(), JSON.stringify(this.achievements));
     }
 
     loadAchievements() {
-        const saved = localStorage.getItem('achievements');
+        const saved = localStorage.getItem(this.getCurrentUserKey());
         if (saved) {
             try {
                 const savedAchievements = JSON.parse(saved);

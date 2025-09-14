@@ -50,16 +50,20 @@ class SaveSystem {
         }
     }
 
+    getCurrentUserKey() {
+        const user = localStorage.getItem('currentUser');
+        return user ? 'storySaves_' + user : 'storySaves_guest';
+    }
+
     loadSaves() {
-        const savedData = localStorage.getItem('storySaves');
+        const savedData = localStorage.getItem(this.getCurrentUserKey());
         this.currentSaves = savedData ? JSON.parse(savedData) : [];
-        
         // 按时间戳降序排序
         this.currentSaves.sort((a, b) => b.timestamp - a.timestamp);
     }
 
     saveSaves() {
-        localStorage.setItem('storySaves', JSON.stringify(this.currentSaves));
+        localStorage.setItem(this.getCurrentUserKey(), JSON.stringify(this.currentSaves));
     }
 
     renderSaveSlots() {
